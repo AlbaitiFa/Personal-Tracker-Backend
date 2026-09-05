@@ -933,11 +933,19 @@
     fab.title = fab.disabled ? "Configure Settings first" : "Add transaction";
   }
 
+  // Beneficiary accounts (money tracked on someone else's behalf - Maryam,
+  // Jawaher, whoever) exist purely for bookkeeping (selectable wherever a
+  // bank account is picked, e.g. accountOptions()) but never appear on the
+  // main dashboard - mirrors the company tracker's own accountTypeLabel()
+  // split (only type "company" shows in ITS top stats row).
+  function isPersonalAccount(a) { return (a.type || "personal") === "personal"; }
+
   function renderAccountCards(derived) {
     var el = document.getElementById("statsRow");
-    if (!state.accounts.length) { el.innerHTML = '<div class="empty-state" style="flex:1 1 100%">No bank accounts yet. Add one in Settings.</div>'; return; }
-    var total = state.accounts.reduce(function (s, a) { return s + derived.accountBalances[a.id]; }, 0);
-    var cardsHtml = state.accounts.map(function (a) {
+    var personalAccounts = state.accounts.filter(isPersonalAccount);
+    if (!personalAccounts.length) { el.innerHTML = '<div class="empty-state" style="flex:1 1 100%">No personal bank accounts yet. Add one in Settings.</div>'; return; }
+    var total = personalAccounts.reduce(function (s, a) { return s + derived.accountBalances[a.id]; }, 0);
+    var cardsHtml = personalAccounts.map(function (a) {
       return '<div class="stat"><div class="label">' + esc(a.name) + '</div>' +
         '<div class="value num">' + curr() + ' ' + fmt(derived.accountBalances[a.id]) + '</div></div>';
     }).join("");
@@ -1839,9 +1847,10 @@
     html += '<div class="sum-note ' + (cSum === 100 ? "ok" : "bad") + '">Share total: ' + cSum + '%' + (cSum === 100 ? " — splits nicely into 100%" : " — should add up to 100% or splits will be off") + '</div>';
     html += '</div>';
 
-    html += '<div class="settings-section"><h4>Bank Accounts</h4><div class="ledger-note" style="margin-top:-6px">Use the arrows to reorder — this order sets the display order everywhere (dashboard, dropdowns).</div>';
+    html += '<div class="settings-section"><h4>Bank Accounts</h4><div class="ledger-note" style="margin-top:-6px">Use the arrows to reorder — this order sets the display order everywhere (dashboard, dropdowns). Beneficiary accounts (money tracked on someone else\'s behalf — Maryam, Jawaher, etc.) are for tracking only and never show on the main dashboard.</div>';
     html += state.accounts.map(function (a, idx) {
       var isDefault = a.id === state.defaultAccountId || (!state.defaultAccountId && state.accounts[0] && state.accounts[0].id === a.id);
+      var acctType = a.type || "personal";
       return '<div class="acct-edit-row" data-account="' + a.id + '">' +
         '<div class="acct-edit-top">' +
           '<div class="reorder-btns">' +
@@ -1852,6 +1861,10 @@
           '<input class="input" data-field="name" value="' + esc(a.name) + '" placeholder="Account name">' +
           '<button class="del-btn" data-del-account="' + a.id + '" aria-label="Remove account">' + xIcon() + '</button>' +
         '</div>' +
+        '<div class="field" style="margin-top:8px"><select class="select" data-field="type">' +
+          '<option value="personal"' + (acctType === "personal" ? " selected" : "") + '>Personal — shows on the dashboard</option>' +
+          '<option value="beneficiary"' + (acctType === "beneficiary" ? " selected" : "") + '>Beneficiary — tracking only</option>' +
+        '</select></div>' +
       '</div>';
     }).join("");
     html += '<div class="btn-row"><button class="add-row-btn" id="addAccount">+ Add bank account</button><button class="btn" id="openObBtn">Add Opening Balance</button></div></div>';
