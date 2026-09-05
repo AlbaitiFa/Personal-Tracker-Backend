@@ -421,8 +421,54 @@ def log_expense(state, args):
         names = ", ".join(b["name"] for b in state["buckets"])
         raise ToolError(f'Unknown Account "{args["bucket"]}". Available: {names}')
     tx_date = args.get("date") or today_str()
-    account_id = resolve_account_id(state, args.get("account"), tool_error_context="log_expense's account")
     historical = bool(args.get("historical", False))
+    currency = state.get("currency", "")
+
+    # Split across accounts (mirrors Personal-tracker.html's own split UI):
+    # fans out into N ordinary single-account expense transactions instead
+    # of one record - compute_derived() needs no special case since each
+    # row is just a normal expense.
+    split = args.get("split")
+    if split:
+        if not isinstance(split, list) or len(split) < 2:
+            raise ToolError("split must be a list of at least 2 {account, amount} entries.")
+        rows = []
+        running = 0.0
+        for entry in split:
+            try:
+                row_amount = round2(entry.get("amount"))
+            except (TypeError, ValueError, AttributeError):
+                row_amount = 0
+            if not row_amount or row_amount <= 0:
+                raise ToolError("Each split entry's amount must be a positive number.")
+            row_account_id = resolve_account_id(state, entry.get("account"), tool_error_context="a log_expense split entry's account")
+            rows.append({"accountId": row_account_id, "amount": row_amount})
+            running = round2(running + row_amount)
+        if abs(running - amount) > 0.004:
+            raise ToolError(f"Split amounts ({running:.2f}) must add up to the total amount ({amount:.2f}).")
+        now = int(time.time() * 1000)
+        split_group_id = uid()
+        for i, row in enumerate(rows):
+            state["transactions"].append({
+                "id": uid(),
+                "type": "expense",
+                "date": tx_date,
+                "description": f"{description} — split {i + 1}/{len(rows)}",
+                "amount": row["amount"],
+                "bucketId": bucket_id,
+                "accountId": row["accountId"],
+                "historical": historical,
+                "createdAt": now + i,
+                "updatedAt": now + i,
+                # Lets Personal-tracker.html's own ledger merge these rows
+                # back into one visual card (groupAdjacentSplits()) - purely
+                # a display link, compute_derived() ignores it entirely.
+                "splitGroupId": split_group_id,
+            })
+        accounts_note = ", ".join(f'{a["name"] if (a := next((x for x in state["accounts"] if x["id"] == r["accountId"]), None)) else r["accountId"]} {r["amount"]:.2f}' for r in rows)
+        return f'Expense logged: {amount:.2f} {currency} from {bucket_label(state, bucket_id)} - "{description}" on {tx_date}, split across {len(rows)} accounts ({accounts_note}).'
+
+    account_id = resolve_account_id(state, args.get("account"), tool_error_context="log_expense's account")
 
     tx = {
         "id": uid(),
@@ -437,7 +483,6 @@ def log_expense(state, args):
         "updatedAt": int(time.time() * 1000),
     }
     state["transactions"].append(tx)
-    currency = state.get("currency", "")
     note = " (historical — record only, doesn't touch the Account or bank account balance)" if historical else ""
     return f'Expense logged: {amount:.2f} {currency} from {bucket_label(state, bucket_id)} - "{description}" on {tx_date}{note}.'
 
@@ -808,16 +853,30 @@ TOOLS = [
         "description": "Log a new personal expense drawn from one Account (Give, FFA, Investment, or "
         "Lifestyle - or any custom Account name in this tracker). Set historical=true only for an "
         "expense that predates a later opening balance which already reflects it (record-only, no "
-        "balance change) - ask if unsure.",
+        "balance change) - ask if unsure. Pass split instead of account when the expense was paid "
+        "partly from two or more bank accounts - this logs it as multiple linked transactions (one "
+        "per account) that the app displays as a single merged ledger row.",
         "inputSchema": {
             "type": "object",
             "properties": {
-                "amount": {"type": "number", "description": "Positive amount spent"},
+                "amount": {"type": "number", "description": "Positive amount spent (the total, if split is used)"},
                 "description": {"type": "string", "description": "What this expense was for / vendor"},
                 "bucket": {"type": "string", "description": 'Which Account to draw from, by name (e.g. "Lifestyle")'},
                 "date": {"type": "string", "description": "YYYY-MM-DD, defaults to today"},
-                "account": {"type": "string", "description": "Bank account it was paid from. Defaults to the app's default account."},
+                "account": {"type": "string", "description": "Bank account it was paid from. Defaults to the app's default account. Ignored if split is given."},
                 "historical": {"type": "boolean", "description": "Default false. True only if this predates a later opening balance that already reflects it."},
+                "split": {
+                    "type": "array",
+                    "description": "Use instead of account when paid from 2+ bank accounts. At least 2 entries, amounts must sum to the total amount.",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "account": {"type": "string", "description": "Bank account name"},
+                            "amount": {"type": "number", "description": "Positive amount paid from this account"},
+                        },
+                        "required": ["account", "amount"],
+                    },
+                },
             },
             "required": ["amount", "description", "bucket"],
             "additionalProperties": False,

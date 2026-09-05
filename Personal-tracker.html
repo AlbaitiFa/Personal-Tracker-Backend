@@ -402,6 +402,7 @@
     background: var(--paper); color: var(--text); font-size: 0.92rem;
   }
   .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .split-row { margin-bottom: 8px; }
   .check-row { display: flex; align-items: center; gap: 9px; font-size: 0.83rem; padding: 6px 0 0; }
   .check-row input { width: 17px; height: 17px; accent-color: var(--accent); flex-shrink: 0; }
   .check-note { font-size: 0.72rem; color: var(--text-muted); margin: 1px 0 6px 26px; line-height: 1.35; }
@@ -1277,6 +1278,60 @@
     );
   }
 
+  // A split expense (submitTx()'s split branch) is still N ordinary
+  // transactions underneath - computeDerived(), edit/delete, filtering all
+  // work on them exactly as if they were unrelated expenses. This just
+  // groups ADJACENT rows sharing a splitGroupId into one visual card, so a
+  // sort where they land next to each other (date sort - the common case,
+  // since they share a date and near-identical createdAt) shows one row
+  // instead of two. Under amount sort they can land apart (different
+  // amounts) and just render individually - no special-casing needed since
+  // grouping only merges rows already adjacent in the given order.
+  function groupAdjacentSplits(list) {
+    var out = [];
+    for (var i = 0; i < list.length; i++) {
+      var tx = list[i];
+      if (tx.splitGroupId) {
+        var group = [tx];
+        while (i + 1 < list.length && list[i + 1].splitGroupId === tx.splitGroupId) { group.push(list[++i]); }
+        out.push(group.length > 1 ? { kind: "split", rows: group } : { kind: "single", tx: tx });
+      } else {
+        out.push({ kind: "single", tx: tx });
+      }
+    }
+    return out;
+  }
+
+  function renderSplitLedgerGroup(rows) {
+    var total = round2(rows.reduce(function (s, r) { return s + r.amount; }, 0));
+    var baseDesc = (rows[0].description || "").replace(/\s+—\s+split\s+\d+\/\d+$/, "");
+    var b = bucketById(rows[0].bucketId);
+    var bucketChip = "";
+    if (b) {
+      var hue = bucketColor(bucketIndex(rows[0].bucketId));
+      bucketChip = '<span class="chip" style="--chip-soft:var(--' + hue + '-soft);--chip-color:var(--' + hue + ')">' + esc(b.name) + '</span>';
+    }
+    var accountChips = rows.map(function (r) {
+      var a = accountById(r.accountId);
+      return '<span class="chip">' + esc(a ? a.name : "(deleted account)") + ' ' + fmt(r.amount) + '</span>';
+    }).join("");
+    var historicalChip = rows[0].historical ? '<span class="chip historical">Historical — record only</span>' : "";
+    var groupId = rows[0].splitGroupId;
+    var actions = '<button class="link-btn danger" data-action="delete-split" data-split-group="' + groupId + '">Delete</button>';
+
+    return (
+      '<div class="ledger-item">' +
+        '<div class="ledger-top">' +
+          '<div><div class="ledger-desc">' + esc(baseDesc || "(no description)") + " <span style=\"font-weight:400;color:var(--text-muted);\">· Expense, split across " + rows.length + " accounts</span></div><div class=\"ledger-date\">" + esc(rows[0].date) + '</div></div>' +
+          '<div class="ledger-amt num neg">' + curr() + ' −' + fmt(total) + '</div>' +
+        '</div>' +
+        '<div class="chip-row">' + bucketChip + accountChips + historicalChip + '</div>' +
+        '<div class="ledger-note">Paid from ' + rows.length + ' accounts</div>' +
+        '<div class="ledger-actions">' + actions + '</div>' +
+      '</div>'
+    );
+  }
+
   // Three separate transaction lists, not one - Ledger is cash flow
   // (draw/expense/opening_balance) PLUS any debt_entry/installment_payment
   // that actually moved real cash through one of my own accounts
@@ -1428,7 +1483,7 @@
       var wrap = document.getElementById(idPrefix + "ListWrap");
       if (!wrap) return;
       wrap.innerHTML = filtered.length
-        ? '<div class="ledger-list">' + filtered.map(renderLedgerItem).join("") + "</div>"
+        ? '<div class="ledger-list">' + groupAdjacentSplits(filtered).map(function (g) { return g.kind === "split" ? renderSplitLedgerGroup(g.rows) : renderLedgerItem(g.tx); }).join("") + "</div>"
         : '<div class="empty-state">' + (allTxs.length ? "No transactions match your filters." : emptyMsg) + '</div>';
     }
 
@@ -1542,6 +1597,80 @@
     return state.incomeSources.map(function (s) { return '<option value="' + s.id + '"' + (s.id === selectedId ? " selected" : "") + '>' + esc(s.name) + "</option>"; }).join("");
   }
 
+  // Ported from the company tracker's expense-split feature: rather than
+  // one transaction carrying multiple accounts, a submit with the split
+  // checkbox on fans out into N ordinary single-account expense
+  // transactions (see submitTx()'s expense branch) - computeDerived()
+  // needs no special case, each row is just a normal expense. Only offered
+  // when creating a new expense, not editing one (editing a row from a
+  // past split just edits that one row, same as the company tracker).
+  var SPLIT_ROW_COUNT = 4;
+
+  function splitAccountsSectionHtml(defaultAccountId) {
+    var rows = "";
+    for (var i = 0; i < SPLIT_ROW_COUNT; i++) {
+      rows +=
+        '<div class="row2 split-row" data-split-row' + (i >= 2 ? ' style="display:none"' : "") + '>' +
+          '<select class="select" data-split-account>' + accountOptions(i === 0 ? defaultAccountId : null) + '</select>' +
+          '<input class="input" type="number" step="0.01" placeholder="0.00" data-split-amount>' +
+        '</div>';
+    }
+    return (
+      '<label class="check-row"><input type="checkbox" id="txExpenseSplit"> Split across accounts</label>' +
+      '<div class="check-note">Paid partly from two or more of my bank accounts instead of just one.</div>' +
+      '<div id="txExpenseSplitWrap" style="display:none">' +
+        rows +
+        '<button type="button" class="link-btn" id="txExpenseSplitAdd">+ Add another account</button>' +
+        '<div class="ledger-note" id="txExpenseSplitRemaining" style="margin-top:6px"></div>' +
+      '</div>'
+    );
+  }
+
+  function wireSplitSection(sheet) {
+    var splitCheckbox = sheet.querySelector("#txExpenseSplit");
+    var splitWrap = sheet.querySelector("#txExpenseSplitWrap");
+    var accountField = sheet.querySelector("#txAccountField");
+    var addBtn = sheet.querySelector("#txExpenseSplitAdd");
+    var remainingEl = sheet.querySelector("#txExpenseSplitRemaining");
+    var amountInput = sheet.querySelector("#txAmount");
+
+    function updateRemaining() {
+      var total = round2(parseFloat(amountInput.value) || 0);
+      var rows = readSplitRows(sheet, total);
+      var allocated = round2(rows.rows.reduce(function (s, r) { return s + r.amount; }, 0));
+      var left = round2(total - allocated);
+      if (Math.abs(left) <= 0.004) remainingEl.textContent = "Fully allocated.";
+      else if (left > 0) remainingEl.textContent = curr_plain() + " " + fmt(left) + " left to allocate.";
+      else remainingEl.textContent = curr_plain() + " " + fmt(Math.abs(left)) + " over the total amount.";
+    }
+    function curr_plain() { return state.currency; }
+
+    splitCheckbox.addEventListener("change", function () {
+      splitWrap.style.display = splitCheckbox.checked ? "" : "none";
+      accountField.style.display = splitCheckbox.checked ? "none" : "";
+      if (splitCheckbox.checked) updateRemaining();
+    });
+    addBtn.addEventListener("click", function () {
+      var hiddenRow = Array.from(sheet.querySelectorAll("[data-split-row]")).filter(function (r) { return r.style.display === "none"; })[0];
+      if (hiddenRow) hiddenRow.style.display = "";
+      else showToast("Up to " + SPLIT_ROW_COUNT + " accounts.");
+    });
+    sheet.querySelectorAll("[data-split-amount]").forEach(function (inp) { inp.addEventListener("input", updateRemaining); });
+    amountInput.addEventListener("input", function () { if (splitCheckbox.checked) updateRemaining(); });
+  }
+
+  function readSplitRows(sheet, totalAmount) {
+    var rows = Array.from(sheet.querySelectorAll("[data-split-row]"))
+      .filter(function (r) { return r.style.display !== "none"; })
+      .map(function (r) {
+        return { accountId: r.querySelector("[data-split-account]").value, amount: round2(parseFloat(r.querySelector("[data-split-amount]").value) || 0) };
+      })
+      .filter(function (r) { return r.amount > 0; });
+    var sum = round2(rows.reduce(function (s, r) { return s + r.amount; }, 0));
+    var valid = rows.length >= 2 && Math.abs(sum - totalAmount) <= 0.004;
+    return { rows: rows, valid: valid };
+  }
+
   function renderTxSheet() {
     var sheet = document.getElementById("txSheet");
     var editingTx = editingTxId ? state.transactions.find(function (t) { return t.id === editingTxId; }) : null;
@@ -1582,7 +1711,8 @@
         '<div class="field"><label>Description</label><input class="input" type="text" id="txDescription" placeholder="e.g. Groceries" value="' + descVal + '"></div>' +
         '<div class="field"><label>Date</label><input class="input" type="date" id="txDate" value="' + dateVal + '"></div>' +
         '<div class="field"><label>Account</label><select class="select" id="txBucket">' + bucketOptions(editingTx ? editingTx.bucketId : null) + "</select></div>" +
-        '<div class="field"><label>Paid from</label><select class="select" id="txAccount">' + accountOptions(editingTx ? editingTx.accountId : null) + "</select></div>" +
+        '<div class="field" id="txAccountField"><label>Paid from</label><select class="select" id="txAccount">' + accountOptions(editingTx ? editingTx.accountId : null) + "</select></div>" +
+        (editingTx ? "" : splitAccountsSectionHtml(state.defaultAccountId)) +
         '<label class="check-row"><input type="checkbox" id="txHistorical"' + (histCheckedExp ? " checked" : "") + '> Historical</label>' +
         '<div class="check-note">Predates the bank account\'s current opening balance, which already reflects it. Record only — shows in the ledger, doesn\'t reduce its Account (Give/FFA/Investment/Lifestyle) or change any balance.</div>';
     } else if (txType === "debt_entry") {
@@ -1636,6 +1766,8 @@
       var emCheckbox = sheet.querySelector("#txEmergency");
       var accountField = sheet.querySelector("#txAccountField");
       emCheckbox.addEventListener("change", function () { accountField.style.display = emCheckbox.checked ? "none" : ""; });
+    } else if (txType === "expense" && !editingTx) {
+      wireSplitSection(sheet);
     } else if (txType === "debt_entry") {
       var debtAcctCheckbox = sheet.querySelector("#txDebtHasAccount");
       var debtAcctField = sheet.querySelector("#txDebtAccountField");
@@ -1670,8 +1802,34 @@
       var desc2 = (document.getElementById("txDescription").value || "").trim();
       if (!desc2) { showToast("Description is required."); return; }
       var bucketId = document.getElementById("txBucket").value;
-      var accountId2 = document.getElementById("txAccount").value;
       var historicalExp = document.getElementById("txHistorical").checked;
+
+      // Split across accounts (new entries only, mirrors the company
+      // tracker): fans out into N ordinary single-account expense
+      // transactions instead of one record - computeDerived() needs no
+      // special case since each row is just a normal expense.
+      var splitCheckbox = document.getElementById("txExpenseSplit");
+      if (!wasEditing && splitCheckbox && splitCheckbox.checked) {
+        var sheet = document.getElementById("txSheet");
+        var splitResult = readSplitRows(sheet, amount);
+        if (!splitResult.valid) { showToast("Split amounts must add up to the total, across at least 2 accounts."); return; }
+        var splitNow = Date.now();
+        var splitGroupId = uid();
+        splitResult.rows.forEach(function (row, i) {
+          state.transactions.push({
+            id: uid(), type: "expense", date: date,
+            description: desc2 + " — split " + (i + 1) + "/" + splitResult.rows.length,
+            amount: row.amount, bucketId: bucketId, accountId: row.accountId,
+            historical: historicalExp, createdAt: splitNow + i, updatedAt: splitNow + i,
+            splitGroupId: splitGroupId
+          });
+        });
+        persist(); closeTxSheet(); render();
+        showToast("Expense split across " + splitResult.rows.length + " accounts.");
+        return;
+      }
+
+      var accountId2 = document.getElementById("txAccount").value;
       Object.assign(record, { amount: amount, description: desc2, bucketId: bucketId, accountId: accountId2, historical: historicalExp });
     } else if (txType === "debt_entry") {
       var debtId = document.getElementById("txDebt").value;
@@ -1776,6 +1934,18 @@
     } else if (action === "edit") {
       var tx = state.transactions.find(function (t) { return t.id === id; });
       if (tx) openEditTxSheet(tx);
+    } else if (action === "delete-split") {
+      var groupId = btn.getAttribute("data-split-group");
+      var groupRows = state.transactions.filter(function (t) { return t.splitGroupId === groupId; });
+      openConfirm("Delete this split expense (" + groupRows.length + " accounts)? This can't be undone.", "Delete", true).then(function (ok) {
+        if (!ok) return;
+        var groupIds = groupRows.map(function (t) { return t.id; });
+        state.transactions = state.transactions.filter(function (t) { return t.splitGroupId !== groupId; });
+        if (!Array.isArray(state.deletedTransactionIds)) state.deletedTransactionIds = [];
+        groupIds.forEach(function (gid) { if (state.deletedTransactionIds.indexOf(gid) === -1) state.deletedTransactionIds.push(gid); });
+        persist(); render();
+        showToast("Deleted.");
+      });
     }
   }
   document.getElementById("ledgerSection").addEventListener("click", handleLedgerActionClick);
