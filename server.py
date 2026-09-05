@@ -194,6 +194,12 @@ def default_account_id(state):
     return state["accounts"][0]["id"] if state["accounts"] else None
 
 
+def inflow_type_of(tx):
+    if tx.get("inflowType"):
+        return tx["inflowType"]
+    return "Historical" if tx.get("historical") else "Income"
+
+
 def default_income_source_id(state):
     sources = state.get("incomeSources") or []
     return sources[0]["id"] if sources else None
@@ -352,6 +358,9 @@ class ToolError(Exception):
     pass
 
 
+_INFLOW_TYPES = ["Income", "Gift", "Cash back", "Historical", "Other"]
+
+
 def log_income(state, args):
     try:
         amount = round2(args.get("amount"))
@@ -364,7 +373,18 @@ def log_income(state, args):
         raise ToolError("description is required.")
     tx_date = args.get("date") or today_str()
     emergency = bool(args.get("emergency", False))
-    historical = bool(args.get("historical", False))
+    # "type" is the primary field now (mirrors Personal-tracker.html's Type
+    # select) - only "Income" counts toward entitlement and splits across
+    # Buckets, every other value behaves like the old bare "historical"
+    # flag. "historical" is still accepted directly for back-compat.
+    inflow_type = args.get("type")
+    if inflow_type and inflow_type not in _INFLOW_TYPES:
+        raise ToolError(f'type must be one of: {", ".join(_INFLOW_TYPES)}.')
+    if inflow_type:
+        historical = inflow_type != "Income"
+    else:
+        historical = bool(args.get("historical", False))
+        inflow_type = "Historical" if historical else "Income"
     account_id = None if emergency else resolve_account_id(state, args.get("account"), tool_error_context="log_income's account")
     split = None if emergency else compute_split(state, amount)
     source_id = args.get("source")
@@ -385,6 +405,7 @@ def log_income(state, args):
         "amount": amount,
         "emergency": emergency,
         "historical": historical,
+        "inflowType": inflow_type,
         "accountId": account_id,
         "split": split,
         "sourceId": source_id,
@@ -397,7 +418,7 @@ def log_income(state, args):
     if emergency:
         note = " (emergency — never landed in a bank account, still counts toward this month's entitlement)"
     elif historical:
-        note = " (historical — hit the account, no Bucket split, doesn't count toward this month's entitlement)"
+        note = f" ({inflow_type} — hit the account, no Bucket split, doesn't count toward this month's entitlement)"
     else:
         bucket_lines = ", ".join(f"{bucket_label(state, bid)}: {amt:.2f}" for bid, amt in (split or {}).items())
         note = f". Split -> {bucket_lines}"
@@ -636,11 +657,12 @@ def list_transactions(state, args):
             flags = []
             if t.get("emergency"):
                 flags.append("emergency")
-            if t.get("historical"):
-                flags.append("historical")
+            inflow_type = inflow_type_of(t)
+            if inflow_type != "Income":
+                flags.append(inflow_type)
             flag_note = f" ({', '.join(flags)})" if flags else ""
             acc = account_name(t.get("accountId")) if t.get("accountId") else "(no account)"
-            lines.append(f'[{tid}] {t.get("date")} | income | +{t.get("amount", 0):.2f} {currency}{flag_note} | "{desc}" | into {acc}')
+            lines.append(f'[{tid}] {t.get("date")} | inflow | +{t.get("amount", 0):.2f} {currency}{flag_note} | "{desc}" | into {acc}')
         elif ttype == "expense":
             b = bucket_label(state, t.get("bucketId"))
             acc = account_name(t.get("accountId"))
@@ -827,12 +849,14 @@ def edit_transaction(state, args):
 TOOLS = [
     {
         "name": "log_income",
-        "description": "Log a new personal income/draw transaction. Splits it across the tracker's "
-        "Buckets (Give/FFA/Investment/Lifestyle) using their current % share, same as logging it by "
-        "hand in the app. Use emergency=true for money that never landed in a bank account (spent "
-        "directly on a bill) - it still counts toward this month's entitlement but doesn't split. Use "
-        "historical=true for real money that predates the Bucket-split system - it hits the account "
-        "balance but doesn't split and doesn't count toward entitlement. Ask if unsure which applies.",
+        "description": "Log a new Inflow transaction (money coming in - the app's Add Transaction "
+        "type is called \"Inflow\", this MCP tool name stayed log_income for stability). type=\"Income\" "
+        "(the default) splits it across the tracker's Buckets (Give/FFA/Investment/Lifestyle) using "
+        "their current % share and counts it toward this month's Owner's Pay entitlement, same as "
+        "logging it by hand in the app. Any other type (Gift, Cash back, Historical, Other) still "
+        "lands in the bank account as real cash, but skips both the Bucket split and the entitlement "
+        "count - use emergency=true separately for money that never landed in a bank account at all "
+        "(spent directly on a bill, still counts toward entitlement). Ask if unsure which type applies.",
         "inputSchema": {
             "type": "object",
             "properties": {
@@ -842,7 +866,8 @@ TOOLS = [
                 "account": {"type": "string", "description": "Bank account it landed in, by name. Defaults to the app's default account. Ignored if emergency=true."},
                 "source": {"type": "string", "description": "Income source name, e.g. \"Owner's Pay\". Defaults to the app's first income source."},
                 "emergency": {"type": "boolean", "description": "Default false. True if this never landed in a bank account (spent directly on a bill)."},
-                "historical": {"type": "boolean", "description": "Default false. True if this predates the Bucket-split system - real money, no split, doesn't count toward entitlement."},
+                "type": {"type": "string", "enum": _INFLOW_TYPES, "description": "Default \"Income\". Only \"Income\" splits across Buckets and counts toward entitlement - Gift/Cash back/Historical/Other all behave like the old historical flag."},
+                "historical": {"type": "boolean", "description": "Legacy alternative to type - true is equivalent to type=\"Historical\". Prefer type instead."},
             },
             "required": ["amount", "description"],
             "additionalProperties": False,

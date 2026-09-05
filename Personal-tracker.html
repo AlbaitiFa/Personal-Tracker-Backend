@@ -1237,7 +1237,7 @@
   }
 
   /* ---------------- ledger ---------------- */
-  function txTypeLabel(t) { return { draw: "Income", expense: "Expense", debt_entry: "Debt entry", installment_payment: "Installment payment", opening_balance: "Opening balance" }[t.type] || t.type; }
+  function txTypeLabel(t) { return { draw: "Inflow", expense: "Expense", debt_entry: "Debt entry", installment_payment: "Installment payment", opening_balance: "Opening balance" }[t.type] || t.type; }
 
   function renderLedgerItem(tx) {
     var isIn = tx.type === "draw" || tx.type === "opening_balance";
@@ -1255,9 +1255,10 @@
         srcName = src ? " (" + esc(src.name) + ")" : "";
       }
       if (tx.historical) {
-        chips = '<div class="chip-row"><span class="chip historical">Historical — record only</span></div>';
+        var inflowTypeLabel = inflowTypeOf(tx);
+        chips = '<div class="chip-row"><span class="chip historical">' + esc(inflowTypeLabel) + ' — record only</span></div>';
         var acctHist = accountById(tx.accountId);
-        note = "Predates the Bucket-split system — lands in " + (acctHist ? esc(acctHist.name) : "(deleted account)") + " but isn't split across Buckets, and doesn't count toward the income entitlement." + srcName;
+        note = (inflowTypeLabel === "Historical" ? "Predates the Bucket-split system" : inflowTypeLabel + ", not earned income") + " — lands in " + (acctHist ? esc(acctHist.name) : "(deleted account)") + " but isn't split across Buckets, and doesn't count toward the income entitlement." + srcName;
       } else if (tx.emergency) {
         chips = '<div class="chip-row"><span class="chip emergency">Emergency — entitlement only</span></div>';
         note = "Doesn't land in a bank account and doesn't split across Buckets." + srcName;
@@ -1399,6 +1400,7 @@
       Object.keys(tx.split || {}).forEach(function (bid) { var b = bucketById(bid); if (b) bits.push(b.name); });
       var a = accountById(tx.accountId); if (a) bits.push(a.name);
       var src = incomeSourceById(tx.sourceId); if (src) bits.push(src.name);
+      bits.push(inflowTypeOf(tx));
     } else if (tx.type === "expense") {
       var b2 = bucketById(tx.bucketId); if (b2) bits.push(b2.name);
       var a2 = accountById(tx.accountId); if (a2) bits.push(a2.name);
@@ -1459,7 +1461,7 @@
             '<div class="row2">' +
               '<div class="field"><label>Type</label><select class="select" id="' + idPrefix + 'TypeFilter">' +
                 '<option value=""' + (!f.type ? " selected" : "") + '>All types</option>' +
-                '<option value="draw"' + (f.type === "draw" ? " selected" : "") + '>Income</option>' +
+                '<option value="draw"' + (f.type === "draw" ? " selected" : "") + '>Inflow</option>' +
                 '<option value="expense"' + (f.type === "expense" ? " selected" : "") + '>Expense</option>' +
                 '<option value="opening_balance"' + (f.type === "opening_balance" ? " selected" : "") + '>Opening balance</option>' +
               '</select></div>' +
@@ -1619,6 +1621,30 @@
     return state.incomeSources.map(function (s) { return '<option value="' + s.id + '"' + (s.id === selectedId ? " selected" : "") + '>' + esc(s.name) + "</option>"; }).join("");
   }
 
+  // Only "Income" counts toward the Owner's Pay entitlement and splits
+  // across Buckets - every other Type behaves exactly like the old
+  // "historical" checkbox did (lands in the account as real cash, no
+  // split, no entitlement count). historical is still the field
+  // computeDerived() actually reads - inflowType is a pure UI/display
+  // categorization derived into it at submit time, so the balance math
+  // never had to change.
+  var INFLOW_TYPES = ["Income", "Gift", "Cash back", "Historical", "Other"];
+  function inflowTypeOptions(selectedType) {
+    return INFLOW_TYPES.map(function (t) { return '<option value="' + t + '"' + (t === selectedType ? " selected" : "") + '>' + t + "</option>"; }).join("");
+  }
+  function inflowTypeOf(tx) {
+    if (tx.inflowType) return tx.inflowType;
+    return tx.historical ? "Historical" : "Income";
+  }
+  function inflowTypeNote(type) {
+    if (type === "Income") return "";
+    var why = type === "Gift" ? "A gift, not earned income"
+      : type === "Cash back" ? "Cash back, not earned income"
+      : type === "Historical" ? "Predates the Bucket-split system (and entitlement tracking)"
+      : "Not counted as earned income";
+    return '<div class="check-note">' + why + " — still lands in the bank account as real cash, but doesn't split across Buckets and doesn't count toward the income entitlement.</div>";
+  }
+
   // Ported from the company tracker's expense-split feature: rather than
   // one transaction carrying multiple accounts, a submit with the split
   // checkbox on fans out into N ordinary single-account expense
@@ -1696,7 +1722,7 @@
   function renderTxSheet() {
     var sheet = document.getElementById("txSheet");
     var editingTx = editingTxId ? state.transactions.find(function (t) { return t.id === editingTxId; }) : null;
-    var types = [{ id: "draw", label: "Income" }, { id: "expense", label: "Expense" }, { id: "debt_entry", label: "Debt" }, { id: "installment_payment", label: "Installment" }];
+    var types = [{ id: "draw", label: "Inflow" }, { id: "expense", label: "Expense" }, { id: "debt_entry", label: "Debt" }, { id: "installment_payment", label: "Installment" }];
     // Type can't change mid-edit (each type has its own field set) — show a
     // plain label instead of the switcher once editing an existing entry.
     var segmented = editingTx
@@ -1715,17 +1741,17 @@
         ? '<div class="field"><label>Income source</label><select class="select" id="txSource">' + incomeSourceOptions(editingTx ? editingTx.sourceId : defaultIncomeSourceId()) + "</select></div>"
         : "";
       var emergencyChecked = editingTx ? !!editingTx.emergency : false;
-      var histCheckedDraw = editingTx ? !!editingTx.historical : false;
+      var inflowTypeVal = editingTx ? inflowTypeOf(editingTx) : "Income";
       fields =
         '<div class="field"><label>Amount</label><input class="input" type="number" step="0.01" id="txAmount" placeholder="0.00" value="' + amountVal + '"></div>' +
         '<div class="field"><label>Description</label><input class="input" type="text" id="txDescription" placeholder="e.g. Owner\'s Pay draw" value="' + descVal + '"></div>' +
+        '<div class="field"><label>Type</label><select class="select" id="txInflowType">' + inflowTypeOptions(inflowTypeVal) + "</select></div>" +
+        '<div id="txInflowTypeNote">' + inflowTypeNote(inflowTypeVal) + '</div>' +
         sourceField +
         '<div class="field"><label>Date</label><input class="input" type="date" id="txDate" value="' + dateVal + '"></div>' +
         '<label class="check-row"><input type="checkbox" id="txEmergency"' + (emergencyChecked ? " checked" : "") + '> Emergency expense</label>' +
         '<div class="check-note">Counts against the income entitlement only — doesn\'t land in a bank account and doesn\'t split across Buckets.</div>' +
-        '<div class="field" id="txAccountField" style="' + (emergencyChecked ? "display:none" : "") + '"><label>Lands in</label><select class="select" id="txAccount">' + accountOptions(editingTx ? editingTx.accountId : state.defaultAccountId) + "</select></div>" +
-        '<label class="check-row"><input type="checkbox" id="txHistorical"' + (histCheckedDraw ? " checked" : "") + '> Historical</label>' +
-        '<div class="check-note">Predates the Bucket-split system (and entitlement tracking). Still lands in the bank account as real cash, but doesn\'t split across Buckets and doesn\'t count toward the income entitlement.</div>';
+        '<div class="field" id="txAccountField" style="' + (emergencyChecked ? "display:none" : "") + '"><label>Lands in</label><select class="select" id="txAccount">' + accountOptions(editingTx ? editingTx.accountId : state.defaultAccountId) + "</select></div>";
     } else if (txType === "expense") {
       var histCheckedExp = editingTx ? !!editingTx.historical : false;
       fields =
@@ -1788,6 +1814,9 @@
       var emCheckbox = sheet.querySelector("#txEmergency");
       var accountField = sheet.querySelector("#txAccountField");
       emCheckbox.addEventListener("change", function () { accountField.style.display = emCheckbox.checked ? "none" : ""; });
+      var inflowTypeSelect = sheet.querySelector("#txInflowType");
+      var inflowTypeNoteEl = sheet.querySelector("#txInflowTypeNote");
+      inflowTypeSelect.addEventListener("change", function () { inflowTypeNoteEl.innerHTML = inflowTypeNote(inflowTypeSelect.value); });
     } else if (txType === "expense" && !editingTx) {
       wireSplitSection(sheet);
     } else if (txType === "debt_entry") {
@@ -1818,8 +1847,8 @@
       var split = emergency ? null : computeSplit(amount);
       var sourceField = document.getElementById("txSource");
       var sourceId = sourceField ? sourceField.value : defaultIncomeSourceId();
-      var historicalDraw = document.getElementById("txHistorical").checked;
-      Object.assign(record, { amount: amount, description: description, emergency: emergency, accountId: accountId, split: split, sourceId: sourceId, historical: historicalDraw });
+      var inflowType = document.getElementById("txInflowType").value;
+      Object.assign(record, { amount: amount, description: description, emergency: emergency, accountId: accountId, split: split, sourceId: sourceId, inflowType: inflowType, historical: inflowType !== "Income" });
     } else if (txType === "expense") {
       var desc2 = (document.getElementById("txDescription").value || "").trim();
       if (!desc2) { showToast("Description is required."); return; }
