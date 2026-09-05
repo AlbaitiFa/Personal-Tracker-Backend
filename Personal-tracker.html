@@ -133,6 +133,16 @@
     outline: 2px solid var(--focus); outline-offset: 2px;
   }
 
+  /* Bank Accounts + Buckets stay pinned right under the topbar while the
+     rest of the page scrolls underneath - --topbar-h is measured in JS
+     (the header's height isn't fixed, it's padding-based) since a sticky
+     element's `top` has to match whatever's already stuck above it. */
+  .frozen-top {
+    position: sticky; top: var(--topbar-h, 64px); z-index: 15;
+    background: var(--paper);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 10px;
+  }
   .stats-row {
     display: flex; flex-direction: column; gap: 8px; padding: 12px 16px 0; max-width: var(--content-max); margin: 0 auto;
   }
@@ -488,7 +498,7 @@
   <div class="topbar-inner">
     <div class="brand">
       <h1 id="brandName">Personal Tracker</h1>
-      <div class="eyebrow">I Am Money · Accounts · Ledger</div>
+      <div class="eyebrow">I Am Money · Buckets · Ledger</div>
     </div>
     <div style="display:flex; align-items:center; gap:8px;">
       <button class="icon-btn" id="syncBtn" aria-label="Sync" title="Sync with server">
@@ -501,12 +511,14 @@
   </div>
 </header>
 
-<div class="stats-row" id="statsRow"></div>
+<div class="frozen-top" id="frozenTop">
+  <div class="stats-row" id="statsRow"></div>
 
-<section class="block">
-  <h2>Accounts</h2>
-  <div id="bucketGrid"></div>
-</section>
+  <section class="block">
+    <h2>Buckets</h2>
+    <div id="bucketGrid"></div>
+  </section>
+</div>
 
 <section class="block">
   <h2>Income</h2>
@@ -980,7 +992,7 @@
   function renderBuckets(derived) {
     var container = document.getElementById("bucketGrid");
     if (!state.buckets.length) {
-      container.innerHTML = '<div class="empty-state">No Accounts configured. Add some in Settings.</div>';
+      container.innerHTML = '<div class="empty-state">No Buckets configured. Add some in Settings.</div>';
       return;
     }
     // Column count tracks the real number of Accounts (capped at the same
@@ -1211,10 +1223,10 @@
       if (tx.historical) {
         chips = '<div class="chip-row"><span class="chip historical">Historical — record only</span></div>';
         var acctHist = accountById(tx.accountId);
-        note = "Predates the Account-split system — lands in " + (acctHist ? esc(acctHist.name) : "(deleted account)") + " but isn't split across Accounts, and doesn't count toward the income entitlement." + srcName;
+        note = "Predates the Bucket-split system — lands in " + (acctHist ? esc(acctHist.name) : "(deleted account)") + " but isn't split across Buckets, and doesn't count toward the income entitlement." + srcName;
       } else if (tx.emergency) {
         chips = '<div class="chip-row"><span class="chip emergency">Emergency — entitlement only</span></div>';
-        note = "Doesn't land in a bank account and doesn't split across Accounts." + srcName;
+        note = "Doesn't land in a bank account and doesn't split across Buckets." + srcName;
       } else {
         var acct = accountById(tx.accountId);
         chips = '<div class="chip-row">' + Object.keys(tx.split || {}).map(function (bid) {
@@ -1222,14 +1234,14 @@
           var hue = bucketColor(bucketIndex(bid));
           return '<span class="chip" style="--chip-soft:var(--' + hue + '-soft);--chip-color:var(--' + hue + ')">' + esc(b.name) + ' ' + fmt(tx.split[bid]) + '</span>';
         }).join("") + '</div>';
-        note = "Into " + (acct ? esc(acct.name) : "(deleted account)") + ", split across Accounts" + srcName;
+        note = "Into " + (acct ? esc(acct.name) : "(deleted account)") + ", split across Buckets" + srcName;
       }
     } else if (tx.type === "expense") {
       var b2 = bucketById(tx.bucketId);
       var acct2 = accountById(tx.accountId);
       if (tx.historical) {
         chips = '<div class="chip-row"><span class="chip historical">Historical — record only</span></div>';
-        note = "Predates " + (acct2 ? esc(acct2.name) : "the account") + "'s current opening balance, which already reflects it — record only, doesn't reduce its Account or change any balance.";
+        note = "Predates " + (acct2 ? esc(acct2.name) : "the account") + "'s current opening balance, which already reflects it — record only, doesn't reduce its Bucket or change any balance.";
       } else {
         if (b2) {
           var hue2 = bucketColor(bucketIndex(tx.bucketId));
@@ -1424,7 +1436,7 @@
     var active = ledgerFiltersActive(f);
     return (
       '<div class="ledger-filter-bar">' +
-        '<input class="input" id="' + idPrefix + 'Search" type="search" placeholder="Search description, Account, bank account…" value="' + esc(f.search) + '">' +
+        '<input class="input" id="' + idPrefix + 'Search" type="search" placeholder="Search description, Bucket, bank account…" value="' + esc(f.search) + '">' +
         '<details class="ledger-filters-details"' + (active ? " open" : "") + '>' +
           '<summary>Sort &amp; filter <span class="filter-badge" id="' + idPrefix + 'FilterBadge" style="' + (active ? "" : "display:none") + '">active</span></summary>' +
           '<div class="field"><label>Sort by</label><select class="select" id="' + idPrefix + 'Sort">' +
@@ -1441,8 +1453,8 @@
                 '<option value="expense"' + (f.type === "expense" ? " selected" : "") + '>Expense</option>' +
                 '<option value="opening_balance"' + (f.type === "opening_balance" ? " selected" : "") + '>Opening balance</option>' +
               '</select></div>' +
-              '<div class="field"><label>Account</label><select class="select" id="' + idPrefix + 'BucketFilter">' +
-                '<option value="">All Accounts</option>' +
+              '<div class="field"><label>Bucket</label><select class="select" id="' + idPrefix + 'BucketFilter">' +
+                '<option value="">All Buckets</option>' +
                 state.buckets.map(function (b) { return '<option value="' + b.id + '"' + (f.bucketId === b.id ? " selected" : "") + '>' + esc(b.name) + '</option>'; }).join("") +
               '</select></div>' +
             '</div>' +
@@ -1700,17 +1712,17 @@
         sourceField +
         '<div class="field"><label>Date</label><input class="input" type="date" id="txDate" value="' + dateVal + '"></div>' +
         '<label class="check-row"><input type="checkbox" id="txEmergency"' + (emergencyChecked ? " checked" : "") + '> Emergency expense</label>' +
-        '<div class="check-note">Counts against the income entitlement only — doesn\'t land in a bank account and doesn\'t split across Accounts.</div>' +
+        '<div class="check-note">Counts against the income entitlement only — doesn\'t land in a bank account and doesn\'t split across Buckets.</div>' +
         '<div class="field" id="txAccountField" style="' + (emergencyChecked ? "display:none" : "") + '"><label>Lands in</label><select class="select" id="txAccount">' + accountOptions(editingTx ? editingTx.accountId : state.defaultAccountId) + "</select></div>" +
         '<label class="check-row"><input type="checkbox" id="txHistorical"' + (histCheckedDraw ? " checked" : "") + '> Historical</label>' +
-        '<div class="check-note">Predates the Account-split system (and entitlement tracking). Still lands in the bank account as real cash, but doesn\'t split across Accounts and doesn\'t count toward the income entitlement.</div>';
+        '<div class="check-note">Predates the Bucket-split system (and entitlement tracking). Still lands in the bank account as real cash, but doesn\'t split across Buckets and doesn\'t count toward the income entitlement.</div>';
     } else if (txType === "expense") {
       var histCheckedExp = editingTx ? !!editingTx.historical : false;
       fields =
         '<div class="field"><label>Amount</label><input class="input" type="number" step="0.01" id="txAmount" placeholder="0.00" value="' + amountVal + '"></div>' +
         '<div class="field"><label>Description</label><input class="input" type="text" id="txDescription" placeholder="e.g. Groceries" value="' + descVal + '"></div>' +
         '<div class="field"><label>Date</label><input class="input" type="date" id="txDate" value="' + dateVal + '"></div>' +
-        '<div class="field"><label>Account</label><select class="select" id="txBucket">' + bucketOptions(editingTx ? editingTx.bucketId : null) + "</select></div>" +
+        '<div class="field"><label>Bucket</label><select class="select" id="txBucket">' + bucketOptions(editingTx ? editingTx.bucketId : null) + "</select></div>" +
         '<div class="field" id="txAccountField"><label>Paid from</label><select class="select" id="txAccount">' + accountOptions(editingTx ? editingTx.accountId : null) + "</select></div>" +
         (editingTx ? "" : splitAccountsSectionHtml(state.defaultAccountId)) +
         '<label class="check-row"><input type="checkbox" id="txHistorical"' + (histCheckedExp ? " checked" : "") + '> Historical</label>' +
@@ -1746,7 +1758,7 @@
     }
 
     var disabledNote = "";
-    if (txType === "expense" && !state.buckets.length) disabledNote = '<div class="empty-state">Add an Account in Settings first.</div>';
+    if (txType === "expense" && !state.buckets.length) disabledNote = '<div class="empty-state">Add a Bucket in Settings first.</div>';
     if (txType === "debt_entry" && !state.debts.length) disabledNote = '<div class="empty-state">Add a debt in Settings first.</div>';
     if (txType === "installment_payment" && !state.installments.length) disabledNote = '<div class="empty-state">Add an installment in Settings first.</div>';
 
@@ -2002,18 +2014,18 @@
     }
     html += '</div>';
 
-    html += '<div class="settings-section"><h4>Accounts</h4>';
+    html += '<div class="settings-section"><h4>Buckets</h4>';
     html += state.buckets.map(function (b) {
       return '<div class="bucket-edit-row" data-bucket="' + b.id + '">' +
         '<div class="bucket-edit-line">' +
           '<input class="input" data-field="name" value="' + esc(b.name) + '" placeholder="Name">' +
           '<div class="pct-input-wrap" style="flex:0 0 84px"><input class="input pct" data-field="cap" type="number" step="1" value="' + b.cap + '"><span class="pct-suffix">%</span></div>' +
-          '<button class="del-btn" data-del-bucket="' + b.id + '" aria-label="Remove Account">' + xIcon() + '</button>' +
+          '<button class="del-btn" data-del-bucket="' + b.id + '" aria-label="Remove Bucket">' + xIcon() + '</button>' +
         '</div>' +
         '<div class="field" style="margin-top:8px"><label>Linked account</label><select class="select" data-field="linkedAccountId"><option value="">Virtual (shared)</option>' + accountOptions(b.linkedAccountId) + '</select></div>' +
       '</div>';
     }).join("");
-    html += '<button class="add-row-btn" id="addBucket">+ Add Account</button>';
+    html += '<button class="add-row-btn" id="addBucket">+ Add Bucket</button>';
     html += '<div class="sum-note ' + (cSum === 100 ? "ok" : "bad") + '">Share total: ' + cSum + '%' + (cSum === 100 ? " — splits nicely into 100%" : " — should add up to 100% or splits will be off") + '</div>';
     html += '</div>';
 
@@ -2161,14 +2173,14 @@
     sheet.querySelectorAll("[data-del-bucket]").forEach(function (btn) {
       btn.addEventListener("click", function () {
         var id = btn.getAttribute("data-del-bucket");
-        if (state.buckets.length <= 1) { showToast("You need at least one Account."); return; }
-        if (bucketUsedInTx(id)) { showToast("Can't remove an Account used in existing transactions."); return; }
+        if (state.buckets.length <= 1) { showToast("You need at least one Bucket."); return; }
+        if (bucketUsedInTx(id)) { showToast("Can't remove a Bucket used in existing transactions."); return; }
         state.buckets = state.buckets.filter(function (b) { return b.id !== id; });
         persist(); renderSettingsSheet();
       });
     });
     sheet.querySelector("#addBucket").addEventListener("click", function () {
-      state.buckets.push({ id: uid(), name: "New Account", cap: 0, linkedAccountId: null });
+      state.buckets.push({ id: uid(), name: "New Bucket", cap: 0, linkedAccountId: null });
       persist(); renderSettingsSheet();
     });
 
@@ -2283,10 +2295,10 @@
       '<div class="field"><label>Date</label><input class="input" type="date" id="obDate" value="' + todayStr() + '"></div>' +
       '<div class="field"><label>Amount</label><input class="input" type="number" step="0.01" min="0" id="obAmount" placeholder="0.00"></div>' +
     '</div>';
-    html += '<label class="check-row"><input type="checkbox" id="obHistorical"> Historical (no Account split needed)</label>' +
+    html += '<label class="check-row"><input type="checkbox" id="obHistorical"> Historical (no Bucket split needed)</label>' +
       '<div class="ledger-note" style="margin:2px 0 10px">For cash that isn\'t part of the Give/FFA/Investment/Lifestyle system — e.g. Cash on hand, a side account. Counts toward the bank total only.</div>';
     html += '<div class="field" id="obBucketField"><label>Allocate to</label><select class="select" id="obBucket">' +
-      '<option value="__auto__">Split like a draw (Account %)</option>' +
+      '<option value="__auto__">Split like a draw (Bucket %)</option>' +
       state.buckets.map(function (b) { return '<option value="' + b.id + '">' + esc(b.name) + ' only</option>'; }).join("") +
     '</select></div>';
     html += '<button class="btn btn-primary" id="obSubmit" style="margin-top:14px">Add opening balance</button>';
@@ -2312,7 +2324,7 @@
       var choice = sheet.querySelector("#obBucket").value;
       if (choice === "__auto__") {
         var sum = pctSum();
-        if (sum <= 0) { showToast("Set Account share % in Settings first, or pick one specific Account instead."); return; }
+        if (sum <= 0) { showToast("Set Bucket share % in Settings first, or pick one specific Bucket instead."); return; }
         allocation = computeSplit(amount);
       } else {
         allocation = {};
@@ -2377,7 +2389,7 @@
   }
 
   function handleReset() {
-    openConfirm("Reset all data? Accounts, bank accounts, debts, installments, and every transaction will be permanently deleted from this device.", "Reset everything", true).then(function (ok) {
+    openConfirm("Reset all data? Buckets, bank accounts, debts, installments, and every transaction will be permanently deleted from this device.", "Reset everything", true).then(function (ok) {
       if (!ok) return;
       state = defaultState();
       persist();
@@ -2391,6 +2403,16 @@
   document.getElementById("fabBtn").addEventListener("click", function () { if (!this.disabled) openTxSheet("draw"); });
   document.getElementById("settingsBtn").addEventListener("click", openSettingsSheet);
   document.getElementById("syncBtn").addEventListener("click", function () { syncFromServer(false); });
+
+  // The topbar's height is padding-based, not fixed - .frozen-top (Bank
+  // Accounts + Buckets, pinned below it) needs that exact height as its
+  // own sticky `top`, so it's measured here instead of hardcoded.
+  function updateTopbarHeightVar() {
+    var header = document.querySelector("header.topbar");
+    if (header) document.documentElement.style.setProperty("--topbar-h", header.getBoundingClientRect().height + "px");
+  }
+  updateTopbarHeightVar();
+  window.addEventListener("resize", updateTopbarHeightVar);
 
   render();
   syncFromServer(true);

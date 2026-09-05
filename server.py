@@ -397,7 +397,7 @@ def log_income(state, args):
     if emergency:
         note = " (emergency — never landed in a bank account, still counts toward this month's entitlement)"
     elif historical:
-        note = " (historical — hit the account, no Account split, doesn't count toward this month's entitlement)"
+        note = " (historical — hit the account, no Bucket split, doesn't count toward this month's entitlement)"
     else:
         bucket_lines = ", ".join(f"{bucket_label(state, bid)}: {amt:.2f}" for bid, amt in (split or {}).items())
         note = f". Split -> {bucket_lines}"
@@ -419,7 +419,7 @@ def log_expense(state, args):
     bucket_id = resolve_bucket_id(state, args["bucket"])
     if not bucket_id:
         names = ", ".join(b["name"] for b in state["buckets"])
-        raise ToolError(f'Unknown Account "{args["bucket"]}". Available: {names}')
+        raise ToolError(f'Unknown Bucket "{args["bucket"]}". Available: {names}')
     tx_date = args.get("date") or today_str()
     historical = bool(args.get("historical", False))
     currency = state.get("currency", "")
@@ -668,7 +668,7 @@ def list_transactions(state, args):
 def get_summary(state):
     derived = compute_derived(state)
     currency = state.get("currency", "")
-    lines = ["Accounts:"]
+    lines = ["Buckets:"]
     for b in state["buckets"]:
         bal = round2(derived["bucketBalances"].get(b["id"], 0))
         lines.append(f'  {b["name"]}: {bal:.2f} {currency} ({b.get("cap")}% share)')
@@ -805,7 +805,7 @@ def edit_transaction(state, args):
         bucket_id = resolve_bucket_id(state, args["bucket"])
         if not bucket_id:
             names = ", ".join(b["name"] for b in state["buckets"])
-            raise ToolError(f'Unknown Account "{args["bucket"]}". Available: {names}')
+            raise ToolError(f'Unknown Bucket "{args["bucket"]}". Available: {names}')
         tx["bucketId"] = bucket_id
         changes.append("bucket")
 
@@ -828,10 +828,10 @@ TOOLS = [
     {
         "name": "log_income",
         "description": "Log a new personal income/draw transaction. Splits it across the tracker's "
-        "Accounts (Give/FFA/Investment/Lifestyle) using their current % share, same as logging it by "
+        "Buckets (Give/FFA/Investment/Lifestyle) using their current % share, same as logging it by "
         "hand in the app. Use emergency=true for money that never landed in a bank account (spent "
         "directly on a bill) - it still counts toward this month's entitlement but doesn't split. Use "
-        "historical=true for real money that predates the Account-split system - it hits the account "
+        "historical=true for real money that predates the Bucket-split system - it hits the account "
         "balance but doesn't split and doesn't count toward entitlement. Ask if unsure which applies.",
         "inputSchema": {
             "type": "object",
@@ -842,7 +842,7 @@ TOOLS = [
                 "account": {"type": "string", "description": "Bank account it landed in, by name. Defaults to the app's default account. Ignored if emergency=true."},
                 "source": {"type": "string", "description": "Income source name, e.g. \"Owner's Pay\". Defaults to the app's first income source."},
                 "emergency": {"type": "boolean", "description": "Default false. True if this never landed in a bank account (spent directly on a bill)."},
-                "historical": {"type": "boolean", "description": "Default false. True if this predates the Account-split system - real money, no split, doesn't count toward entitlement."},
+                "historical": {"type": "boolean", "description": "Default false. True if this predates the Bucket-split system - real money, no split, doesn't count toward entitlement."},
             },
             "required": ["amount", "description"],
             "additionalProperties": False,
@@ -850,8 +850,8 @@ TOOLS = [
     },
     {
         "name": "log_expense",
-        "description": "Log a new personal expense drawn from one Account (Give, FFA, Investment, or "
-        "Lifestyle - or any custom Account name in this tracker). Set historical=true only for an "
+        "description": "Log a new personal expense drawn from one Bucket (Give, FFA, Investment, or "
+        "Lifestyle - or any custom Bucket name in this tracker). Set historical=true only for an "
         "expense that predates a later opening balance which already reflects it (record-only, no "
         "balance change) - ask if unsure. Pass split instead of account when the expense was paid "
         "partly from two or more bank accounts - this logs it as multiple linked transactions (one "
@@ -861,7 +861,7 @@ TOOLS = [
             "properties": {
                 "amount": {"type": "number", "description": "Positive amount spent (the total, if split is used)"},
                 "description": {"type": "string", "description": "What this expense was for / vendor"},
-                "bucket": {"type": "string", "description": 'Which Account to draw from, by name (e.g. "Lifestyle")'},
+                "bucket": {"type": "string", "description": 'Which Bucket to draw from, by name (e.g. "Lifestyle")'},
                 "date": {"type": "string", "description": "YYYY-MM-DD, defaults to today"},
                 "account": {"type": "string", "description": "Bank account it was paid from. Defaults to the app's default account. Ignored if split is given."},
                 "historical": {"type": "boolean", "description": "Default false. True only if this predates a later opening balance that already reflects it."},
@@ -972,7 +972,7 @@ TOOLS = [
         "an expense its Account/bank account) by id, from list_transactions' [id] prefix. Requires "
         "echoing back the transaction's current exact description as confirm_description - a safety "
         "check against editing the wrong entry. Editing an income transaction's amount recomputes its "
-        "Account split, same as the app itself. Only pass the fields you want to change.",
+        "Bucket split, same as the app itself. Only pass the fields you want to change.",
         "inputSchema": {
             "type": "object",
             "properties": {
@@ -981,7 +981,7 @@ TOOLS = [
                 "amount": {"type": "number", "description": "New amount (positive - sign is inferred), if changing it"},
                 "description": {"type": "string", "description": "New description, if changing it"},
                 "date": {"type": "string", "description": "New date (YYYY-MM-DD), if changing it"},
-                "bucket": {"type": "string", "description": "New Account, by name - expense only"},
+                "bucket": {"type": "string", "description": "New Bucket, by name - expense only"},
                 "account": {"type": "string", "description": "New bank account, by name - income/expense only"},
             },
             "required": ["id", "confirm_description"],
