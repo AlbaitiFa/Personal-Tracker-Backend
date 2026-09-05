@@ -460,9 +460,9 @@ def log_expense(state, args):
                 "historical": historical,
                 "createdAt": now + i,
                 "updatedAt": now + i,
-                # Lets Personal-tracker.html's own ledger merge these rows
-                # back into one visual card (groupAdjacentSplits()) - purely
-                # a display link, compute_derived() ignores it entirely.
+                # Lets Personal-tracker.html's own ledger lay these rows out
+                # side by side instead of stacked (groupAdjacentSplits()) -
+                # purely a display link, compute_derived() ignores it.
                 "splitGroupId": split_group_id,
             })
         accounts_note = ", ".join(f'{a["name"] if (a := next((x for x in state["accounts"] if x["id"] == r["accountId"]), None)) else r["accountId"]} {r["amount"]:.2f}' for r in rows)
@@ -855,7 +855,7 @@ TOOLS = [
         "expense that predates a later opening balance which already reflects it (record-only, no "
         "balance change) - ask if unsure. Pass split instead of account when the expense was paid "
         "partly from two or more bank accounts - this logs it as multiple linked transactions (one "
-        "per account) that the app displays as a single merged ledger row.",
+        "per account) that the app displays side by side in the ledger, each still independently editable.",
         "inputSchema": {
             "type": "object",
             "properties": {

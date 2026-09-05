@@ -133,16 +133,21 @@
     outline: 2px solid var(--focus); outline-offset: 2px;
   }
 
-  /* Bank Accounts + Buckets stay pinned right under the topbar while the
-     rest of the page scrolls underneath - --topbar-h is measured in JS
-     (the header's height isn't fixed, it's padding-based) since a sticky
-     element's `top` has to match whatever's already stuck above it. */
-  .frozen-top {
+  /* Bank Accounts + Buckets, toggled via #freezeBtn - when frozen, pinned
+     right under the topbar while the rest of the page scrolls underneath.
+     --topbar-h is measured in JS (the header's height isn't fixed, it's
+     padding-based) since a sticky element's `top` has to match whatever's
+     already stuck above it. Unfrozen, it's a plain block that scrolls
+     with everything else, same as before this feature existed. */
+  .frozen-top { background: var(--paper); padding-bottom: 10px; }
+  .frozen-top.is-frozen {
     position: sticky; top: var(--topbar-h, 64px); z-index: 15;
-    background: var(--paper);
     border-bottom: 1px solid var(--border);
-    padding-bottom: 10px;
   }
+  /* The topbar's own bottom border becomes a redundant doubled line right
+     above .frozen-top's own border once frozen - hide it only then. */
+  header.topbar.frozen-active { border-bottom: none; }
+  #freezeBtn.active { color: var(--accent); border-color: var(--accent); }
   .stats-row {
     display: flex; flex-direction: column; gap: 8px; padding: 12px 16px 0; max-width: var(--content-max); margin: 0 auto;
   }
@@ -335,6 +340,11 @@
   .filter-badge { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--accent); background: var(--accent-soft); padding: 1px 6px; border-radius: 999px; }
   .ledger-list { display: flex; flex-direction: column; gap: 8px; }
   .ledger-item { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 11px 13px; }
+  /* Sibling legs of a split expense (same splitGroupId) side by side
+     instead of stacked - each is still the exact same independent
+     .ledger-item card (own Edit/Delete), just laid out in a row. */
+  .split-card-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .split-card-row > .ledger-item { flex: 1 1 45%; min-width: 150px; }
   .ledger-top { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
   .ledger-top > div:first-child { min-width: 0; }
   .ledger-desc { font-size: 0.88rem; font-weight: 600; overflow-wrap: break-word; word-break: break-word; }
@@ -503,6 +513,9 @@
     <div style="display:flex; align-items:center; gap:8px;">
       <button class="icon-btn" id="syncBtn" aria-label="Sync" title="Sync with server">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      </button>
+      <button class="icon-btn" id="freezeBtn" aria-label="Freeze Bank Accounts & Buckets" title="Freeze Bank Accounts & Buckets while scrolling">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V17a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg>
       </button>
       <button class="icon-btn" id="settingsBtn" aria-label="Settings" title="Settings">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
@@ -1292,13 +1305,15 @@
 
   // A split expense (submitTx()'s split branch) is still N ordinary
   // transactions underneath - computeDerived(), edit/delete, filtering all
-  // work on them exactly as if they were unrelated expenses. This just
-  // groups ADJACENT rows sharing a splitGroupId into one visual card, so a
-  // sort where they land next to each other (date sort - the common case,
-  // since they share a date and near-identical createdAt) shows one row
-  // instead of two. Under amount sort they can land apart (different
-  // amounts) and just render individually - no special-casing needed since
-  // grouping only merges rows already adjacent in the given order.
+  // work on them exactly as if they were unrelated expenses, each with its
+  // own Edit/Delete, unchanged. This only groups ADJACENT rows sharing a
+  // splitGroupId for LAYOUT - rendered side by side in one row instead of
+  // stacked - via renderLedgerItem() exactly as-is, just wrapped. A sort
+  // where they land next to each other (date sort - the common case, since
+  // they share a date and near-identical createdAt) puts them in one row;
+  // under amount sort they can land apart (different amounts) and just
+  // render individually - no special-casing needed since grouping only
+  // combines rows already adjacent in the given order.
   function groupAdjacentSplits(list) {
     var out = [];
     for (var i = 0; i < list.length; i++) {
@@ -1315,33 +1330,7 @@
   }
 
   function renderSplitLedgerGroup(rows) {
-    var total = round2(rows.reduce(function (s, r) { return s + r.amount; }, 0));
-    var baseDesc = (rows[0].description || "").replace(/\s+—\s+split\s+\d+\/\d+$/, "");
-    var b = bucketById(rows[0].bucketId);
-    var bucketChip = "";
-    if (b) {
-      var hue = bucketColor(bucketIndex(rows[0].bucketId));
-      bucketChip = '<span class="chip" style="--chip-soft:var(--' + hue + '-soft);--chip-color:var(--' + hue + ')">' + esc(b.name) + '</span>';
-    }
-    var accountChips = rows.map(function (r) {
-      var a = accountById(r.accountId);
-      return '<span class="chip">' + esc(a ? a.name : "(deleted account)") + ' ' + fmt(r.amount) + '</span>';
-    }).join("");
-    var historicalChip = rows[0].historical ? '<span class="chip historical">Historical — record only</span>' : "";
-    var groupId = rows[0].splitGroupId;
-    var actions = '<button class="link-btn danger" data-action="delete-split" data-split-group="' + groupId + '">Delete</button>';
-
-    return (
-      '<div class="ledger-item">' +
-        '<div class="ledger-top">' +
-          '<div><div class="ledger-desc">' + esc(baseDesc || "(no description)") + " <span style=\"font-weight:400;color:var(--text-muted);\">· Expense, split across " + rows.length + " accounts</span></div><div class=\"ledger-date\">" + esc(rows[0].date) + '</div></div>' +
-          '<div class="ledger-amt num neg">' + curr() + ' −' + fmt(total) + '</div>' +
-        '</div>' +
-        '<div class="chip-row">' + bucketChip + accountChips + historicalChip + '</div>' +
-        '<div class="ledger-note">Paid from ' + rows.length + ' accounts</div>' +
-        '<div class="ledger-actions">' + actions + '</div>' +
-      '</div>'
-    );
+    return '<div class="split-card-row">' + rows.map(renderLedgerItem).join("") + '</div>';
   }
 
   // Three separate transaction lists, not one - Ledger is cash flow
@@ -1946,18 +1935,6 @@
     } else if (action === "edit") {
       var tx = state.transactions.find(function (t) { return t.id === id; });
       if (tx) openEditTxSheet(tx);
-    } else if (action === "delete-split") {
-      var groupId = btn.getAttribute("data-split-group");
-      var groupRows = state.transactions.filter(function (t) { return t.splitGroupId === groupId; });
-      openConfirm("Delete this split expense (" + groupRows.length + " accounts)? This can't be undone.", "Delete", true).then(function (ok) {
-        if (!ok) return;
-        var groupIds = groupRows.map(function (t) { return t.id; });
-        state.transactions = state.transactions.filter(function (t) { return t.splitGroupId !== groupId; });
-        if (!Array.isArray(state.deletedTransactionIds)) state.deletedTransactionIds = [];
-        groupIds.forEach(function (gid) { if (state.deletedTransactionIds.indexOf(gid) === -1) state.deletedTransactionIds.push(gid); });
-        persist(); render();
-        showToast("Deleted.");
-      });
     }
   }
   document.getElementById("ledgerSection").addEventListener("click", handleLedgerActionClick);
@@ -2413,6 +2390,27 @@
   }
   updateTopbarHeightVar();
   window.addEventListener("resize", updateTopbarHeightVar);
+
+  // Freeze/unfreeze Bank Accounts + Buckets - a per-device UI preference,
+  // not synced financial data, so it lives in its own localStorage key
+  // rather than in state. Defaults to frozen (the behavior this was built
+  // with) until toggled off.
+  var FREEZE_PREF_KEY = "i-am-money-personal.frozen";
+  function setFrozen(on) {
+    document.getElementById("frozenTop").classList.toggle("is-frozen", on);
+    document.querySelector("header.topbar").classList.toggle("frozen-active", on);
+    var btn = document.getElementById("freezeBtn");
+    btn.classList.toggle("active", on);
+    btn.setAttribute("aria-label", on ? "Unfreeze Bank Accounts & Buckets" : "Freeze Bank Accounts & Buckets");
+    btn.title = on ? "Unfreeze Bank Accounts & Buckets" : "Freeze Bank Accounts & Buckets while scrolling";
+    try { localStorage.setItem(FREEZE_PREF_KEY, on ? "1" : "0"); } catch (e) {}
+  }
+  var frozenPref;
+  try { frozenPref = localStorage.getItem(FREEZE_PREF_KEY); } catch (e) { frozenPref = null; }
+  setFrozen(frozenPref !== "0");
+  document.getElementById("freezeBtn").addEventListener("click", function () {
+    setFrozen(!document.getElementById("frozenTop").classList.contains("is-frozen"));
+  });
 
   render();
   syncFromServer(true);
