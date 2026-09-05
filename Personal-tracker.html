@@ -1,0 +1,2156 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>I Am Money — Personal Tracker</title>
+<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAIAAABMXPacAAAbcUlEQVR42u2ca4xl2XXX12Pvfc65j7q3Hl1d/e6e6el5eMaDY4NFZCvCjiIkGxNMgDiExEIRjhWEQIoUiEQ+8QUhISFAfAAFjGQcQkiEQDFgTxITD/EL/IgTOzPjHnf3dL2rbtV9nXP2Yy0+nFvdYzO2x/akuyc6vxmNarqnp27tx1p7/dcDoKWlpaWlpaWlpaWlpaWlpaWlpaWlpaWlpaWlpaWlpaWlpaWlpaWlpaWlpaWlpaWlpaWlpaXl9Qq+nj80AigCAoDe/U39xn9tN+A1+6AIAIiLL7FZY8SX/xiqerIJzV8nX7cb8P2sO+Lin4CoSICAhADU/FrzE6jeWWpVBRBBEQUFVT3ZC2034LtdekJAQCACQiAmIiQiVCIEYgRCVARVxOboq6qKqKqKJlUVgaQgoppAVfRBvA34oJ56BEIiAmJkYiYmJmZmIiYkQiZEXNwOAG1OvqiIaBJJIimJpJREkiQRTYIpieriUrQb8MqfBhEVgAmZiJiMYSZjjDGGLLMxZJgNIRESIlKzT6iwMDQioiJJJIqkmGKSEFNMMcaUJKUEMUlKqqIvcxj3F/NArT4BgmVkNobYWGOsccY4y86wZWYmY6mxSIiEdOKLARQBFgsrkiSppJRilJBiiNaHGEIMMXKESJIEU1QFfQBc9INyAxgRiMAYw2yssc4ZZ41znLG1lqwhNkQMBISIoApwx/4ACDRuQEEVVRfWCJJoDDHGGFIMMdUx1j5EH0NKMUJMKiL32yLhA3LwkQisMYadsybLbJbZ3LCzxloylggBCRGQAJmYGZjIEhIBMyIoqCbVGCWpxKQxQkyioAlURFKMIUQfow+hDrGuYwghiMQAjWO4f3tg7v9TBxAMo7HWssucyXOXO5sZdo6NRWZCYASwzJmjXg69gns5FhYKq9YRkwKACMaoPmpZxbmHaYnTMpRRKi8JkRHJMAc2zMZ4NuRrpBCIUgwYI4rIfdoDc3/PPgOqMWyttcblzuWZLZzNMmMtGQOEREDOmX5hVpfw1ADWhrLc426RFx3IsuTyHEkAsDnmvvLzUqeTND6W0dQcjPVglo5mqawIU+IMmZiRmIMhImLCGiACQgwkKqDw2m5D86bAkwgdX8Hzm/v6zEdlZmudMy7LbCd3hbUuY+eICAmNZR703JllPr+uZ9fo1HJ3sNLr9jrdfuZ6ucvIOCKDAAqoKcZYV3VVzcaz8Wg+2i/3d+vdA9o9MNtH6WAK85rQJmKgQNTEFYSItceEoDFCEoHvJWLDb171O7+4iBUVtHklAOI37YG5b4cfEO6sfp67Tu5yazPHLiMiMGCLLNtYoYfPw+UNPLcxXNlYXlpd6i138q6zORnDSECkTTSsjSNIQSBI1GpWT8fHo529ndvj2zfK9W28vcdbIzmcQRUQHTIh1dhEHIg1QAAkCJhEXsULtYk8EBcPN0AEbTQpvaOXKOKJVqUoqKAooM1z7eWvj/uy/oRIbNga5+xi9TvO5lmz+sRkl/vdR87pm67Jk9dWHnrkwvmHL69fHK6ey/prJu8hG0EKKin6GGoJVYq1xhABgdgZy3m36PaL5fXhcH1pMKSiiBmCU1BEHyEJACAxISIRLhQlFaDmFfVtniaISETEzIbJMhvLhpkNGUI2wIxM0HxBDMyIpIiAQHoiTCHe5xuAiISEhoy1NstskdncWefYOiQCx3ZlkD12cf7Uw53LFy+sX1xf3uh3BtZmCJJi5X0V6tm8ns/nszSbQjnTlBITWefyTtbpFUUv6yyZvJfZPF893ekPemsbg7WNzeFXJt0Xqo7lWyM9ngEiooOTI4wIiN4jaEA6iRLgjjFBQm5iDyLDZJiZkIiIFBBEJEoTBYIKKAjQQhoBAKBGn1ooVvfXBDXPHjXGGGOtMXlmc2cyS9YhIhm0a8PiyYfS048MLl95eO38ysoZzpcQoQpVPRvNJ6PR4d5s86XJ3j6WpSIYRYUkMaY6RAXb6RRnN3ob51ZWTq8srxX9Zcy6nVPnz3f6xXBlp9vfyf8wGIabJIfTpMAOsbET2ITWdURICSUpqS5UQEY2hpnJEFlDxhAjETc2RlUlqvgoKUlMqiIiqLhQAhVUBRsH/yC8ghABmInZ2ua9b40zbB0igcFsuV88caF+86PDy1eurF9ZHpy2tvApzmej8Wh7tPPS8XPP+9GoWN9Yf+RaMVwBtJAEFC2jkOp0Orp1Y+v550df+MLxuXP7D19dO3dlePpCpzvE3vJpl+V5zxadXcNjRiTA0YyrhM4pARISExsOPqQYRVUBkMkwkDVsDVlD1hITEjYpCBHVJuZgBSIVQUJN2ChT0ghTknARabyyDGXug9rDZG1jf5xxTNYSMRK6XpFfvRCffmzp0pXLpx9eHp5h4+p6fnS0eWt3c/6Hf1C9cHP5icevvv2d4WCy/+zntj77G0c3bvnxBKJgJy/W10498cjZt7353I/9xGhv86WPf+z4xjOTRx9Zfeix9UuPDtY2KOv0Ni5dtNYYF9hF1EgYD6boASk36Jk5WmNilCaqJmRj0JIxDNYSEyEJIMUkKcSUMCkoiKDGJCk1CmBKKSUVUZUEKphUVb9NvH1PI2ECRGM4c3lms0436xa2cMY5YuTMFlcv4Nve6J56/OqZq6dWz1vOUnW8dbC5e/P53U9/oVPHKz/+4zyafuWf/dvrH/tEfXgozGwtMkNjhVMUH9jw2uOPPvkzP3nhL73zhf/9yduf+Hhx6dzytcfOX3vjxpmL0BlASvOjnZee+9Lm739u/LWvw83DNJpB6TWJiEhq3jGKRGCImBvhDxRFFVPUkFKUGHwKUUJKISYfUwwxxBQb6VW1Wf1FhP3y5NAraTD3VGQmJGONtS7LbJG53BpniQ0ydlf79KZH6alrD525sr5y3rpOqmZbezdf/PofzZ/5ZK+78uQHPrj1oV9/5md/YfuLf0DWml7P5BkbS8zETMZwltlOB/NsurP3wn/56PGnv/j03/iJ4VNPbX/iE5PpyMe6sNZ2+pgVLu90+ssuL2qWiEGNgiF2TLnhrrPdjPqZ6TvTySA3ZBgQIUUIQeoYvQ/exzqEKsY6xKqOPoQQY0wpJo2p0b0XS/8qXrR8T48/M1njrHVZ5jqZcYaNQ0RTOHftUnjz4xsXL2+cupR3BhrrzdH2ra8/V/3W7/WHpx77wAc/87d/8XP/9F+Zpa7rdEB18fc3JIMXZpaddb3e3os3X/zIbzz8nr+w9o637z/zO9X8eBLrzHAnLyjruKLbWxr2lwbU60CvwKVCl7u83KHVnqwv0fqA1vppuSsFzk0EjVBLmNW+rEPlY+lj5UNV+6oOIQQfYowaIqakSVRF4LsQu8290/wQkMgwsWF2lpmRTRMOu2EPr5zLzmysDNfzYsCa9mfH+9vXy899vhvkiQ984LN/6+f/8D/8WvfsGY1RUvz2llNFVWJnsDQvq9/80Z9+z//4las//f7nfvlfH+gfRV+F+XTt0jUzXHedwdrlx/prZ8ZX98Nor5pNoveiSYgtYExpcjwa3XzheOumpGSOyjCfh2mdQoo+phgaWw8pweLpqWkRZemDqQUhIgERMzV5FWJCYkQgS3x6hc6vDwYrve5Kxjyvp3uHL82eewG+euvaP/wHX/2XH/rih/9T7+wZCeHV+y2NMSuyWJa/81M/96P/8z8evP1to2d/91BSOZ+f2d9a3bg0PHu5s3YmX9lwy+sxRowBow9JfKjTdDTb3Q7jQw3ezQIczOvdaT2ahdqnEFMSTQLSuNfmuJ9Y+e9eSeJ7Zn+IiQxb62yeudyxNcQWCWyv695wRZ586NTG5dP9NUXenxzs3fzK+BOfu/jWtxZLqx97/9/JhoPmR311rgYYkQgNQtHr1qOjeHh47b3v2rz+NSx9WU93ZvvT8ci6YmW4xnlOSMk4RcRqXo52D299beu5L29/+fObX/nq7Plb4fpedeOg3B/Xszr5OsUkMcLioaPfv3pn7tnzX5GImJiIDRIhMxIAqV0qaH057y8P8z6zq6OfTA/KG5tuXm/88I986u/9UgjedruS0qu4YoAIfKIUsDOU2f7a0t7vf3n4mS8U58/OX3wBDTt2vazo5F0k5uCr4P14NNnf2r99c3zr+uT2S9Ptfb996HeP6t1xdTwP81pi1EXyRhXgNdSuzb1xAAqICERIzMRIzREFQGIcduPqsNvpFa5QNCGMy+mourl16qmn/e7hjY/+dra09G1WHwEJFZGY0PBCYjKZ5cyaIjed3Patdu1LX/0CnVnTjY315bXV0+eH5y4NVjaqer6/vzndvjF66cbB5u16a9PvjdLuuN4b1wfT6nhazWsJQVI6sTKvfdLA3LPwi5pcenMJmoIGALKGlnq61MtdYU0GoFWoqvGERsenfuTdtz/+v6rJtLO+KjG9gksHRARDaIjZMFtDzpjcmdyZTkbdDPuF9vKwlOGg55YHvdPnLq+f7a2dzrp9Tel468bxzq2Dl25Otm773YN0MMXjeTqu/PGsGk+rybwu6xQivOxN+XpOyCAAUuOHkRCIEAEQyBnqd6DInSuYjGqqfBUmY8tcbGzsPvsZdEZFX7buiACE0KRTjGFjjHGGMseFNUVmOhn1cu3n0M90qTCDgV1d66+dXj51Jh+uGpeFan5468WjzVuj2zcnm5u6dSDHM5x6rCX6FMs6lj7VTVSlKCmqwOs9I4YndwCbFMiipo0UAC1zN9csZ5MRkkjwsZLxDLsdVBy9eJOtXfzpu+tOxhAbJmdN7jh3tsi4k2PPUT/XXp6WChz0isFysbparJ1eGq65oi+q1fTIv3h7f3frYGe7emlbbmzH3WOd1iTIRMimCYVTUmnqK+5JmvJePkMXZoiQAAkAEMUYC52O5rk1lpBCkjJUYTbLur0qSjgeG2MMIiEwEzEby+ysyTJTOO5mppNxP8d+Dr0c+7ks9Wl50BusdlfWlgbLpjswiFVdH23dmGzdqifHM1+N97Zhe+Svb4UX98O8IjZZllHmUAEbzUZU71Rw/fEXrZh7pIAiEjUbAIBNCkQRCYus7neGzDkZRYwSfT0PZdlXsCEgQO6MzQwbw5k1hXNFxr2C+gX3c+h3YKlIS13o94p+1w6GnaWVbn/QKTpgHPi6Otwa7e9Ntrfrre35c19fefSJ4snL+1s3M+9hXMaykiRs7jqkRSwtogtl/14UDd07J7ywQY0ZalwAMyx1od+zWdcap6qpnpfzWaq8r4LU5dLKUnRkh33bzXjQ40GB/Y4Mu6aXa79D/W7e7XJ/Jest9Ysu5h2HkEKYTo6nR4f1znbY3Kxv7/rNUdwfT577+sWnfyheupy++Kw6p8agYRakprbuRNnXpCJyIqPpn4SqiEXxFCGdVPUoIQIqgunm9swarQw7eZfJ+Hq6P9nfnU0siNdwdLg1/DOPh3Ju1ofUz2SpR/0u9rrY7XY7HdvpZ0U3dzmTUQCpq/nR/sHxod/d9zs7fmvPbx6G7ZE/GPvxPPo0PZgNLl66rfWR5cwQMyMzcHMvmzilSaWIpiQijefXPxEbAHBy8GlR9EmEYLtF98q56omHl9Y3VrtDAN2d7L54tLOTwpnTKxDT5vyQ3/kDrFp0O9jpZHlhi16j4bFhUEjRz+o6jvero0O/vxd2duPmQdg6rPZGcX/sx2Woah8bxUBdr1M8fnVz89PeGEFEJmRGBjKMyACoi/SJLFb/XlVrmXvhAZrIyxiyhpiNs/nqILt2Sd/yhu6jVy+unFkqllVCGSsBPdPrd6/2e8bkrshdwTbPrcvJEJGK1ilUvoqjw3Iyqg+Pwv5B3Dmod0aytR93jurRxE/nofKhEfdPdt/PZhff/LQ9v3742euGSZOSAhEhCxMiNflbUdGUVCQtStvh9e+Em5pDJjbGsLPG2XzY610+595wNT79yPDyxY3VCxtLa85mMdnT/dPWFIUkQ01RHKJCAilTqKvpvJxNZlM9Ogyjw7QzijuHfmcUd0Zx/6g+mvl5GXyISdJCE8O7tSNEUpbX/sp7b893p8d7HbUYg6oSITa5BKTG90oSTTGlpCmh3gk/Xp8bgACEqExs2GbWdPJ8qdO/cHbw5MPwA492rl4uNi6cHpxe7gytcQBARN1i4EweUogpzmIl5WRWl7PJOIxHejRO+4d+b4RbB3FnVO8f+9HYT+ehjCGk1NTYfqMYekcfClU1vPrQlb/2F//zp35FiFIpWRV8FEIkZiICxMb0pJgknqS0VL65gud1sQEI0DhYIMKm7iqzWSfrLA+XH7nkfvCN9PQT9tKFteGp9WIld4UB9b6sU0yxnPuqrmeTcl7Op3E28bPJJPrTnf78mc/I8zfDuPQHR34892UdQoiNcT8p+fvWPx+F/aO3//N/ciPs3vr6H1jTycuJ1EmTEnJTaSIAoiJRJJ6kdBv54XXnA5riGmqiJmOsMzbPbJF1Br3lxx/q/NBbwpseyzfOLfdOLRtOyR/NJqUvZ76uqpmfTcvpBI+O69FxOjzWeYmYKpPKN/3Zh3/wz/3uh34+hZiIYkgKCC+v7/vWq0/OTra2//T7f3L9r77r33/kH6F1een70xLmnpIqGUBQQFWBJCmmFGKKQZLgq9W+H4zy9EUfXaPzGGrEGZdZm+eUu6xTLF3cyN/51v23PsUrq+dcUaCJwWs5i/NpOZvReMKHx2E0TntHcecw7I38ZBoZea2HF1eO1jrveN/Pud974Tfe/0HjHBe5xPhqzgIZnm7vXHv3n3/Xr/7yr/72v7v+tS85yoqRX7+xD7cO9XCuUbFpq4kp1sHPy7qs6nIefNCQ5B65gO/jBjTWBpqgiogMs7XGOZtZkxmbW5Pl1lnbKdyFs/WlMzNrhkdHs2prMi3paMyjsY6ncjzT44k/mvvxzI8n1fG0ns1jCORMFleob9NS9tH/+m/e+76/+5d//cO/+Td/dnpwmC8PCfAVzH7zqYiQKFRluX/09E//1Dv+xT/+78/+2vXnv2iyPs+r4XGp4wqr2HR4QPP4TzGFGEOMwcekkO5pvwB+T3/gpDmFCZuqMWOMcyazJnOcOeuszRxbgwbJ2u6ls+bJR6ST6dEUDkc6GsfJPE1LrQOExu81tR4hVGWqQwxRCexKL7u8Hh5ZH53u2yL74ff8zPmq/8m//0vP/bePRlXX7bK1iwaxk/pvTSlWVZiXK5fPv+0Xf2Hjr7/3o8986Pnr/zfPer5KK8fVmVsHfnMso5n4hIKqIiEEH+p57edlXVWxDrqoytIHbgMWCv4isiVkw4xsrXHWOMu5tdYY59haYxmMacomQRGco06hMYbpLM3LUAdNggJNkrIJShEwSdIQko8hJJFAubXrQ3d5ZXrl1OFyJ2L8U295xw8+/SPlp37/yx/6yIuffHa2syPeN1KTqhKR63dXHn/86fe++6H3/dhNPfrYMx8+muznroNVNDN/emdibx+ng5nMaoiqopJCqqOvvJ+XVVX5OoD3SeUeXoBXtwGL+mFEQtTGxzIZJmOaI2+NY3KODRvDTCyI2ESTSVJMMaYUYvRRfIgxoigSIrN1TXm0ZcvIFhFBUkox+RglASh1c7u+DJeHs3PDg9WepDLvrb7pzT/0xENvdEdx9tz18XMvzvYPIIas1+1evDB4/JH80qkb84PP/5/funn9S5A5S7nWwZbx3N6Mdya0O05TDz6kpJpi8iHUwc+ruqzqOqTgNaZ7FQC8ug1YdEoDAqIyIjIRI6NhapoYOXNsuUmOINOJpqXNk058lBBCkBRiilFTajReRGLjnGOb5SZ3LrdkLRuDgEkFUpQYU1IxaLoZbgzo7PLozGC+3ImkEgLk2fmN8+vnHx6snO1mHYMQgj+ajfa2b23den5yfACGyRUqhD72Z+XKaO5257g/1eNKay8JJQYJPvjoy9qXZV2F6IPGcO/7xfA7PisRALjJZNFJcTzyon+X0RpigqZPQlUaNTfGFFIKadGsGwWkudlyJ5eIxhprXOZc5kyeudyyYTS2iUtVQiMIgEHqFbTah40lOdU5GBTzTq6EIgLRw8n/EEABEpABm7ExqihBTAgrUz84qtzeRA/LNKugDBI0pqgxxDr6eR2qqq4r7yOEKJLufaeY+Q6PekRoZgM0kwIQCRcVd5JSVMWUgFChyWMsClRlUWe5qI88KSLQOz0KhIghxOYEnMRTNgMGADZAjGQZZZEWKSMczlCVfViuoh2EaSf3zqBzSARAgLrYVoGomupovfbr0JvXveOKDis9KmVWahUkqqSkwQcfQ+lDXXnvg0/QiEf3o0/PfOfbgYumm2ahGgOZRBCaQuzFmACVpAIquqhYWlzlV/6ZpGlYSCHeSTuJqIhRZ62SEWWDaHjx3QDriKM5+pTPoxv7QT+UPRsyrix7JkRkgAQqAkXSro9FGXvTALMKj2uY1lLW6oMEkRAbbxSqOtS1r0PwUWNUSaoC8CB1SX5De19zjBeBI0Ba1Gg0V79Z7EUPwp2i1O/0jUWVkoCEqAAgICIKoqBirQBZBWIkJgAgBFWsk4qHKGbu7bjMOnkqbMxMsqSEhKiqlDSrE/rIZdB50NJr6aWOGqIEkehjkFDHWNeh9sH74GOKASQJ3LdG4e8QiDWtZahJm47Lu4akWbY7h/ybCmVfFaIKChibe7BQwDQlcdaKJSPECdmgEoECEEbBuRefoIzkvLFsHaNpsioooBgEo2hsnH9ULxqiNnJdiDGk4EOqQ/C1r0OMUWLQKH+sVSff+wYIKAKgnMi6cNek6J1f+b6/vaCiAocool4azxE1JY2JM8PWMAsaViQiQCBVxJQ0itQRidA0UzsWxnLRpZVEkmgUiU3vfEpBUojR++hD8N6HmGKCEJoRNnpfx0V8uxvw/1nxuwOpXjMUFDQBUEqg6hWSQEpiY6JkjU3GGjZChpSgaaQRJEwEpIqCiIACoAi0sIWiKqJJm8xiipJCkmZSRwgxhBBSilEl4p0GCmiHdZwoeoSkhonZNDG2sWybiIPJMFHTGYdIBM1/DYqqiihKAALS5LVEk6QkEiXFlGKQGGOIIYYURVO67/MhHtx5QbRo4CYgIm6GBfFJIy4TM94pI6FmiNndG9kc/8YKSRJtpP0YU0zNsKDF0j8YB//BnZjVzGxCRG1GCdDi7DNhoxpRU9bYNFifWH9dRCIC0qR2m0hEYlJJadGq+AAMp3ndzIzDO7VEgEC02Aw8mRp3d0RAE8c1Cgg0mV1dFDhIM8EM7hTyq7ZD+757x3BX+0ZtSovo7qy4l1sgWPSNKaqCyp0mxbvxdzs18XvfBz0ZGIp4kgTGO3NJ7uRW4G6n0J05ltoObn3NPy5+q4/+upjU2tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0vLa8v8AmsF01EUnzZ0AAAAASUVORK5CYII=">
+<style>
+  /* Official Saudi Riyal sign (U+20C1, Unicode 17). Scoped to just that one
+     codepoint via unicode-range so it never affects any other character -
+     safe to sit first in every font stack below. Falls back to whatever
+     glyph the system font has for U+20C1 if this CDN is unreachable. */
+  @font-face {
+    font-family: "saudi-riyal";
+    src: url("https://cdn.jsdelivr.net/npm/@emran-alhaddad/saudi-riyal-font/fonts/regular/saudi_riyal.woff2") format("woff2"),
+         url("https://cdn.jsdelivr.net/npm/@emran-alhaddad/saudi-riyal-font/fonts/regular/saudi_riyal.woff") format("woff");
+    unicode-range: U+20C1;
+    font-display: swap;
+  }
+  :root {
+    --ink: #12181B;
+    --paper: #F1F2EC;
+    --surface: #FFFFFF;
+    --surface-2: #E7E8E1;
+    --text: #1B211F;
+    --text-muted: #5B6560;
+    --border: #D7D9CF;
+
+    --accent: #1F5C4D;      --accent-soft: #E4EEE9;
+    --gold: #9C7A24;        --gold-soft: #F3ECD9;
+    --clay: #A5432B;        --clay-soft: #F4E3DD;
+    --slate: #3E5C76;       --slate-soft: #E2E8ED;
+    --plum: #6B4C82;        --plum-soft: #EBE3F0;
+    --moss: #55702E;        --moss-soft: #E7EDD9;
+
+    --danger: #B23A2E;
+    --danger-soft: #F5E1DE;
+    --focus: #1F5C4D;
+
+    --font-display: "Iowan Old Style", "Palatino Linotype", "URW Palladio L", Georgia, serif;
+    --font-body: "saudi-riyal", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: "saudi-riyal", ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+
+    --content-max: 640px;
+    color-scheme: light;
+  }
+  @media (min-width: 860px) { :root { --content-max: 900px; } }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #ECEFE9;
+      --paper: #10151A;
+      --surface: #171D22;
+      --surface-2: #232A2F;
+      --text: #E7EAE3;
+      --text-muted: #9AA59D;
+      --border: #2B3339;
+
+      --accent: #57B394;      --accent-soft: #17332C;
+      --gold: #D9AB4C;        --gold-soft: #362C16;
+      --clay: #E1785C;        --clay-soft: #3A241C;
+      --slate: #86A9CC;       --slate-soft: #202C38;
+      --plum: #B491CC;        --plum-soft: #2B2333;
+      --moss: #9CBE6E;        --moss-soft: #26301A;
+
+      --danger: #E2685A;
+      --danger-soft: #3A211D;
+      --focus: #57B394;
+      color-scheme: dark;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ink: #ECEFE9;
+    --paper: #10151A;
+    --surface: #171D22;
+    --surface-2: #232A2F;
+    --text: #E7EAE3;
+    --text-muted: #9AA59D;
+    --border: #2B3339;
+
+    --accent: #57B394;      --accent-soft: #17332C;
+    --gold: #D9AB4C;        --gold-soft: #362C16;
+    --clay: #E1785C;        --clay-soft: #3A241C;
+    --slate: #86A9CC;       --slate-soft: #202C38;
+    --plum: #B491CC;        --plum-soft: #2B2333;
+    --moss: #9CBE6E;        --moss-soft: #26301A;
+
+    --danger: #E2685A;
+    --danger-soft: #3A211D;
+    --focus: #57B394;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--text);
+    font-family: var(--font-body);
+    line-height: 1.45;
+    padding-bottom: 96px;
+  }
+  h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; color: var(--ink); }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  .num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  .curr { font-size: 1.35em; line-height: 1; vertical-align: -0.06em; display: inline-block; }
+
+  a { color: var(--accent); }
+
+  /* ---------- layout ---------- */
+  header.topbar {
+    position: sticky; top: 0; z-index: 20;
+    background: color-mix(in srgb, var(--paper) 88%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .topbar-inner {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px;
+    max-width: var(--content-max); margin: 0 auto;
+  }
+  .brand { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+  .brand h1 { font-size: 1.25rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .brand .eyebrow { font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
+  .icon-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 38px; height: 38px; border-radius: 10px;
+    background: var(--surface); border: 1px solid var(--border);
+    color: var(--text); flex: 0 0 auto;
+  }
+  .icon-btn:hover { border-color: var(--accent); }
+  .icon-btn:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible {
+    outline: 2px solid var(--focus); outline-offset: 2px;
+  }
+
+  .stats-row {
+    display: flex; flex-direction: column; gap: 8px; padding: 12px 16px 0; max-width: var(--content-max); margin: 0 auto;
+  }
+  .stats-row-accounts {
+    display: flex; gap: 8px; overflow-x: auto; scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: 2px;
+  }
+  .stats-row-accounts::-webkit-scrollbar { display: none; }
+  @media (min-width: 460px) {
+    .stats-row { flex-direction: row; flex-wrap: wrap; }
+    .stats-row-accounts { display: contents; }
+    .stats-row-accounts .stat { flex: 0 0 calc((100% - 32px) / 5); }
+  }
+  .stat {
+    flex: 1 1 130px; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 9px 10px; min-width: 0; container-type: inline-size;
+  }
+  @media (max-width: 459px) {
+    .stats-row-accounts .stat { flex: 1 0 30%; scroll-snap-align: start; scroll-snap-stop: always; }
+  }
+  .stat .label {
+    font-size: clamp(0.52rem, 6.5cqw, 0.63rem); letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted);
+    overflow-wrap: break-word; word-break: break-word;
+  }
+  .stat .value {
+    font-size: clamp(0.78rem, 11cqw, 1rem); font-weight: 600; margin-top: 2px;
+    overflow-wrap: break-word; word-break: break-word;
+  }
+  .stat.total { background: var(--surface-2); width: 100%; padding: 9px 10px; flex: 0 0 auto; }
+  .total-label-short { display: none; }
+  @media (min-width: 460px) {
+    .stat.total { width: auto; flex: 1 1 130px; }
+    .stat.total .label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .total-label-full { display: none; }
+    .total-label-short { display: inline; }
+    .total-note { font-size: 0.85em; font-weight: 400; color: var(--text-muted); opacity: 0.85; }
+  }
+  .acct-type-tag { font-size: 0.6rem; color: var(--text-muted); margin-top: 3px; text-transform: uppercase; letter-spacing: 0.03em; }
+
+  section.block { padding: 20px 16px 0; max-width: var(--content-max); margin: 0 auto; }
+  .block h2 { font-size: 0.95rem; font-weight: 600; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
+  .block h2 .sub { font-family: var(--font-body); font-weight: 400; font-size: 0.78rem; color: var(--text-muted); }
+  .collapsible-header { cursor: pointer; user-select: none; }
+  .chevron { font-size: 0.75em; color: var(--text-muted); transition: transform .15s; display: inline-block; }
+  .chevron.open { transform: rotate(180deg); }
+
+  /* ---------- bucket cards ---------- */
+  .bucket-grid {
+    display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: 2px;
+  }
+  .bucket-grid::-webkit-scrollbar { display: none; }
+  @media (min-width: 460px) {
+    .bucket-grid { display: grid; grid-template-columns: repeat(var(--bucket-cols-sm, 4), 1fr); overflow-x: visible; scroll-snap-type: none; }
+  }
+  @media (min-width: 860px) { .bucket-grid { grid-template-columns: repeat(var(--bucket-cols-lg, 5), 1fr); } }
+
+  .bucket-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+    padding: 12px; display: flex; flex-direction: column; gap: 8px; min-width: 0;
+    border-top: 3px solid var(--bucket-color, var(--accent));
+    flex: 1 0 44%; scroll-snap-align: start; scroll-snap-stop: always;
+  }
+  @media (min-width: 460px) { .bucket-card { flex: initial; } }
+  .bucket-name { font-size: 0.78rem; font-weight: 600; color: var(--text-muted); }
+  .bucket-balance { font-size: 1.15rem; font-weight: 700; letter-spacing: -0.01em; }
+  .pill {
+    display: inline-block; font-size: 0.68rem; padding: 2px 7px; border-radius: 999px;
+    background: var(--bucket-soft, var(--surface-2)); color: var(--bucket-color, var(--text));
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums; width: fit-content;
+  }
+  .progress { position: relative; height: 7px; border-radius: 999px; background: var(--bucket-soft, var(--surface-2)); overflow: visible; margin-top: 2px; }
+  .progress-fill { position: absolute; inset: 0; width: 0%; background: var(--bucket-color, var(--accent)); border-radius: 999px; transition: width .4s ease; }
+  .progress-marker { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--ink); opacity: 0.55; left: 0%; }
+  /* One segment per installment: green = paid, yellow = due, red = late.
+     Each segment is its own small rounded piece with a visible gap between
+     them, so the row reads as distinct tiny pieces, not one solid bar. */
+  .segbar-row { display: flex; align-items: center; gap: 4px; margin-top: 8px; }
+  .segbar-more { font-size: 0.62rem; color: var(--text-muted); white-space: nowrap; }
+  .segbar { display: flex; gap: 2px; height: 9px; flex: 1 1 auto; min-width: 0; }
+  .segbar > div { width: calc((100% - 22px) / 12); flex: none; border-radius: 999px; background: var(--surface-2); }
+  .segbar > div.paid { background: var(--accent); }
+  .segbar > div.due { background: var(--gold); }
+  .segbar > div.late { background: var(--danger); }
+  .bucket-caption { font-size: 0.68rem; color: var(--text-muted); }
+
+  .info-dot {
+    width: 14px; height: 14px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface-2);
+    font-size: 0.62rem; line-height: 1; display: inline-flex; align-items: center; justify-content: center;
+    color: var(--text-muted); font-style: italic; font-family: Georgia, serif; padding: 0; vertical-align: middle;
+  }
+  .bucket-section { margin-bottom: 14px; }
+  .bucket-section:last-child { margin-bottom: 0; }
+  .bucket-section-title {
+    font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase;
+    letter-spacing: 0.04em; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;
+  }
+
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px; }
+  .comp-title { font-size: 0.8rem; font-weight: 600; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .income-chart-nav { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 10px; }
+  .income-chart-nav .icon-btn { width: 30px; height: 30px; }
+  .income-chart-nav-label { font-size: 0.82rem; font-weight: 600; }
+  .mo-wrap { display: flex; margin-top: 10px; }
+  .mo-axis { width: 34px; flex-shrink: 0; position: relative; height: 150px; }
+  .mo-tick-num { position: absolute; right: 10px; transform: translateY(-50%); font-size: 0.52rem; color: var(--text-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .mo-spine { position: absolute; left: 0; top: 0; bottom: 0; width: 1px; background: var(--border); opacity: 0.25; }
+  .mo-tick-mark { position: absolute; left: 0; width: 8px; height: 1px; background: var(--border); opacity: 0.25; }
+  .mo-bars-outer { flex: 1; min-width: 0; }
+  .mo-bars { display: flex; align-items: flex-end; height: 150px; gap: 2px; border-bottom: 1px solid var(--border); position: relative; }
+  .mo-col { flex: 1; position: relative; height: 100%; display: flex; align-items: flex-end; min-width: 0; cursor: default; }
+  .mo-bar { width: 100%; max-width: 12px; margin: 0 auto; background: var(--accent); border-radius: 2px 2px 0 0; min-height: 0; transition: opacity 0.15s ease; }
+  .mo-col.has-data .mo-bar { min-height: 2px; }
+  .mo-col.has-data:hover .mo-bar { opacity: 0.8; }
+  .mo-axis-labels { display: flex; gap: 2px; margin-top: 4px; }
+  .mo-axis-label { flex: 1; text-align: center; font-size: 0.5rem; color: var(--text-muted); min-width: 0; }
+  .income-chart-tooltip { position: absolute; pointer-events: none; left: 0; top: 0; width: max-content; max-width: min(220px, calc(100vw - 32px)); background: #12181B; color: #fff; font-size: 0.68rem; line-height: 1.55; padding: 8px 10px; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.22); z-index: 30; opacity: 0; transform: translate(-50%, calc(-100% - 8px)); transition: opacity 0.1s ease; }
+  .income-chart-tooltip.show { opacity: 1; }
+  .income-chart-tooltip .tt-title { font-weight: 700; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .income-chart-tooltip .tt-row { display: flex; align-items: center; gap: 6px; }
+  .income-chart-tooltip .tt-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .income-chart-tooltip .tt-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .income-chart-tooltip .tt-amt { margin-left: 14px; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+  .income-chart-tooltip .tt-total { margin-top: 5px; padding-top: 5px; border-top: 1px solid rgba(255,255,255,0.22); font-weight: 700; display: flex; justify-content: space-between; gap: 14px; font-variant-numeric: tabular-nums; }
+  .comp-title .sub { font-family: var(--font-body); font-weight: 400; font-size: 0.7rem; color: var(--text-muted); }
+
+  .ie-chart { margin-top: 10px; }
+  .ie-legend { display: flex; justify-content: center; gap: 18px; margin-bottom: 10px; }
+  .ie-legend-item { display: flex; flex-direction: row; align-items: center; gap: 5px; font-size: 0.68rem; color: var(--text-muted); }
+  .ie-legend-dot { width: 9px; height: 9px; border-radius: 50%; flex: 0 0 auto; }
+  .ie-wrap { display: flex; }
+  .ie-axis { width: 34px; flex-shrink: 0; position: relative; height: 220px; }
+  .ie-tick-num { position: absolute; right: 10px; transform: translateY(-50%); font-size: 0.52rem; color: var(--text-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .ie-spine { position: absolute; left: 0; top: 0; bottom: 0; width: 1px; background: var(--border); opacity: 0.25; }
+  .ie-tick-mark { position: absolute; left: 0; width: 11px; height: 1px; background: var(--border); opacity: 0.25; }
+  .ie-plot-outer { flex: 1; min-width: 0; position: relative; }
+  .ie-plot { position: relative; height: 220px; display: flex; flex-direction: column; }
+  .ie-half { flex: 1; position: relative; }
+  .ie-bar { position: absolute; width: var(--ie-bar-w, 11px); min-height: 0; cursor: default; }
+  .ie-half-upper .ie-bar { bottom: 0; }
+  .ie-half-lower .ie-bar { top: 0; }
+  .ie-bar-exp { background: var(--clay); border-radius: 0 0 3px 3px; }
+  .ie-bar-inc { background: var(--accent); border-radius: 3px 3px 0 0; }
+  .ie-bar-net { background: var(--gold); }
+  .ie-bar-net.ie-up { border-radius: 3px 3px 0 0; }
+  .ie-bar-net.ie-down { border-radius: 0 0 3px 3px; }
+  .ie-gridline { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--border); opacity: 0.25; }
+  .ie-zeroline { position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: var(--border); opacity: 0.25; }
+  .ie-pct { position: absolute; transform: translateX(-50%); font-size: 0.56rem; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  @media (max-width: 480px) { .ie-pct { font-size: 0.44rem; } }
+  .ie-pct-top { top: 0; color: var(--accent); }
+  .ie-pct-bottom { bottom: 0; color: var(--clay); }
+  .ie-month-labels { position: relative; height: 16px; margin-top: 6px; }
+  .ie-month-label { position: absolute; transform: translateX(-50%); font-size: 0.68rem; color: var(--text-muted); white-space: nowrap; }
+  .comp-bar { display: flex; gap: 2px; height: 22px; border-radius: 8px; overflow: hidden; background: var(--surface-2); }
+  .comp-seg { min-width: 3px; }
+  .comp-legend { display: flex; flex-direction: column; gap: 7px; margin-top: 12px; }
+  .comp-legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; }
+  .comp-dot { width: 9px; height: 9px; border-radius: 50%; flex: 0 0 auto; }
+  .comp-legend-label { flex: 1; color: var(--text); }
+  .comp-legend-val { color: var(--text-muted); font-size: 0.74rem; }
+
+  .split-row { margin-bottom: 8px; }
+  .split-remaining { font-size: 0.78rem; font-weight: 600; margin: 4px 0 13px; }
+  .split-remaining.ok { color: var(--accent); }
+  .split-remaining.bad { color: var(--danger); }
+  .ledger-floor-note {
+    font-size: 0.72rem; color: var(--danger); font-weight: 600; line-height: 1.35; margin-top: 6px;
+  }
+  .bucket-activity {
+    font-size: 0.66rem; color: var(--text-muted); line-height: 1.35; margin-top: 1px;
+    display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    overflow-wrap: break-word; word-break: break-word;
+  }
+
+  .acct-status {
+    display: inline-block; font-size: 0.64rem; font-weight: 600; padding: 2px 7px;
+    border-radius: 999px; background: var(--clay-soft); color: var(--clay);
+    margin-left: 6px; white-space: nowrap; vertical-align: middle;
+  }
+
+  /* ---------- ledger ---------- */
+  .ledger-filter-bar { margin-bottom: 12px; }
+  .ledger-filters-details { margin-top: 8px; }
+  .ledger-filters-details summary { cursor: pointer; font-size: 0.83rem; font-weight: 600; color: var(--text-muted); padding: 4px 0; list-style: none; display: flex; align-items: center; gap: 6px; }
+  .ledger-filters-details summary::-webkit-details-marker { display: none; }
+  .ledger-filters-details summary::before { content: "▸"; font-size: 0.7rem; }
+  .ledger-filters-details[open] summary::before { content: "▾"; }
+  .ledger-filters-details > .field, .ledger-filters-details > .row2 { margin-top: 10px; }
+  .filter-badge { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--accent); background: var(--accent-soft); padding: 1px 6px; border-radius: 999px; }
+  .ledger-list { display: flex; flex-direction: column; gap: 8px; }
+  .ledger-item { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 11px 13px; }
+  .ledger-top { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+  .ledger-top > div:first-child { min-width: 0; }
+  .ledger-desc { font-size: 0.88rem; font-weight: 600; overflow-wrap: break-word; word-break: break-word; }
+  .ledger-date { font-size: 0.7rem; color: var(--text-muted); margin-top: 1px; }
+  .ledger-amt { font-size: 0.95rem; font-weight: 700; white-space: nowrap; flex-shrink: 0; }
+  .ledger-amt.pos { color: var(--accent); }
+  .ledger-amt.neg { color: var(--clay); }
+  .chip-row { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+  .chip {
+    font-size: 0.68rem; padding: 2px 7px; border-radius: 999px; font-family: var(--font-mono);
+    background: var(--chip-soft, var(--surface-2)); color: var(--chip-color, var(--text-muted));
+  }
+  .ledger-note { font-size: 0.72rem; color: var(--text-muted); margin-top: 6px; }
+  .recurring-badge { background: var(--gold-soft); color: var(--gold); font-family: var(--font-body); font-weight: 600; }
+  .ledger-user-note { font-style: italic; color: var(--text); white-space: pre-wrap; }
+  .ledger-actions { display: flex; gap: 8px; margin-top: 9px; }
+  .link-btn { font-size: 0.75rem; color: var(--accent); background: none; border: none; padding: 0; text-decoration: underline; text-underline-offset: 2px; }
+  .link-btn.danger { color: var(--danger); }
+
+  .empty-state { text-align: center; padding: 26px 14px; color: var(--text-muted); font-size: 0.85rem; border: 1px dashed var(--border); border-radius: 14px; }
+
+  /* ---------- FAB ---------- */
+  .fab {
+    position: fixed; right: 20px; bottom: 24px; z-index: 30;
+    width: 56px; height: 56px; border-radius: 50%;
+    background: var(--accent); color: var(--paper); border: none;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+  }
+  .fab:hover { filter: brightness(1.06); }
+  .fab[disabled] { opacity: 0.4; cursor: not-allowed; }
+
+  /* ---------- sheet / modal ---------- */
+  .overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.42);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 50; opacity: 0; pointer-events: none; transition: opacity .2s ease;
+    padding: 16px;
+  }
+  .overlay.open { opacity: 1; pointer-events: auto; }
+  .sheet {
+    width: 100%; max-width: 560px; background: var(--surface);
+    border-radius: 18px; padding: 18px;
+    max-height: 88vh; overflow-y: auto;
+    transform: scale(0.96); transition: transform .2s ease;
+    border: 1px solid var(--border);
+  }
+  .overlay.open .sheet { transform: scale(1); }
+  @media (prefers-reduced-motion: reduce) {
+    .overlay, .sheet { transition: none; }
+  }
+  @media (max-width: 600px) {
+    .overlay { align-items: flex-end; padding: 0; }
+    .sheet {
+      max-width: 100%; border-radius: 18px 18px 0 0; max-height: 90vh;
+      padding-bottom: calc(18px + env(safe-area-inset-bottom));
+      transform: translateY(100%); transition: transform .24s ease;
+    }
+    .overlay.open .sheet { transform: translateY(0); }
+  }
+  .sheet-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .sheet-head h3 { font-size: 1.05rem; }
+
+  .segmented { display: flex; background: var(--surface-2); border-radius: 10px; padding: 3px; gap: 3px; margin-bottom: 16px; }
+  .segmented button { flex: 1; border: none; background: transparent; padding: 8px 6px; border-radius: 8px; font-size: 0.82rem; font-weight: 600; color: var(--text-muted); }
+  .segmented-5 button { padding: 8px 2px; font-size: 0.72rem; }
+  .segmented-compact { padding: 2px; gap: 2px; border-radius: 8px; }
+  .segmented-compact button { padding: 5px 8px; font-size: 0.68rem; border-radius: 6px; white-space: nowrap; }
+  .segmented button.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
+
+  .field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 13px; }
+  .field label { font-size: 0.74rem; font-weight: 600; color: var(--text-muted); }
+  .input, .select {
+    width: 100%; padding: 10px 11px; border-radius: 9px; border: 1px solid var(--border);
+    background: var(--paper); color: var(--text); font-size: 0.92rem;
+  }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .check-row { display: flex; align-items: center; gap: 9px; font-size: 0.83rem; padding: 6px 0 0; }
+  .check-row input { width: 17px; height: 17px; accent-color: var(--accent); flex-shrink: 0; }
+  .check-note { font-size: 0.72rem; color: var(--text-muted); margin: 1px 0 6px 26px; line-height: 1.35; }
+
+  .split-preview { display: flex; flex-wrap: wrap; gap: 6px; margin: -3px 0 13px; }
+
+  .btn {
+    width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border);
+    background: var(--surface); font-weight: 600; font-size: 0.92rem; text-align: center;
+  }
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: var(--paper); }
+  .btn-danger { background: var(--danger); border-color: var(--danger); color: var(--paper); }
+  .btn-ghost { background: transparent; }
+  .btn-row { display: flex; gap: 10px; margin-top: 6px; }
+  .btn-row .btn { width: auto; flex: 1; }
+
+  .settings-section { margin-bottom: 22px; }
+  .settings-section h4 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 9px; }
+
+  .bucket-edit-row, .acct-edit-row { margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+  .bucket-edit-row:last-of-type, .acct-edit-row:last-of-type { border-bottom: none; margin-bottom: 6px; padding-bottom: 0; }
+  .acct-edit-top { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .acct-edit-top .input { flex: 1; }
+  .default-radio {
+    display: flex; align-items: center; gap: 4px; flex: 0 0 auto; font-size: 0.68rem; font-weight: 600;
+    color: var(--text-muted); white-space: nowrap; padding: 6px 8px; border: 1px solid var(--border); border-radius: 8px;
+  }
+  .default-radio input { width: 13px; height: 13px; accent-color: var(--accent); margin: 0; }
+  .default-radio:has(input:checked) { color: var(--accent); border-color: var(--accent); }
+  .bucket-edit-header { display: flex; gap: 8px; margin-bottom: 6px; font-size: 0.7rem; font-weight: 600; color: var(--text-muted); }
+  .bucket-tier-group { margin-bottom: 12px; border: 1px solid var(--border); border-radius: 12px; padding: 2px 12px 12px; }
+  .bucket-tier-group summary {
+    cursor: pointer; padding: 11px 0; font-weight: 600; font-size: 0.85rem; list-style: none;
+    display: flex; align-items: baseline; gap: 6px; color: var(--text);
+  }
+  .bucket-tier-group summary::-webkit-details-marker { display: none; }
+  .bucket-tier-group summary::before {
+    content: "▸"; display: inline-block; color: var(--text-muted);
+    transition: transform .15s ease;
+  }
+  .bucket-tier-group[open] summary::before { transform: rotate(90deg); }
+  .bucket-tier-explain { font-weight: 400; font-size: 0.76rem; color: var(--text-muted); }
+  .bucket-edit-line { display: flex; gap: 8px; align-items: center; }
+  .bucket-edit-line .input:first-child { flex: 1; }
+
+  .pct-field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+  .pct-field label { font-size: 0.7rem; font-weight: 600; color: var(--text-muted); }
+  .pct-input-wrap { position: relative; }
+  .pct-input-wrap .input { padding-right: 26px; text-align: right; }
+  .pct-suffix { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 0.82rem; color: var(--text-muted); pointer-events: none; }
+
+  .del-btn { flex: 0 0 auto; width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); display: flex; align-items: center; justify-content: center; color: var(--danger); }
+  .reorder-btns { display: flex; flex-direction: column; gap: 2px; flex: 0 0 auto; }
+  .reorder-btn { width: 22px; height: 17px; border-radius: 5px; border: 1px solid var(--border); background: var(--surface); display: flex; align-items: center; justify-content: center; color: var(--text-muted); padding: 0; }
+  .reorder-btn:disabled { opacity: 0.35; }
+  .reorder-btn:not(:disabled):hover { border-color: var(--accent); color: var(--accent); }
+  .sum-note { font-size: 0.74rem; margin-top: 4px; }
+  .sum-note.ok { color: var(--moss); }
+  .sum-note.bad { color: var(--danger); }
+  .add-row-btn { font-size: 0.8rem; color: var(--accent); background: none; border: none; padding: 4px 0; font-weight: 600; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 92px; transform: translate(-50%, 8px);
+    background: var(--ink); color: var(--paper); padding: 9px 16px; border-radius: 999px;
+    font-size: 0.8rem; z-index: 60; opacity: 0; pointer-events: none; transition: opacity .2s ease, transform .2s ease;
+    max-width: 90vw; text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  .overlay.confirm-sheet { z-index: 60; }
+  .confirm-sheet .sheet { max-width: 360px; border-radius: 16px; }
+  .confirm-msg { font-size: 0.88rem; color: var(--text); margin-bottom: 16px; }
+
+  .assess-preview { background: var(--surface-2); border-radius: 10px; padding: 10px 12px; margin-top: 6px; }
+  .assess-row-preview { display: flex; justify-content: space-between; font-size: 0.82rem; padding: 3px 0; }
+  .assess-row-preview.total { border-top: 1px solid var(--border); margin-top: 4px; padding-top: 6px; font-weight: 600; }
+  .assess-adjusted { color: var(--accent); font-weight: 700; }
+
+  input[type="file"] { display: none; }
+  hr.div { border: none; border-top: 1px solid var(--border); margin: 18px 0; }
+</style>
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <h1 id="brandName">Personal Tracker</h1>
+      <div class="eyebrow">I Am Money · Accounts · Ledger</div>
+    </div>
+    <div style="display:flex; align-items:center; gap:8px;">
+      <button class="icon-btn" id="syncBtn" aria-label="Sync" title="Sync with server">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      </button>
+      <button class="icon-btn" id="settingsBtn" aria-label="Settings" title="Settings">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="stats-row" id="statsRow"></div>
+
+<section class="block">
+  <h2>Accounts</h2>
+  <div id="bucketGrid"></div>
+</section>
+
+<section class="block">
+  <h2>Income</h2>
+  <div id="entitlementPanel"></div>
+</section>
+
+<section class="block">
+  <h2 class="collapsible-header" data-toggle="debt">Debt <span class="chevron" id="debtChevron">▾</span></h2>
+  <div id="debtSummary"></div>
+  <div id="debtBody" class="collapsible-body" style="display:none">
+    <div id="debtSection"></div>
+    <div id="debtLedgerSection" style="margin-top:14px;"></div>
+  </div>
+</section>
+
+<section class="block">
+  <h2 class="collapsible-header" data-toggle="installment" >Installments <span class="chevron" id="installmentChevron">▾</span></h2>
+  <div id="installmentSummary"></div>
+  <div id="installmentBody" class="collapsible-body" style="display:none">
+    <div id="installmentSection"></div>
+    <div id="installmentLedgerSection" style="margin-top:14px;"></div>
+  </div>
+</section>
+
+<section class="block" style="padding-bottom:8px;">
+  <h2 class="collapsible-header" data-toggle="ledger">Ledger <span style="display:flex; align-items:center; gap:6px"><span class="sub" id="ledgerCount"></span><span class="chevron open" id="ledgerChevron">▾</span></span></h2>
+  <div id="ledgerBody" class="collapsible-body">
+    <div id="ledgerSection"></div>
+  </div>
+</section>
+
+<button class="fab" id="fabBtn" aria-label="Add transaction" title="Add transaction">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+</button>
+
+<div class="overlay" id="txOverlay">
+  <div class="sheet" role="dialog" aria-modal="true" id="txSheet"></div>
+</div>
+
+<div class="overlay" id="settingsOverlay">
+  <div class="sheet" role="dialog" aria-modal="true" id="settingsSheet"></div>
+</div>
+
+<div class="overlay confirm-sheet" id="confirmOverlay">
+  <div class="sheet" role="alertdialog" aria-modal="true" id="confirmSheet"></div>
+</div>
+
+<div class="overlay" id="obOverlay">
+  <div class="sheet" role="dialog" aria-modal="true" id="obSheet"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<style>
+  /* ---- personal-only additions: no company equivalent to copy ---- */
+  .item-list { display: flex; flex-direction: column; gap: 8px; }
+  .item-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 11px 13px; }
+  .item-top { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+  .item-name { font-size: 0.88rem; font-weight: 600; }
+  .item-sub { font-size: 0.7rem; color: var(--text-muted); margin-top: 1px; }
+  .item-amt { font-size: 0.95rem; font-weight: 700; white-space: nowrap; }
+  .item-amt.pos { color: var(--accent); }
+  .item-amt.neg { color: var(--clay); }
+  .chip.emergency { background: var(--clay-soft); color: var(--clay); }
+  .chip.historical { background: var(--surface-2); color: var(--text-muted); }
+</style>
+
+<script>
+(function () {
+  "use strict";
+
+  var STORAGE_KEY = "i-am-money-personal.v1";
+
+  // --- Cloud sync (optional) ---
+  // Same pattern as the company tracker (tracker.html) - points at its own
+  // separate Render service + server.py, sharing the company tracker's
+  // Upstash Redis database but under its own key (see server.py's
+  // STATE_KEY), so Prudy backfilling from a different browser/device ends
+  // up in the same live dataset instead of stuck in her own localStorage.
+  // Leave SYNC_URL empty to keep this exactly as it was - localStorage only.
+  var SYNC_URL = "https://personal-tracker-backend-t9oz.onrender.com";
+  var SYNC_TOKEN = "725cc2ff168af77b44fbc88ad5731f52b79390986917eba6344e53e7fb2308e3";
+  // Ordered to match Prudy's original personal-finances-tracker artifact's
+  // actual per-Account colors, not the company tracker's bucket-color order:
+  // Give=green(moss), FFA=blue(slate), Investment=amber(gold), Lifestyle=purple(plum).
+  var HUES = ["moss", "slate", "gold", "plum", "accent", "clay"];
+  var INCOME_FREQUENCIES = ["Undefined", "Weekly", "Monthly", "Quarterly", "Semi Annual", "Annual"];
+  function monthlyEquivalentAmount(amount, frequency) {
+    var amt = Number(amount) || 0;
+    if (frequency === "Weekly") return round2(amt * 52 / 12);
+    if (frequency === "Quarterly") return round2(amt / 3);
+    if (frequency === "Semi Annual") return round2(amt / 6);
+    if (frequency === "Annual") return round2(amt / 12);
+    return amt; // "Monthly" and "Undefined" both read as-is
+  }
+
+  function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
+  function todayStr() {
+    var d = new Date();
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+  function round2(n) { return Math.round((n + Number.EPSILON) * 100) / 100; }
+  function fmt(n) {
+    var v = round2(n || 0);
+    var sign = v < 0 ? "-" : "";
+    return sign + Math.abs(v).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function curr() { return '<span class="curr">' + esc(state.currency) + '</span>'; }
+
+  // Albaiti's real current numbers (from Prudy's personal-finances-tracker
+  // artifact, 2026-08-25) — used only as the very first load's starting
+  // state (see loadState() below), never as defaultState() itself, so the
+  // app's generic/empty template logic stays intact for whenever this
+  // becomes a product other people install. "Reset all data" deliberately
+  // does NOT re-seed this — it goes back to a true blank defaultState().
+  var ALBAITI_SEED_STATE = {"version": 2, "person": "Albaiti", "currency": "⃁", "defaultAccountId": "barq", "accounts": [{"id": "barq", "name": "Barq"}, {"id": "cash", "name": "Cash on hand"}, {"id": "stc", "name": "STC Bank"}, {"id": "albilad", "name": "Al Bilad"}], "buckets": [{"id": "give", "name": "Give", "cap": 5, "linkedAccountId": null}, {"id": "ffa", "name": "FFA", "cap": 10, "linkedAccountId": null}, {"id": "investment", "name": "Investment", "cap": 20, "linkedAccountId": null}, {"id": "lifestyle", "name": "Lifestyle", "cap": 65, "linkedAccountId": null}], "incomeSources": [{"id": "ownerspay", "name": "Owner's Pay", "frequency": "Monthly", "amount": 30000}], "debts": [{"id": "debt_company", "name": "Company owes Albaiti", "direction": "owed_to_me"}, {"id": "debt_jawaher", "name": "Owed to Jawaher", "direction": "owed_by_me"}], "installments": [{"id": "inst_tamam", "name": "Tamam Loan (via Maryam)", "monthlyAmount": 3032.69, "purpose": "Bank loan, proceeds to Albaiti, started Jul 2026", "installmentsTotal": 36, "installmentsLeft": 36, "lateCount": 1, "balloon": 0}, {"id": "inst_snb", "name": "SNB Car Loan (Maryam's car)", "monthlyAmount": 1453.3, "purpose": "Maryam's car", "installmentsTotal": 60, "installmentsLeft": 2, "lateCount": 0, "balloon": 21893.0}, {"id": "inst_almosafer", "name": "Tamara — Almosafer", "monthlyAmount": 1116.05, "purpose": "Japan trip plane ticket, Maryam", "installmentsTotal": 12, "installmentsLeft": 3, "lateCount": 2, "balloon": 0}, {"id": "inst_jarir", "name": "Tamara — Jarir", "monthlyAmount": 2559.0, "purpose": "iPhone 17 Pro Max, Albaiti", "installmentsTotal": 3, "installmentsLeft": 1, "lateCount": 1, "balloon": 0}, {"id": "inst_stc", "name": "Tamara — STC", "monthlyAmount": 692.18, "purpose": "Galaxy Z Flip 7, Maryam's birthday gift", "installmentsTotal": 6, "installmentsLeft": 5, "lateCount": 4, "balloon": 0}, {"id": "inst_hemah", "name": "Hemah Contract (maid)", "monthlyAmount": 1899.0, "purpose": "Monthly service contract, not a fixed-term loan", "installmentsTotal": 0, "installmentsLeft": 0, "lateCount": 0, "balloon": 0}, {"id": "inst_rent", "name": "Rent (home)", "monthlyAmount": 0, "purpose": "Annual 45,000.00, 1st payment already paid", "installmentsTotal": 2, "installmentsLeft": 1, "lateCount": 0, "balloon": 0}], "transactions": [{"id": "ob_barq_20260731", "type": "opening_balance", "accountId": "barq", "amount": 5.99, "allocation": {"give": 0, "ffa": 1, "investment": 1, "lifestyle": 3.99}, "date": "2026-07-31", "description": "Opening balance — Barq (real balance per Barq statement, end of July 2026 — last transaction 29 Jul, nothing 30-31 Jul)", "createdAt": 101}, {"id": "income_20260801_gift", "type": "draw", "date": "2026-08-01", "amount": 252, "description": "Personal gift from Maryam (reclassified 2026-09-04 — previously logged as an Owner's Pay draw; no matching company wire found)", "emergency": false, "historical": true, "accountId": "barq", "split": null, "sourceId": "ownerspay", "createdAt": 102}, {"id": "draw_20260803", "type": "draw", "date": "2026-08-03", "amount": 500, "description": "Owner's Pay draw, routed via Maryam's account (from Tariq's 3,000 SAR collection) — corrected 635 to 500; the other 135 was an \"Allowance to Maryam\" that never reached Albaiti", "emergency": false, "accountId": "barq", "split": {"give": 25, "ffa": 50, "investment": 100, "lifestyle": 325}, "sourceId": "ownerspay", "createdAt": 103}, {"id": "draw_20260805", "type": "draw", "date": "2026-08-05", "amount": 500, "description": "Owner's Pay draw, routed via Maryam's account (part of the 750 SAR wire)", "emergency": false, "accountId": "barq", "split": {"give": 25, "ffa": 50, "investment": 100, "lifestyle": 325}, "sourceId": "ownerspay", "createdAt": 104}, {"id": "draw_20260810", "type": "draw", "date": "2026-08-10", "amount": 350, "description": "Owner's Pay draw, routed via Maryam's account (2026-08-10 client payment split)", "emergency": false, "accountId": "barq", "split": {"give": 18, "ffa": 35, "investment": 70, "lifestyle": 227}, "sourceId": "ownerspay", "createdAt": 105}, {"id": "draw_20260813", "type": "draw", "date": "2026-08-13", "amount": 100, "description": "Old (pre-bankruptcy) company's CR renewal fee — paid directly from SiFi, never landed in Barq", "emergency": true, "accountId": null, "split": null, "sourceId": "ownerspay", "createdAt": 106}, {"id": "draw_20260817_car", "type": "draw", "date": "2026-08-17", "amount": 2909, "description": "Emergency car debt payment, 2 installments — car was towed", "emergency": true, "accountId": null, "split": null, "sourceId": "ownerspay", "createdAt": 107}, {"id": "draw_20260817_barq", "type": "draw", "date": "2026-08-17", "amount": 1591, "description": "Cash on hand remainder wired to Barq", "emergency": false, "accountId": "barq", "split": {"give": 80, "ffa": 159, "investment": 318, "lifestyle": 1034}, "sourceId": "ownerspay", "createdAt": 108}, {"id": "ob_barq_20260817_44", "type": "opening_balance", "accountId": "barq", "amount": 44, "allocation": {"give": 2, "ffa": 4, "investment": 9, "lifestyle": 29}, "date": "2026-08-17", "description": "Personal cash moved into Barq (not company money — doesn't count toward Owner's Pay entitlement)", "createdAt": 109}, {"id": "draw_20260819", "type": "draw", "date": "2026-08-19", "amount": 35, "description": "Chamber of Commerce fee (The Certain Way Co.) — paid directly from SiFi", "emergency": true, "accountId": null, "split": null, "sourceId": "ownerspay", "createdAt": 110}, {"id": "draw_20260821_electric", "type": "draw", "date": "2026-08-21", "amount": 1096.29, "description": "Electric bill — part of a 3,000 SAR wire to Maryam", "emergency": true, "accountId": null, "split": null, "sourceId": "ownerspay", "createdAt": 111}, {"id": "draw_20260821_owner", "type": "draw", "date": "2026-08-21", "amount": 1403.71, "description": "Owner's draw — remainder of the 3,000 SAR wire to Maryam", "emergency": false, "accountId": "barq", "split": {"give": 70, "ffa": 140, "investment": 281, "lifestyle": 912.71}, "sourceId": "ownerspay", "createdAt": 112}, {"id": "seed_cash", "type": "opening_balance", "accountId": "cash", "amount": 284.0, "allocation": {}, "date": "2026-09-03", "description": "Opening balance — Cash on hand", "createdAt": 2}, {"id": "seed_stc", "type": "opening_balance", "accountId": "stc", "amount": 2.2, "allocation": {}, "date": "2026-09-03", "description": "Opening balance — STC Bank", "createdAt": 3}, {"id": "seed_albilad", "type": "opening_balance", "accountId": "albilad", "amount": 3.89, "allocation": {}, "date": "2026-09-03", "description": "Opening balance — Al Bilad", "createdAt": 4}, {"id": "seed_debt_company", "type": "debt_entry", "debtId": "debt_company", "amount": 154084.13, "date": "2026-09-03", "description": "Opening balance", "opening": true, "createdAt": 5}, {"id": "seed_debt_jawaher", "type": "debt_entry", "debtId": "debt_jawaher", "amount": 500, "date": "2026-09-03", "description": "Opening balance", "opening": true, "createdAt": 6}, {"id": "seed_inst_tamam", "type": "installment_payment", "installmentId": "inst_tamam", "amount": 109176.84, "date": "2026-09-03", "description": "Opening balance", "opening": true, "createdAt": 7}, {"id": "seed_inst_snb", "type": "installment_payment", "installmentId": "inst_snb", "amount": 24799.6, "date": "2026-09-03", "description": "Opening balance", "opening": true, "createdAt": 8}, {"id": "seed_inst_almosafer", "type": "installment_payment", "installmentId": "inst_almosafer", "amount": 3348.15, "date": "2026-09-03", "description": "Opening balance", "opening": true, "createdAt": 9}, {"id": "seed_inst_jarir", "type": "installment_payment", "installmentId": "inst_jarir", "amount": 2559.0, "date": "2026-09-03", "description": "Opening balance", "opening": true, "createdAt": 10}, {"id": "seed_inst_stc", "type": "installment_payment", "installmentId": "inst_stc", "amount": 3460.9, "date": "2026-09-03", "description": "Opening balance", "opening": true, "createdAt": 11}, {"id": "seed_inst_rent", "type": "installment_payment", "installmentId": "inst_rent", "amount": 22500.0, "date": "2026-09-03", "description": "Opening balance", "opening": true, "createdAt": 12}, {"id": "exp_200", "type": "expense", "date": "2026-08-01", "amount": 20.0, "description": "Unidentified Barq charge (from statement reconciliation, pending ID)", "bucketId": "lifestyle", "accountId": "barq", "createdAt": 200}, {"id": "exp_201", "type": "expense", "date": "2026-08-01", "amount": 120.6, "description": "Unidentified Barq charge (from statement reconciliation, pending ID)", "bucketId": "lifestyle", "accountId": "barq", "createdAt": 201}, {"id": "exp_202", "type": "expense", "date": "2026-08-03", "amount": 250.0, "description": "Outgoing transfer to Mahmoud Abdulazeem Mohammad Ahmad (purpose unconfirmed)", "bucketId": "lifestyle", "accountId": "barq", "createdAt": 202}, {"id": "exp_203", "type": "expense", "date": "2026-08-03", "amount": 67.68, "description": "Personal spending — food/gifts/groceries", "bucketId": "lifestyle", "accountId": "barq", "createdAt": 203}, {"id": "exp_204", "type": "expense", "date": "2026-08-03", "amount": 8.5, "description": "Personal spending — food/gifts/groceries", "bucketId": "lifestyle", "accountId": "barq", "createdAt": 204}, {"id": "exp_205", "type": "expense", "date": "2026-08-03", "amount": 48.55, "description": "Personal spending — food/gifts/groceries", "bucketId": "lifestyle", "accountId": "barq", "createdAt": 205}, {"id": "exp_206", "type": "expense", "date": "2026-08-03", "amount": 86.5, "description": "Personal spending — food/gifts/groceries", "bucketId": "lifestyle", "accountId": "barq", "createdAt": 206}, {"id": "exp_207", "type": "expense", "date": "2026-08-05", "amount": 57.27, "description": "Personal spending — food/gifts/groceries", "bucketId": "lifestyle", "accountId": "barq", "createdAt": 207}, {"id": "exp_208", "type": "expense", "date": "2026-08-06", "amount": 23.0, "description": "Dunkin", "bucketId": "lifestyle", "accountId": "barq", "createdAt": 208}, {"id": "exp_209", "type": "expense", "date": "2026-08-06", "amount": 12.0, "description": "SUPPLY (grocery store)", "bucketId": "lifestyle", "accountId": "barq", "createdAt": 209}, {"id": "exp_210", "type": "expense", "date": "2026-08-06", "amount": 4.6, "description": "National Parking Company", "bucketId": "lifestyle", "accountId": "barq", "createdAt": 210}, {"id": "exp_211", "type": "expense", "date": "2026-08-06", "amount": 49.0, "description": "Shawerma", "bucketId": "lifestyle", "accountId": "barq", "createdAt": 211}, {"id": "exp_212", "type": "expense", "date": "2026-08-07", "amount": 72.0, "description": "Shoug Al Masaari — padel split", "bucketId": "lifestyle", "accountId": "barq", "createdAt": 212}, {"id": "exp_213", "type": "expense", "date": "2026-08-07", "amount": 182.98, "description": "Groceries", "bucketId": "lifestyle", "accountId": "barq", "createdAt": 213}, {"id": "exp_214", "type": "expense", "date": "2026-08-07", "amount": 84.7, "description": "Groceries", "bucketId": "lifestyle", "accountId": "barq", "createdAt": 214}, {"id": "exp_215", "type": "expense", "date": "2026-08-07", "amount": 80.18, "description": "Groceries", "bucketId": "lifestyle", "accountId": "barq", "createdAt": 215}, {"id": "exp_216", "type": "expense", "date": "2026-08-08", "amount": 18.0, "description": "Coffee", "bucketId": "lifestyle", "accountId": "barq", "createdAt": 216}, {"id": "exp_217", "type": "expense", "date": "2026-08-08", "amount": 57.5, "description": "Neighbour's Sawa phone credit (charity, gross — 30 SAR cash offset tracked separately)", "bucketId": "give", "accountId": "barq", "createdAt": 217}, {"id": "exp_218", "type": "expense", "date": "2026-08-11", "amount": -3.45, "description": "Refund — Hungerstation missing items (from 08-07 grocery order)", "bucketId": "lifestyle", "accountId": "barq", "createdAt": 218}, {"id": "exp_219", "type": "expense", "date": "2026-08-11", "amount": 173.4, "description": "Groceries", "bucketId": "lifestyle", "accountId": "barq", "createdAt": 219}, {"id": "exp_220", "type": "expense", "date": "2026-08-11", "amount": 141.21, "description": "Groceries", "bucketId": "lifestyle", "accountId": "barq", "createdAt": 220}, {"id": "exp_221", "type": "expense", "date": "2026-08-14", "amount": 44.92, "description": "Groceries — Tamimi", "bucketId": "lifestyle", "accountId": "barq", "createdAt": 221}, {"id": "exp_222", "type": "expense", "date": "2026-08-17", "amount": 254.1, "description": "Gathern", "bucketId": "lifestyle", "accountId": "barq", "createdAt": 222}, {"id": "exp_223", "type": "expense", "date": "2026-08-17", "amount": 89.5, "description": "Food (Hungerstation)", "bucketId": "lifestyle", "accountId": "barq", "createdAt": 223}, {"id": "exp_224", "type": "expense", "date": "2026-08-17", "amount": 49.0, "description": "Coffee", "bucketId": "lifestyle", "accountId": "barq", "createdAt": 224}, {"id": "exp_225", "type": "expense", "date": "2026-08-17", "amount": 59.15, "description": "Food (Hungerstation)", "bucketId": "lifestyle", "accountId": "barq", "createdAt": 225}, {"id": "exp_226", "type": "expense", "date": "2026-08-17", "amount": 264.6, "description": "Gathern", "bucketId": "lifestyle", "accountId": "barq", "createdAt": 226}, {"id": "exp_227", "type": "expense", "date": "2026-08-17", "amount": 56.14, "description": "Audible subscription (corrected — logged in USD by mistake, real SAR charge)", "bucketId": "investment", "accountId": "barq", "createdAt": 227}, {"id": "exp_228", "type": "expense", "date": "2026-08-18", "amount": 10.0, "description": "Coffee", "bucketId": "lifestyle", "accountId": "barq", "createdAt": 228}, {"id": "exp_229", "type": "expense", "date": "2026-08-18", "amount": 33.0, "description": "Breakfast", "bucketId": "lifestyle", "accountId": "barq", "createdAt": 229}, {"id": "exp_230", "type": "expense", "date": "2026-08-18", "amount": 79.0, "description": "Food (Al Romansiah)", "bucketId": "lifestyle", "accountId": "barq", "createdAt": 230}, {"id": "exp_231", "type": "expense", "date": "2026-08-18", "amount": 205.0, "description": "Gift", "bucketId": "lifestyle", "accountId": "barq", "createdAt": 231}, {"id": "exp_232", "type": "expense", "date": "2026-08-18", "amount": 20.0, "description": "Food", "bucketId": "lifestyle", "accountId": "barq", "createdAt": 232}, {"id": "exp_233", "type": "expense", "date": "2026-08-18", "amount": 12.5, "description": "Groceries", "bucketId": "lifestyle", "accountId": "barq", "createdAt": 233}, {"id": "exp_234", "type": "expense", "date": "2026-08-19", "amount": 94.0, "description": "Food (Hungerstation)", "bucketId": "lifestyle", "accountId": "barq", "createdAt": 234}, {"id": "exp_235", "type": "expense", "date": "2026-08-19", "amount": 110.36, "description": "Groceries (Hungerstation)", "bucketId": "lifestyle", "accountId": "barq", "createdAt": 235}, {"id": "exp_236", "type": "expense", "date": "2026-08-19", "amount": 40.0, "description": "Food", "bucketId": "lifestyle", "accountId": "barq", "createdAt": 236}, {"id": "exp_237", "type": "expense", "date": "2026-08-20", "amount": 240.35, "description": "Groceries (Que)", "bucketId": "lifestyle", "accountId": "barq", "createdAt": 237}, {"id": "exp_hist_1", "type": "expense", "date": "2026-08-21", "amount": 200.0, "description": "Monthly car wash tip, building janitor (cash)", "bucketId": "lifestyle", "accountId": "cash", "historical": true, "createdAt": 300}, {"id": "exp_hist_2", "type": "expense", "date": "2026-08-21", "amount": 46.0, "description": "Coffee, Starbucks (cash)", "bucketId": "lifestyle", "accountId": "cash", "historical": true, "createdAt": 301}]};
+
+  function defaultState() {
+    var mainId = uid();
+    var cashId = uid();
+    return {
+      version: 1,
+      person: "My Personal Finances",
+      currency: "⃁",
+      incomeSources: [{ id: uid(), name: "Monthly Income", frequency: "Monthly", amount: 0 }],
+      defaultAccountId: mainId,
+      accounts: [
+        { id: mainId, name: "Main Account" },
+        { id: cashId, name: "Cash on hand" }
+      ],
+      buckets: [
+        { id: uid(), name: "Give", cap: 5, linkedAccountId: null },
+        { id: uid(), name: "FFA", cap: 10, linkedAccountId: null },
+        { id: uid(), name: "Investment", cap: 20, linkedAccountId: null },
+        { id: uid(), name: "Lifestyle", cap: 65, linkedAccountId: null }
+      ],
+      debts: [],
+      installments: [],
+      transactions: [],
+      deletedTransactionIds: [],
+      stateUpdatedAt: 0
+    };
+  }
+
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return Object.assign(defaultState(), ALBAITI_SEED_STATE);
+      var parsed = JSON.parse(raw);
+      if (!parsed || !Array.isArray(parsed.buckets) || !Array.isArray(parsed.accounts) || !Array.isArray(parsed.transactions)) return Object.assign(defaultState(), ALBAITI_SEED_STATE);
+      // A newer embedded seed (a real data correction - a backfill, a fixed
+      // categorization) always wins over whatever this browser already has
+      // saved, so a data fix shows up on the next reload with no manual
+      // localStorage.clear() needed. Only kicks in when the seed's own
+      // version number was bumped; an unversioned/stale save loses.
+      if ((ALBAITI_SEED_STATE.version || 0) > (parsed.version || 0)) return Object.assign(defaultState(), ALBAITI_SEED_STATE);
+      return Object.assign(defaultState(), parsed);
+    } catch (e) { return Object.assign(defaultState(), ALBAITI_SEED_STATE); }
+  }
+
+  var state = loadState();
+
+  function persist() {
+    // Every transaction needs an updatedAt before it can take part in
+    // reconcileState()'s merge - backfills it for any pushed directly
+    // without going through submitTx()'s own stamping.
+    state.transactions.forEach(function (t) { if (!t.updatedAt) t.updatedAt = t.createdAt || Date.now(); });
+    state.stateUpdatedAt = Date.now();
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+    pushStateToServer();
+  }
+
+  function syncEnabled() { return !!(SYNC_URL && SYNC_TOKEN); }
+
+  // These travel together as one bundle on sync - whichever side has the
+  // newer stateUpdatedAt wins the whole thing, since there's no sane
+  // per-field merge for something like "the current bucket list". Mirrors
+  // server.py's _SETTINGS_FIELDS - keep both in sync.
+  var SETTINGS_FIELDS = [
+    "version", "person", "currency", "defaultAccountId", "accounts", "buckets",
+    "incomeSources", "debts", "installments"
+  ];
+
+  // Merges two full state snapshots into one, symmetrically - either side
+  // can be passed as base or incoming and the result is the same. Mirrors
+  // tracker.html's reconcileState() / server.py's reconcile_state() - keep
+  // all three in sync.
+  function reconcileState(base, incoming) {
+    var result = {};
+    Object.keys(base).forEach(function (k) { result[k] = base[k]; });
+
+    var baseDeleted = Array.isArray(base.deletedTransactionIds) ? base.deletedTransactionIds : [];
+    var incomingDeleted = Array.isArray(incoming.deletedTransactionIds) ? incoming.deletedTransactionIds : [];
+    var tombstones = {};
+    baseDeleted.forEach(function (id) { tombstones[id] = true; });
+    incomingDeleted.forEach(function (id) { tombstones[id] = true; });
+    result.deletedTransactionIds = Object.keys(tombstones);
+
+    var merged = {};
+    (Array.isArray(base.transactions) ? base.transactions : []).forEach(function (t) { merged[t.id] = t; });
+    (Array.isArray(incoming.transactions) ? incoming.transactions : []).forEach(function (t) {
+      var existing = merged[t.id];
+      if (!existing) { merged[t.id] = t; return; }
+      var existingTime = existing.updatedAt || existing.createdAt || 0;
+      var incomingTime = t.updatedAt || t.createdAt || 0;
+      if (incomingTime > existingTime) merged[t.id] = t;
+    });
+    result.transactions = Object.keys(merged)
+      .filter(function (id) { return !tombstones[id]; })
+      .map(function (id) { return merged[id]; });
+
+    var baseStamp = base.stateUpdatedAt || 0;
+    var incomingStamp = incoming.stateUpdatedAt || 0;
+    var settingsSource = incomingStamp > baseStamp ? incoming : base;
+    SETTINGS_FIELDS.forEach(function (key) {
+      if (settingsSource[key] !== undefined) result[key] = settingsSource[key];
+    });
+    result.stateUpdatedAt = Math.max(baseStamp, incomingStamp);
+
+    return result;
+  }
+
+  // Pulls the server's copy, reconciles it against this device's local
+  // state, then always pushes the result back - self-healing if the
+  // server's copy was ever wiped (a host redeploy with no persistent disk),
+  // since this device's localStorage re-populates it on the next sync.
+  function syncFromServer(silent) {
+    if (!syncEnabled()) return Promise.resolve(0);
+    return fetch(SYNC_URL + "/api/state", { headers: { "Authorization": "Bearer " + SYNC_TOKEN } })
+      .then(function (res) { return res.ok ? res.json() : null; })
+      .then(function (remoteState) {
+        var changed = false;
+        if (remoteState && Array.isArray(remoteState.transactions)) {
+          var before = JSON.stringify(state);
+          state = reconcileState(state, remoteState);
+          changed = before !== JSON.stringify(state);
+        }
+        if (changed) {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+          render();
+        }
+        pushStateToServer();
+        if (changed) {
+          showToast("Synced with server.");
+        } else if (!silent) {
+          showToast("Up to date.");
+        }
+        return changed ? 1 : 0;
+      })
+      .catch(function () { if (!silent) showToast("Sync failed — check connection."); return 0; });
+  }
+
+  function pushStateToServer() {
+    if (!syncEnabled()) return;
+    fetch(SYNC_URL + "/api/state", {
+      method: "PUT",
+      headers: { "Authorization": "Bearer " + SYNC_TOKEN, "Content-Type": "application/json" },
+      body: JSON.stringify(state)
+    }).catch(function () {});
+  }
+
+  function bucketColor(index) { return HUES[index % HUES.length]; }
+
+  function pctSum() { return round2(state.buckets.reduce(function (s, b) { return s + (Number(b.cap) || 0); }, 0)); }
+
+  function bucketUsedInTx(id) {
+    return state.transactions.some(function (t) { return t.bucketId === id || (t.split && t.split.hasOwnProperty(id)); });
+  }
+  function accountUsedInTx(id) {
+    return state.transactions.some(function (t) { return t.accountId === id; });
+  }
+  function accountLinkedToBucket(id) {
+    return state.buckets.some(function (b) { return b.linkedAccountId === id; });
+  }
+  function debtUsedInTx(id) {
+    return state.transactions.some(function (t) { return t.debtId === id; });
+  }
+  function installmentUsedInTx(id) {
+    return state.transactions.some(function (t) { return t.installmentId === id; });
+  }
+
+  function bucketById(id) { return state.buckets.find(function (b) { return b.id === id; }); }
+  function bucketIndex(id) { return state.buckets.findIndex(function (b) { return b.id === id; }); }
+  function accountById(id) { return state.accounts.find(function (a) { return a.id === id; }); }
+  function debtById(id) { return state.debts.find(function (d) { return d.id === id; }); }
+  function installmentById(id) { return state.installments.find(function (i) { return i.id === id; }); }
+
+  // "Opening balance" fields in Settings (for Debts/Installments) still go
+  // through the transaction log, same as everything else here — they just
+  // find-or-create a single specially-flagged transaction instead of forcing
+  // a trip to the separate Add Transaction sheet for the very first amount.
+  function debtOpeningTx(debtId) { return state.transactions.find(function (t) { return t.type === "debt_entry" && t.debtId === debtId && t.opening; }); }
+  function installmentOpeningTx(installmentId) { return state.transactions.find(function (t) { return t.type === "installment_payment" && t.installmentId === installmentId && t.opening; }); }
+  function setDebtOpeningBalance(debtId, amount) {
+    var tx = debtOpeningTx(debtId);
+    if (tx) { tx.amount = amount; }
+    else { state.transactions.push({ id: uid(), type: "debt_entry", debtId: debtId, amount: amount, date: todayStr(), description: "Opening balance", opening: true, createdAt: Date.now() }); }
+  }
+  function setInstallmentOpeningBalance(installmentId, amount) {
+    var tx = installmentOpeningTx(installmentId);
+    if (tx) { tx.amount = amount; }
+    else { state.transactions.push({ id: uid(), type: "installment_payment", installmentId: installmentId, amount: amount, date: todayStr(), description: "Opening balance", opening: true, createdAt: Date.now() }); }
+  }
+  function incomeSourceById(id) { return state.incomeSources.find(function (s) { return s.id === id; }); }
+  function defaultIncomeSourceId() { return state.incomeSources[0] ? state.incomeSources[0].id : null; }
+  function effectiveBucketAccountId(bucket) {
+    if (bucket && bucket.linkedAccountId && accountById(bucket.linkedAccountId)) return bucket.linkedAccountId;
+    if (state.defaultAccountId && accountById(state.defaultAccountId)) return state.defaultAccountId;
+    return (state.accounts[0] && state.accounts[0].id) || null;
+  }
+
+  // Mirrors the company tracker's computeIncomeSplit() exactly: each bucket
+  // except the last gets its CAP share rounded to a whole number (no cents —
+  // same as Prudy's original personal-finances-tracker artifact, "rounded to
+  // the nearest whole SAR"); the last bucket absorbs whatever fractional
+  // remainder is left, so the parts always sum exactly to the whole amount.
+  function computeSplit(amount) {
+    var buckets = state.buckets;
+    var split = {}, running = 0;
+    buckets.forEach(function (b, i) {
+      if (i === buckets.length - 1) { split[b.id] = round2(amount - running); }
+      else { var amt = Math.round(amount * (Number(b.cap) || 0) / 100); split[b.id] = amt; running += amt; }
+    });
+    return split;
+  }
+
+  function thisMonthStart() { var d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-01"; }
+
+  function computeDerived() {
+    var accountBalances = {}; state.accounts.forEach(function (a) { accountBalances[a.id] = 0; });
+    var bucketBalances = {}; state.buckets.forEach(function (b) { bucketBalances[b.id] = 0; });
+    var debtBalances = {}; state.debts.forEach(function (d) { debtBalances[d.id] = 0; });
+    var installmentBalances = {}; state.installments.forEach(function (i) { installmentBalances[i.id] = 0; });
+    var receivedBySource = {}; state.incomeSources.forEach(function (s) { receivedBySource[s.id] = 0; });
+    var monthStart = thisMonthStart();
+
+    state.transactions.forEach(function (tx) {
+      if (tx.type === "draw") {
+        var srcId = tx.sourceId || defaultIncomeSourceId();
+        // historical = predates the Account-split system (and entitlement
+        // tracking) - real money, so it still hits the bank account's
+        // balance normally, it just doesn't split across Accounts and
+        // doesn't count toward "received this month". Emergency is
+        // different: it never lands in a bank account at all (spent
+        // directly on a bill), but still counts toward the entitlement.
+        if (!tx.historical && tx.date >= monthStart && srcId in receivedBySource) receivedBySource[srcId] = round2(receivedBySource[srcId] + tx.amount);
+        if (!tx.emergency) {
+          if (tx.accountId in accountBalances) accountBalances[tx.accountId] = round2(accountBalances[tx.accountId] + tx.amount);
+          if (!tx.historical) {
+            Object.keys(tx.split || {}).forEach(function (bid) { if (bid in bucketBalances) bucketBalances[bid] = round2(bucketBalances[bid] + tx.split[bid]); });
+          }
+        }
+      } else if (tx.type === "expense") {
+        // Opposite of draw: a historical expense already happened before a
+        // LATER bank account opening balance that already reflects it (e.g.
+        // Cash on hand's current total already has this spending baked in),
+        // so it's record-only - doesn't touch the account or an Account.
+        // A historical draw is the reverse case (real cash coming IN before
+        // the split system existed, not yet reflected anywhere), so it still
+        // hits the account.
+        if (!tx.historical) {
+          if (tx.bucketId in bucketBalances) bucketBalances[tx.bucketId] = round2(bucketBalances[tx.bucketId] - tx.amount);
+          if (tx.accountId in accountBalances) accountBalances[tx.accountId] = round2(accountBalances[tx.accountId] - tx.amount);
+        }
+      } else if (tx.type === "debt_entry") {
+        if (tx.debtId in debtBalances) debtBalances[tx.debtId] = round2(debtBalances[tx.debtId] + tx.amount);
+      } else if (tx.type === "installment_payment") {
+        if (tx.installmentId in installmentBalances) installmentBalances[tx.installmentId] = round2(installmentBalances[tx.installmentId] + tx.amount);
+      } else if (tx.type === "opening_balance") {
+        // Pre-existing cash, not a draw: never counted toward the Owner's Pay
+        // entitlement (receivedBySource only sums "draw" transactions),
+        // just an account-balance seed that lands directly in the Account(s)
+        // it's allocated to. Mirrors the company tracker's own opening_balance branch.
+        if (tx.accountId in accountBalances) accountBalances[tx.accountId] = round2(accountBalances[tx.accountId] + tx.amount);
+        Object.keys(tx.allocation || {}).forEach(function (bid) { if (bid in bucketBalances) bucketBalances[bid] = round2(bucketBalances[bid] + tx.allocation[bid]); });
+      }
+    });
+
+    return { accountBalances: accountBalances, bucketBalances: bucketBalances, debtBalances: debtBalances, installmentBalances: installmentBalances, receivedBySource: receivedBySource };
+  }
+
+  /* ---------------- render ---------------- */
+  var lastDerived = null;
+
+  function render() {
+    document.getElementById("brandName").textContent = state.person || "Personal Tracker";
+    var derived = computeDerived();
+    lastDerived = derived;
+    renderAccountCards(derived);
+    renderBuckets(derived);
+    renderEntitlementPanel(derived);
+    renderDebtSummary(derived);
+    renderDebts(derived);
+    renderInstallmentSummary(derived);
+    renderInstallments(derived);
+    renderLedger();
+    renderDebtLedger();
+    renderInstallmentLedger();
+    var fab = document.getElementById("fabBtn");
+    fab.disabled = !state.accounts.length || !state.buckets.length;
+    fab.title = fab.disabled ? "Configure Settings first" : "Add transaction";
+  }
+
+  function renderAccountCards(derived) {
+    var el = document.getElementById("statsRow");
+    if (!state.accounts.length) { el.innerHTML = '<div class="empty-state" style="flex:1 1 100%">No bank accounts yet. Add one in Settings.</div>'; return; }
+    var total = state.accounts.reduce(function (s, a) { return s + derived.accountBalances[a.id]; }, 0);
+    var cardsHtml = state.accounts.map(function (a) {
+      return '<div class="stat"><div class="label">' + esc(a.name) + '</div>' +
+        '<div class="value num">' + curr() + ' ' + fmt(derived.accountBalances[a.id]) + '</div></div>';
+    }).join("");
+    el.innerHTML = '<div class="stats-row-accounts">' + cardsHtml + '</div>' +
+      '<div class="stat total"><div class="label">' +
+        '<span class="total-label-full">Total across bank accounts</span>' +
+        '<span class="total-label-short">TOTAL <span class="total-note">— across bank accounts</span></span>' +
+      '</div><div class="value num">' + curr() + ' ' + fmt(total) + '</div></div>';
+  }
+
+  function bucketLinkedCaption(b) {
+    var linkedAcct = b.linkedAccountId ? accountById(b.linkedAccountId) : (state.defaultAccountId ? accountById(state.defaultAccountId) : null);
+    var isDefault = !b.linkedAccountId;
+    return '<div class="bucket-caption">' + (linkedAcct ? "→ " + esc(linkedAcct.name) + (isDefault ? " (default)" : "") : "No bank account set") + '</div>';
+  }
+
+  function buildBucketCardHtml(b, derived) {
+    var i = bucketIndex(b.id);
+    var hue = bucketColor(i);
+    var balance = derived.bucketBalances[b.id] || 0;
+    return (
+      '<div class="bucket-card" style="--bucket-color:var(--' + hue + ');--bucket-soft:var(--' + hue + '-soft)">' +
+        '<div class="bucket-name">' + esc(b.name) + '</div>' +
+        '<div class="bucket-balance num">' + fmt(balance) + '</div>' +
+        '<div class="bucket-caption">' + (Number(b.cap) || 0) + '% share</div>' +
+        bucketLinkedCaption(b) +
+      '</div>'
+    );
+  }
+
+  function renderBuckets(derived) {
+    var container = document.getElementById("bucketGrid");
+    if (!state.buckets.length) {
+      container.innerHTML = '<div class="empty-state">No Accounts configured. Add some in Settings.</div>';
+      return;
+    }
+    // Column count tracks the real number of Accounts (capped at the same
+    // 4/5 breakpoint widths the company tracker uses) so a handful of cards
+    // stretch to fill the row instead of leaving a gap where a 5th/6th
+    // column would be - a 6th+ Account wraps to a new row, same as there.
+    var colsSm = Math.min(state.buckets.length, 4) || 1;
+    var colsLg = Math.min(state.buckets.length, 5) || 1;
+    container.innerHTML = '<div class="bucket-grid" style="--bucket-cols-sm:' + colsSm + ';--bucket-cols-lg:' + colsLg + '">' + state.buckets.map(function (b) { return buildBucketCardHtml(b, derived); }).join("") + '</div>';
+  }
+
+  function progressPanelHtml(title, received, monthly, extraClass) {
+    var remaining = round2(monthly - received);
+    var pct = monthly > 0 ? Math.max(0, Math.min(100, (received / monthly) * 100)) : 0;
+    return '<div class="' + (extraClass || "panel") + '">' +
+      '<div class="comp-title">' + esc(title) + ' <span class="sub">' + curr() + ' ' + fmt(received) + ' / ' + curr() + ' ' + fmt(monthly) + '</span></div>' +
+      '<div class="progress"><div class="progress-fill" style="width:' + pct.toFixed(1) + '%"></div></div>' +
+      '<div class="bucket-caption" style="margin-top:6px">Remaining: ' + curr() + ' ' + fmt(remaining) + '</div>' +
+    '</div>';
+  }
+
+  function renderEntitlementPanel(derived) {
+    var el = document.getElementById("entitlementPanel");
+    var sources = state.incomeSources;
+    var totalMonthly = round2(sources.reduce(function (s, src) { return s + monthlyEquivalentAmount(src.amount, src.frequency); }, 0));
+    if (!sources.length || !totalMonthly) { el.innerHTML = '<div class="empty-state">No income amount set. Add one in Settings.</div>'; return; }
+
+    if (sources.length === 1) {
+      var only = sources[0];
+      el.innerHTML = progressPanelHtml("This month", derived.receivedBySource[only.id] || 0, monthlyEquivalentAmount(only.amount, only.frequency));
+      return;
+    }
+
+    // Per-source rows show each one's raw cadence and its contribution to the
+    // combined monthly total above — not a per-source received/remaining
+    // tracker, which would be misleading for anything non-monthly (a
+    // quarterly source looks "0 received" for two months out of three even
+    // though nothing is actually wrong). Received-vs-remaining lives once,
+    // at the combined total, where "this month" genuinely means something.
+    var totalReceived = round2(sources.reduce(function (s, src) { return s + (derived.receivedBySource[src.id] || 0); }, 0));
+    var html = progressPanelHtml("This month — all sources", totalReceived, totalMonthly);
+    html += '<div class="item-list" style="margin-top:8px">' + sources.map(function (src) {
+      var monthlyEquiv = monthlyEquivalentAmount(src.amount, src.frequency);
+      var freq = src.frequency || "Undefined";
+      var caption = freq === "Monthly" ? "Monthly" : freq + " · " + curr() + " " + fmt(src.amount || 0) + " per period";
+      return '<div class="item-card"><div class="item-top">' +
+        '<div><div class="item-name">' + esc(src.name) + '</div><div class="item-sub">' + caption + '</div></div>' +
+        '<div class="item-amt num">' + curr() + ' ' + fmt(monthlyEquiv) + '/mo</div>' +
+      '</div></div>';
+    }).join("") + '</div>';
+    el.innerHTML = html;
+  }
+
+  function renderDebtSummary(derived) {
+    var el = document.getElementById("debtSummary");
+    if (!state.debts.length) { el.innerHTML = ""; return; }
+    // Net personal position, same concept as Prudy's original artifact card:
+    // owed-to-you balances minus owed-by-you balances, summed across every
+    // debt on file (kept generic — the original's specific exclusions, like
+    // "company owes Maryam is informational only," were Albaiti-specific
+    // judgment calls, not a formula to replicate). Stays visible even when
+    // the detail list below is collapsed - same pattern as Prudy's artifact,
+    // where the summary card never hides, only the itemized breakdown does.
+    var net = 0;
+    state.debts.forEach(function (deb) {
+      var bal = derived.debtBalances[deb.id] || 0;
+      net = round2(net + (deb.direction === "owed_by_me" ? -bal : bal));
+    });
+    el.innerHTML = '<div class="panel" style="margin-bottom:8px">' +
+      '<div class="comp-title">Net personal position</div>' +
+      '<div class="bucket-balance num' + (net < 0 ? " neg" : "") + '" style="' + (net < 0 ? "color:var(--danger)" : "color:var(--accent)") + '">' + curr() + ' ' + fmt(net) + '</div>' +
+      '<div class="bucket-caption">' + state.debts.length + ' item' + (state.debts.length === 1 ? "" : "s") + ' · click to see the breakdown</div>' +
+      '</div>';
+  }
+
+  function renderDebts(derived) {
+    var el = document.getElementById("debtSection");
+    if (!state.debts.length) { el.innerHTML = '<div class="empty-state">No debts tracked. Add some in Settings.</div>'; return; }
+    el.innerHTML = '<div class="bucket-section-title">Debts</div><div class="item-list">' + state.debts.map(function (deb) {
+      var bal = derived.debtBalances[deb.id] || 0;
+      var isOwedByMe = deb.direction === "owed_by_me";
+      var dirLabel = isOwedByMe ? "You owe" : "Owed to you";
+      // A debt "you owe" is a liability regardless of how the raw balance's
+      // own sign happens to fall out of its increase/decrease entries — its
+      // card should read as red/negative, matching the Net personal position
+      // panel above (which already applies this same direction-based flip).
+      return '<div class="item-card"><div class="item-top">' +
+        '<div><div class="item-name">' + esc(deb.name) + '</div><div class="item-sub">' + dirLabel + '</div></div>' +
+        '<div class="item-amt ' + (isOwedByMe ? "neg" : "pos") + ' num">' + curr() + ' ' + fmt(bal) + '</div>' +
+      '</div></div>';
+    }).join("") + "</div>";
+  }
+
+  function renderInstallmentSummary(derived) {
+    var el = document.getElementById("installmentSummary");
+    if (!state.installments.length) { el.innerHTML = ""; return; }
+    var totalMonthly = round2(state.installments.reduce(function (s, i) { return s + (Number(i.monthlyAmount) || 0); }, 0));
+    var totalRemaining = round2(state.installments.reduce(function (s, i) { return s + (derived.installmentBalances[i.id] || 0); }, 0));
+    el.innerHTML = '<div class="panel" style="margin-bottom:8px">' +
+      '<div class="comp-title">Total monthly obligation <span class="sub">' + curr() + ' ' + fmt(totalMonthly) + '/mo</span></div>' +
+      '<div class="bucket-caption">' + state.installments.length + ' item' + (state.installments.length === 1 ? "" : "s") + ' · Total remaining ' + curr() + ' ' + fmt(totalRemaining) + ' · click for the breakdown</div>' +
+      '</div>';
+  }
+
+  // Adds `months` to today and returns a short "Mon YYYY" label - used to
+  // turn "installments left" (already a monthly-cadence count) into a real
+  // estimated payoff date, without needing any new data field.
+  function estimatedPayoffLabel(months) {
+    if (!months || months <= 0) return "";
+    var d = new Date();
+    d.setMonth(d.getMonth() + months);
+    var names = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    return names[d.getMonth()] + " " + d.getFullYear();
+  }
+
+  // One segment per installment: the first `paid` are green, the next
+  // `late` (the ones immediately due after the last real payment) are red,
+  // and whatever's left is yellow (due later, not yet late). There's no
+  // per-installment due-date data, so "which ones are late" is inferred as
+  // the earliest unpaid ones, not a specific tracked date.
+  // Multi-year schedules (e.g. 60 months) would render as near-invisible
+  // slivers and mostly just show grey noise past the near-term window - so
+  // long bars show a ~1-year (12-segment) window centered on the active
+  // boundary (recent paid/late history + the one due next), with a small
+  // "+N" marker on whichever side got cut off. The "X/Y paid" caption below
+  // still states the real, un-windowed total, so nothing is hidden, just
+  // not all rendered as individual slivers.
+  var SEGBAR_WINDOW = 12;
+
+  function buildInstallmentSegBar(total, paid, late, isMonthly) {
+    var active = paid + late; // index of the "due" segment, or the boundary if none
+    var start = 0, end = total;
+    if (total > SEGBAR_WINDOW) {
+      start = active - Math.floor(SEGBAR_WINDOW / 2);
+      end = start + SEGBAR_WINDOW;
+      if (start < 0) { start = 0; end = SEGBAR_WINDOW; }
+      if (end > total) { end = total; start = total - SEGBAR_WINDOW; }
+    }
+    // Segment width is fixed CSS-side as 1/12th of the bar's row width
+    // (SEGBAR_WINDOW caps visible segments at 12), so a full 12-segment
+    // bar spans the whole card and every other bar uses that same
+    // per-segment size, just running shorter.
+    var segs = [];
+    for (var i = start; i < end; i++) {
+      // The single next payment right after paid/late is only "due" for a
+      // real monthly-cadence loan - the next one being right after in the
+      // count doesn't mean it's due now for something like an annual
+      // payment (monthlyAmount 0 is the signal for that), so it just stays
+      // unclassed (grey) like the rest of the un-due future there.
+      var cls = i < paid ? "paid" : (i < paid + late ? "late" : (isMonthly && i === paid + late ? "due" : ""));
+      segs.push('<div class="' + cls + '"></div>');
+    }
+    var before = start > 0 ? '<span class="segbar-more">+' + start + '</span>' : "";
+    var after = end < total ? '<span class="segbar-more">+' + (total - end) + '</span>' : "";
+    return '<div class="segbar-row">' + before + '<div class="segbar">' + segs.join("") + '</div>' + after + '</div>';
+  }
+
+  function renderInstallments(derived) {
+    var el = document.getElementById("installmentSection");
+    if (!state.installments.length) { el.innerHTML = '<div class="empty-state">No installments tracked. Add some in Settings.</div>'; return; }
+
+    var lateOnes = state.installments.filter(function (i) { return (Number(i.lateCount) || 0) > 0; });
+    var lateNote = lateOnes.length
+      ? '<div class="ledger-note" style="margin-bottom:10px">' + lateOnes.length + ' of ' + state.installments.length +
+        ' loan' + (state.installments.length === 1 ? "" : "s") + ' ' + (lateOnes.length === 1 ? "has" : "have") + ' at least one late installment: ' +
+        lateOnes.map(function (i) { return esc(i.name) + ' (' + (Number(i.lateCount) || 0) + '/' + (i.installmentsTotal || "?") + ')'; }).join(", ") + '.</div>'
+      : "";
+
+    el.innerHTML = lateNote + '<div class="item-list">' + state.installments.map(function (inst) {
+      var bal = derived.installmentBalances[inst.id] || 0;
+      var total = Number(inst.installmentsTotal) || 0;
+      var left = Number(inst.installmentsLeft) || 0;
+      var late = Number(inst.lateCount) || 0;
+      var hasSchedule = total > 0;
+      var isMonthly = (Number(inst.monthlyAmount) || 0) > 0;
+      var paid = hasSchedule ? Math.max(0, total - left) : 0;
+      var pct = hasSchedule ? Math.max(0, Math.min(100, (paid / total) * 100)) : 0;
+      // Same reasoning as the segment bar's "due" flag: "installments left"
+      // only converts cleanly into a calendar estimate for a real monthly
+      // cadence - for something like an annual payment, guessing a monthly
+      // countdown would just be wrong, so it's omitted rather than shown.
+      var trailer = "";
+      if (left <= 0) trailer = " · paid off";
+      else if (isMonthly) {
+        var payoff = estimatedPayoffLabel(left);
+        if (payoff) trailer = " · est. payoff " + payoff;
+      }
+
+      var progressHtml = hasSchedule
+        ? buildInstallmentSegBar(total, paid, late, isMonthly) +
+          '<div class="bucket-caption" style="margin-top:5px">' + paid + '/' + total + ' paid (' + pct.toFixed(0) + '%)' + trailer + '</div>'
+        : '<div class="bucket-caption" style="margin-top:6px">Ongoing — no fixed end date</div>';
+
+      var chips = [];
+      if (late) chips.push('<span class="chip emergency">' + late + (hasSchedule ? "/" + total : "") + ' late</span>');
+      if (inst.balloon) chips.push('<span class="chip">Balloon ' + curr() + ' ' + fmt(inst.balloon) + '</span>');
+      var chipRow = chips.length ? '<div class="chip-row" style="margin-top:6px">' + chips.join("") + '</div>' : "";
+
+      return '<div class="item-card"' + (late ? ' style="border-left:3px solid var(--clay)"' : '') + '>' +
+        '<div class="item-top">' +
+          '<div><div class="item-name">' + esc(inst.name) + '</div><div class="item-sub">' + esc(inst.purpose || "") + '</div></div>' +
+          '<div class="item-amt num">' + curr() + ' ' + fmt(bal) + '</div>' +
+        '</div>' +
+        '<div class="bucket-caption">' + curr() + ' ' + fmt(inst.monthlyAmount || 0) + '/mo</div>' +
+        progressHtml + chipRow +
+      '</div>';
+    }).join("") + "</div>";
+  }
+
+  /* ---------------- ledger ---------------- */
+  function txTypeLabel(t) { return { draw: "Income", expense: "Expense", debt_entry: "Debt entry", installment_payment: "Installment payment", opening_balance: "Opening balance" }[t.type] || t.type; }
+
+  function renderLedgerItem(tx) {
+    var isIn = tx.type === "draw" || tx.type === "opening_balance";
+    var isOut = tx.type === "expense";
+    var signedAmt = (tx.type === "debt_entry" || tx.type === "installment_payment") ? tx.amount : (isOut ? -tx.amount : tx.amount);
+    var amtClass = signedAmt >= 0 ? "pos" : "";
+    if (signedAmt < 0) amtClass = "neg";
+    var amtSign = signedAmt >= 0 ? "+" : "−";
+    var chips = "", note = "";
+
+    if (tx.type === "draw") {
+      var srcName = "";
+      if (state.incomeSources.length > 1) {
+        var src = incomeSourceById(tx.sourceId);
+        srcName = src ? " (" + esc(src.name) + ")" : "";
+      }
+      if (tx.historical) {
+        chips = '<div class="chip-row"><span class="chip historical">Historical — record only</span></div>';
+        var acctHist = accountById(tx.accountId);
+        note = "Predates the Account-split system — lands in " + (acctHist ? esc(acctHist.name) : "(deleted account)") + " but isn't split across Accounts, and doesn't count toward the income entitlement." + srcName;
+      } else if (tx.emergency) {
+        chips = '<div class="chip-row"><span class="chip emergency">Emergency — entitlement only</span></div>';
+        note = "Doesn't land in a bank account and doesn't split across Accounts." + srcName;
+      } else {
+        var acct = accountById(tx.accountId);
+        chips = '<div class="chip-row">' + Object.keys(tx.split || {}).map(function (bid) {
+          var b = bucketById(bid); if (!b) return "";
+          var hue = bucketColor(bucketIndex(bid));
+          return '<span class="chip" style="--chip-soft:var(--' + hue + '-soft);--chip-color:var(--' + hue + ')">' + esc(b.name) + ' ' + fmt(tx.split[bid]) + '</span>';
+        }).join("") + '</div>';
+        note = "Into " + (acct ? esc(acct.name) : "(deleted account)") + ", split across Accounts" + srcName;
+      }
+    } else if (tx.type === "expense") {
+      var b2 = bucketById(tx.bucketId);
+      var acct2 = accountById(tx.accountId);
+      if (tx.historical) {
+        chips = '<div class="chip-row"><span class="chip historical">Historical — record only</span></div>';
+        note = "Predates " + (acct2 ? esc(acct2.name) : "the account") + "'s current opening balance, which already reflects it — record only, doesn't reduce its Account or change any balance.";
+      } else {
+        if (b2) {
+          var hue2 = bucketColor(bucketIndex(tx.bucketId));
+          chips = '<div class="chip-row"><span class="chip" style="--chip-soft:var(--' + hue2 + '-soft);--chip-color:var(--' + hue2 + ')">' + esc(b2.name) + '</span></div>';
+        }
+        note = "From " + (acct2 ? esc(acct2.name) : "(deleted account)");
+      }
+    } else if (tx.type === "debt_entry") {
+      var deb = debtById(tx.debtId);
+      note = deb ? esc(deb.name) : "(deleted debt)";
+    } else if (tx.type === "installment_payment") {
+      var inst = installmentById(tx.installmentId);
+      note = inst ? esc(inst.name) : "(deleted installment)";
+      if (tx.late) chips = '<div class="chip-row"><span class="chip emergency">Late</span></div>';
+    } else if (tx.type === "opening_balance") {
+      var acct3 = accountById(tx.accountId);
+      chips = '<div class="chip-row">' + Object.keys(tx.allocation || {}).map(function (bid) {
+        var b3 = bucketById(bid); if (!b3) return "";
+        var hue3 = bucketColor(bucketIndex(bid));
+        return '<span class="chip" style="--chip-soft:var(--' + hue3 + '-soft);--chip-color:var(--' + hue3 + ')">' + esc(b3.name) + ' ' + fmt(tx.allocation[bid]) + '</span>';
+      }).join("") + '</div>';
+      note = "Into " + (acct3 ? esc(acct3.name) : "(deleted account)");
+    }
+
+    var actions = (tx.opening ? "" : '<button class="link-btn" data-action="edit" data-id="' + tx.id + '">Edit</button>') +
+      '<button class="link-btn danger" data-action="delete" data-id="' + tx.id + '">Delete</button>';
+
+    return (
+      '<div class="ledger-item">' +
+        '<div class="ledger-top">' +
+          '<div><div class="ledger-desc">' + esc(tx.description || "(no description)") + " <span style=\"font-weight:400;color:var(--text-muted);\">· " + txTypeLabel(tx) + '</span></div><div class="ledger-date">' + esc(tx.date) + '</div></div>' +
+          '<div class="ledger-amt num ' + amtClass + '">' + curr() + ' ' + amtSign + fmt(Math.abs(signedAmt)) + '</div>' +
+        '</div>' +
+        chips +
+        '<div class="ledger-note">' + note + '</div>' +
+        '<div class="ledger-actions">' + actions + '</div>' +
+      '</div>'
+    );
+  }
+
+  // Three separate transaction lists, not one - Ledger is cash flow
+  // (draw/expense/opening_balance), Debt and Installments each get their
+  // own history of just their own entries. All three reuse the same
+  // renderLedgerItem() row AND the same search/sort/filter mechanism
+  // (ported from the company tracker's ledgerFilter/tracker.html), so
+  // formatting and behavior stay identical everywhere - each section just
+  // gets its own filter state (keyed by idPrefix) and, since debt/
+  // installment entries don't touch a bucket or bank account directly,
+  // a leaner filter bar (no type/bucket/account dropdowns).
+  var LEDGER_TYPES = { draw: true, expense: true, opening_balance: true };
+
+  var ledgerFilters = {};
+  function ledgerFilterState(idPrefix) {
+    if (!ledgerFilters[idPrefix]) {
+      ledgerFilters[idPrefix] = { search: "", type: "", bucketId: "", accountId: "", dateFrom: "", dateTo: "", amountMin: "", amountMax: "", sortBy: "date-desc" };
+    }
+    return ledgerFilters[idPrefix];
+  }
+
+  function ledgerTxTouchesBucket(tx, bucketId) {
+    if (tx.type === "draw") return !!(tx.split && tx.split.hasOwnProperty(bucketId));
+    if (tx.type === "expense") return tx.bucketId === bucketId;
+    if (tx.type === "opening_balance") return !!(tx.allocation && tx.allocation.hasOwnProperty(bucketId));
+    return false;
+  }
+  function ledgerTxTouchesAccount(tx, accountId) {
+    if (tx.type === "draw" || tx.type === "expense" || tx.type === "opening_balance") return tx.accountId === accountId;
+    return false;
+  }
+  function ledgerSearchText(tx) {
+    var bits = [tx.description || "", tx.type || "", tx.date || ""];
+    if (tx.type === "draw") {
+      Object.keys(tx.split || {}).forEach(function (bid) { var b = bucketById(bid); if (b) bits.push(b.name); });
+      var a = accountById(tx.accountId); if (a) bits.push(a.name);
+      var src = incomeSourceById(tx.sourceId); if (src) bits.push(src.name);
+    } else if (tx.type === "expense") {
+      var b2 = bucketById(tx.bucketId); if (b2) bits.push(b2.name);
+      var a2 = accountById(tx.accountId); if (a2) bits.push(a2.name);
+    } else if (tx.type === "opening_balance") {
+      var a3 = accountById(tx.accountId); if (a3) bits.push(a3.name);
+      Object.keys(tx.allocation || {}).forEach(function (bid) { var b3 = bucketById(bid); if (b3) bits.push(b3.name); });
+    } else if (tx.type === "debt_entry") {
+      var deb = debtById(tx.debtId); if (deb) bits.push(deb.name);
+    } else if (tx.type === "installment_payment") {
+      var inst = installmentById(tx.installmentId); if (inst) bits.push(inst.name);
+    }
+    return bits.join(" ").toLowerCase();
+  }
+  function ledgerFiltersActive(f) {
+    return !!(f.search || f.type || f.bucketId || f.accountId || f.dateFrom || f.dateTo || f.amountMin !== "" || f.amountMax !== "");
+  }
+  function matchesLedgerFilter(tx, f) {
+    if (f.search && ledgerSearchText(tx).indexOf(f.search.toLowerCase()) === -1) return false;
+    if (f.type && tx.type !== f.type) return false;
+    if (f.bucketId && !ledgerTxTouchesBucket(tx, f.bucketId)) return false;
+    if (f.accountId && !ledgerTxTouchesAccount(tx, f.accountId)) return false;
+    if (f.dateFrom && tx.date < f.dateFrom) return false;
+    if (f.dateTo && tx.date > f.dateTo) return false;
+    if (f.amountMin !== "" && Math.abs(tx.amount) < parseFloat(f.amountMin)) return false;
+    if (f.amountMax !== "" && Math.abs(tx.amount) > parseFloat(f.amountMax)) return false;
+    return true;
+  }
+  function sortedFilteredLedger(txs, f) {
+    var filtered = txs.filter(function (tx) { return matchesLedgerFilter(tx, f); });
+    filtered.sort(function (a, b) {
+      if (f.sortBy === "amount-desc") return Math.abs(b.amount) - Math.abs(a.amount);
+      if (f.sortBy === "amount-asc") return Math.abs(a.amount) - Math.abs(b.amount);
+      if (f.sortBy === "date-asc") {
+        if (a.date === b.date) return (a.createdAt || 0) - (b.createdAt || 0);
+        return a.date < b.date ? -1 : 1;
+      }
+      if (a.date === b.date) return (b.createdAt || 0) - (a.createdAt || 0);
+      return a.date < b.date ? 1 : -1;
+    });
+    return filtered;
+  }
+  function ledgerFilterBarHtml(idPrefix, f, showTypeBucketAccount) {
+    var active = ledgerFiltersActive(f);
+    return (
+      '<div class="ledger-filter-bar">' +
+        '<input class="input" id="' + idPrefix + 'Search" type="search" placeholder="Search description, Account, bank account…" value="' + esc(f.search) + '">' +
+        '<details class="ledger-filters-details"' + (active ? " open" : "") + '>' +
+          '<summary>Sort &amp; filter <span class="filter-badge" id="' + idPrefix + 'FilterBadge" style="' + (active ? "" : "display:none") + '">active</span></summary>' +
+          '<div class="field"><label>Sort by</label><select class="select" id="' + idPrefix + 'Sort">' +
+            '<option value="date-desc"' + (f.sortBy === "date-desc" ? " selected" : "") + '>Date (newest first)</option>' +
+            '<option value="date-asc"' + (f.sortBy === "date-asc" ? " selected" : "") + '>Date (oldest first)</option>' +
+            '<option value="amount-desc"' + (f.sortBy === "amount-desc" ? " selected" : "") + '>Amount (high to low)</option>' +
+            '<option value="amount-asc"' + (f.sortBy === "amount-asc" ? " selected" : "") + '>Amount (low to high)</option>' +
+          '</select></div>' +
+          (showTypeBucketAccount ? (
+            '<div class="row2">' +
+              '<div class="field"><label>Type</label><select class="select" id="' + idPrefix + 'TypeFilter">' +
+                '<option value=""' + (!f.type ? " selected" : "") + '>All types</option>' +
+                '<option value="draw"' + (f.type === "draw" ? " selected" : "") + '>Income</option>' +
+                '<option value="expense"' + (f.type === "expense" ? " selected" : "") + '>Expense</option>' +
+                '<option value="opening_balance"' + (f.type === "opening_balance" ? " selected" : "") + '>Opening balance</option>' +
+              '</select></div>' +
+              '<div class="field"><label>Account</label><select class="select" id="' + idPrefix + 'BucketFilter">' +
+                '<option value="">All Accounts</option>' +
+                state.buckets.map(function (b) { return '<option value="' + b.id + '"' + (f.bucketId === b.id ? " selected" : "") + '>' + esc(b.name) + '</option>'; }).join("") +
+              '</select></div>' +
+            '</div>' +
+            '<div class="field"><label>Bank account</label><select class="select" id="' + idPrefix + 'AccountFilter">' +
+              '<option value="">All bank accounts</option>' +
+              state.accounts.map(function (a) { return '<option value="' + a.id + '"' + (f.accountId === a.id ? " selected" : "") + '>' + esc(a.name) + '</option>'; }).join("") +
+            '</select></div>'
+          ) : "") +
+          '<div class="row2">' +
+            '<div class="field"><label>From date</label><input class="input" type="date" id="' + idPrefix + 'DateFrom" value="' + esc(f.dateFrom) + '"></div>' +
+            '<div class="field"><label>To date</label><input class="input" type="date" id="' + idPrefix + 'DateTo" value="' + esc(f.dateTo) + '"></div>' +
+          '</div>' +
+          '<div class="row2">' +
+            '<div class="field"><label>Min amount</label><input class="input" type="number" step="0.01" id="' + idPrefix + 'AmountMin" value="' + esc(f.amountMin) + '" placeholder="0.00"></div>' +
+            '<div class="field"><label>Max amount</label><input class="input" type="number" step="0.01" id="' + idPrefix + 'AmountMax" value="' + esc(f.amountMax) + '" placeholder="0.00"></div>' +
+          '</div>' +
+          '<button class="link-btn" id="' + idPrefix + 'ClearFilters" style="' + (active ? "" : "display:none") + '">Clear all filters</button>' +
+        '</details>' +
+      '</div>'
+    );
+  }
+
+  function renderFilteredLedger(elId, countElId, predicate, emptyMsg, showTypeBucketAccount) {
+    var idPrefix = elId;
+    var f = ledgerFilterState(idPrefix);
+    var el = document.getElementById(elId);
+    var countEl = countElId ? document.getElementById(countElId) : null;
+    var allTxs = state.transactions.filter(predicate);
+
+    function renderList() {
+      var filtered = sortedFilteredLedger(allTxs, f);
+      var active = ledgerFiltersActive(f);
+      if (countEl) countEl.textContent = allTxs.length ? (active ? "(" + filtered.length + " of " + allTxs.length + ")" : "(" + allTxs.length + ")") : "";
+      var badgeEl = document.getElementById(idPrefix + "FilterBadge");
+      if (badgeEl) badgeEl.style.display = active ? "" : "none";
+      var clearBtnEl = document.getElementById(idPrefix + "ClearFilters");
+      if (clearBtnEl) clearBtnEl.style.display = active ? "" : "none";
+      var wrap = document.getElementById(idPrefix + "ListWrap");
+      if (!wrap) return;
+      wrap.innerHTML = filtered.length
+        ? '<div class="ledger-list">' + filtered.map(renderLedgerItem).join("") + "</div>"
+        : '<div class="empty-state">' + (allTxs.length ? "No transactions match your filters." : emptyMsg) + '</div>';
+    }
+
+    if (!allTxs.length) {
+      if (countEl) countEl.textContent = "";
+      el.innerHTML = '<div class="empty-state">' + emptyMsg + '</div>';
+      return;
+    }
+
+    el.innerHTML = ledgerFilterBarHtml(idPrefix, f, showTypeBucketAccount) + '<div id="' + idPrefix + 'ListWrap"></div>';
+    var bar = el.querySelector(".ledger-filter-bar");
+    function on(id, evt, apply) {
+      var input = bar.querySelector("#" + id);
+      if (input) input.addEventListener(evt, function () { apply(input.value); renderList(); });
+    }
+    on(idPrefix + "Search", "input", function (v) { f.search = v; });
+    on(idPrefix + "Sort", "change", function (v) { f.sortBy = v; });
+    on(idPrefix + "TypeFilter", "change", function (v) { f.type = v; });
+    on(idPrefix + "BucketFilter", "change", function (v) { f.bucketId = v; });
+    on(idPrefix + "AccountFilter", "change", function (v) { f.accountId = v; });
+    on(idPrefix + "DateFrom", "change", function (v) { f.dateFrom = v; });
+    on(idPrefix + "DateTo", "change", function (v) { f.dateTo = v; });
+    on(idPrefix + "AmountMin", "input", function (v) { f.amountMin = v; });
+    on(idPrefix + "AmountMax", "input", function (v) { f.amountMax = v; });
+    var clearBtn = bar.querySelector("#" + idPrefix + "ClearFilters");
+    if (clearBtn) clearBtn.addEventListener("click", function () {
+      ledgerFilters[idPrefix] = { search: "", type: "", bucketId: "", accountId: "", dateFrom: "", dateTo: "", amountMin: "", amountMax: "", sortBy: f.sortBy };
+      renderFilteredLedger(elId, countElId, predicate, emptyMsg, showTypeBucketAccount);
+    });
+
+    renderList();
+  }
+
+  function renderLedger() {
+    renderFilteredLedger("ledgerSection", "ledgerCount", function (t) { return LEDGER_TYPES[t.type]; }, "No transactions logged yet.", true);
+  }
+
+  function renderDebtLedger() {
+    renderFilteredLedger("debtLedgerSection", null, function (t) { return t.type === "debt_entry"; }, "No debt entries logged yet.", false);
+  }
+
+  function renderInstallmentLedger() {
+    renderFilteredLedger("installmentLedgerSection", null, function (t) { return t.type === "installment_payment"; }, "No installment payments logged yet.", false);
+  }
+
+  /* ---------------- toast ---------------- */
+  var toastTimer = null;
+  function showToast(msg) {
+    var el = document.getElementById("toast");
+    el.textContent = msg;
+    el.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { el.classList.remove("show"); }, 2600);
+  }
+
+  /* ---------------- confirm dialog (copied verbatim from the company tracker) ---------------- */
+  function openConfirm(message, confirmLabel, danger) {
+    return new Promise(function (resolve) {
+      var overlay = document.getElementById("confirmOverlay");
+      var sheet = document.getElementById("confirmSheet");
+      sheet.innerHTML =
+        '<div class="confirm-msg">' + esc(message) + '</div>' +
+        '<div class="btn-row">' +
+          '<button class="btn" id="confirmCancel">Cancel</button>' +
+          '<button class="btn ' + (danger ? "btn-danger" : "btn-primary") + '" id="confirmOk">' + esc(confirmLabel || "Confirm") + '</button>' +
+        '</div>';
+      function close(result) { overlay.classList.remove("open"); resolve(result); }
+      sheet.querySelector("#confirmCancel").onclick = function () { close(false); };
+      sheet.querySelector("#confirmOk").onclick = function () { close(true); };
+      overlay.onclick = function (e) { if (e.target === overlay) close(false); };
+      overlay.classList.add("open");
+    });
+  }
+
+  /* ---------------- icons (copied verbatim from the company tracker) ---------------- */
+  function xIcon() { return '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>'; }
+  function upIcon() { return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>'; }
+  function downIcon() { return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>'; }
+
+  function moveAccount(id, dir) {
+    var idx = state.accounts.findIndex(function (a) { return a.id === id; });
+    if (idx === -1) return;
+    var target = dir === "up" ? idx - 1 : idx + 1;
+    if (target < 0 || target >= state.accounts.length) return;
+    var tmp = state.accounts[idx];
+    state.accounts[idx] = state.accounts[target];
+    state.accounts[target] = tmp;
+    persist(); renderSettingsSheet(); render();
+  }
+
+  /* ---------------- transaction sheet ---------------- */
+  var txType = "draw";
+  var editingTxId = null;
+  function openTxSheet(type) { txType = type || "draw"; editingTxId = null; document.getElementById("txOverlay").classList.add("open"); renderTxSheet(); }
+  function openEditTxSheet(tx) { txType = tx.type; editingTxId = tx.id; document.getElementById("txOverlay").classList.add("open"); renderTxSheet(); }
+  function closeTxSheet() { editingTxId = null; document.getElementById("txOverlay").classList.remove("open"); }
+
+  function accountOptions(selectedId) {
+    return state.accounts.map(function (a) { return '<option value="' + a.id + '"' + (a.id === selectedId ? " selected" : "") + '>' + esc(a.name) + "</option>"; }).join("");
+  }
+  function bucketOptions(selectedId) {
+    return state.buckets.map(function (b) { return '<option value="' + b.id + '"' + (b.id === selectedId ? " selected" : "") + '>' + esc(b.name) + "</option>"; }).join("");
+  }
+  function debtOptions(selectedId) {
+    return state.debts.map(function (d) { return '<option value="' + d.id + '"' + (d.id === selectedId ? " selected" : "") + '>' + esc(d.name) + "</option>"; }).join("");
+  }
+  function installmentOptions(selectedId) {
+    return state.installments.map(function (i) { return '<option value="' + i.id + '"' + (i.id === selectedId ? " selected" : "") + '>' + esc(i.name) + "</option>"; }).join("");
+  }
+  function incomeSourceOptions(selectedId) {
+    return state.incomeSources.map(function (s) { return '<option value="' + s.id + '"' + (s.id === selectedId ? " selected" : "") + '>' + esc(s.name) + "</option>"; }).join("");
+  }
+
+  function renderTxSheet() {
+    var sheet = document.getElementById("txSheet");
+    var editingTx = editingTxId ? state.transactions.find(function (t) { return t.id === editingTxId; }) : null;
+    var types = [{ id: "draw", label: "Income" }, { id: "expense", label: "Expense" }, { id: "debt_entry", label: "Debt" }, { id: "installment_payment", label: "Installment" }];
+    // Type can't change mid-edit (each type has its own field set) — show a
+    // plain label instead of the switcher once editing an existing entry.
+    var segmented = editingTx
+      ? '<div class="ledger-note" style="margin-bottom:14px">Editing a ' + (types.filter(function (t) { return t.id === editingTx.type; })[0] || {}).label + ' transaction.</div>'
+      : '<div class="segmented">' + types.map(function (t) {
+          return '<button type="button" data-action="tx-type" data-type="' + t.id + '" class="' + (txType === t.id ? "active" : "") + '">' + t.label + "</button>";
+        }).join("") + "</div>";
+
+    var amountVal = editingTx ? round2(Math.abs(editingTx.amount)) : "";
+    var descVal = editingTx ? esc(editingTx.description || "") : "";
+    var dateVal = editingTx ? editingTx.date : todayStr();
+
+    var fields = "";
+    if (txType === "draw") {
+      var sourceField = (state.incomeSources.length > 1)
+        ? '<div class="field"><label>Income source</label><select class="select" id="txSource">' + incomeSourceOptions(editingTx ? editingTx.sourceId : defaultIncomeSourceId()) + "</select></div>"
+        : "";
+      var emergencyChecked = editingTx ? !!editingTx.emergency : false;
+      var histCheckedDraw = editingTx ? !!editingTx.historical : false;
+      fields =
+        '<div class="field"><label>Amount</label><input class="input" type="number" step="0.01" id="txAmount" placeholder="0.00" value="' + amountVal + '"></div>' +
+        '<div class="field"><label>Description</label><input class="input" type="text" id="txDescription" placeholder="e.g. Owner\'s Pay draw" value="' + descVal + '"></div>' +
+        sourceField +
+        '<div class="field"><label>Date</label><input class="input" type="date" id="txDate" value="' + dateVal + '"></div>' +
+        '<label class="check-row"><input type="checkbox" id="txEmergency"' + (emergencyChecked ? " checked" : "") + '> Emergency expense</label>' +
+        '<div class="check-note">Counts against the income entitlement only — doesn\'t land in a bank account and doesn\'t split across Accounts.</div>' +
+        '<div class="field" id="txAccountField" style="' + (emergencyChecked ? "display:none" : "") + '"><label>Lands in</label><select class="select" id="txAccount">' + accountOptions(editingTx ? editingTx.accountId : state.defaultAccountId) + "</select></div>" +
+        '<label class="check-row"><input type="checkbox" id="txHistorical"' + (histCheckedDraw ? " checked" : "") + '> Historical</label>' +
+        '<div class="check-note">Predates the Account-split system (and entitlement tracking). Still lands in the bank account as real cash, but doesn\'t split across Accounts and doesn\'t count toward the income entitlement.</div>';
+    } else if (txType === "expense") {
+      var histCheckedExp = editingTx ? !!editingTx.historical : false;
+      fields =
+        '<div class="field"><label>Amount</label><input class="input" type="number" step="0.01" id="txAmount" placeholder="0.00" value="' + amountVal + '"></div>' +
+        '<div class="field"><label>Description</label><input class="input" type="text" id="txDescription" placeholder="e.g. Groceries" value="' + descVal + '"></div>' +
+        '<div class="field"><label>Date</label><input class="input" type="date" id="txDate" value="' + dateVal + '"></div>' +
+        '<div class="field"><label>Account</label><select class="select" id="txBucket">' + bucketOptions(editingTx ? editingTx.bucketId : null) + "</select></div>" +
+        '<div class="field"><label>Paid from</label><select class="select" id="txAccount">' + accountOptions(editingTx ? editingTx.accountId : null) + "</select></div>" +
+        '<label class="check-row"><input type="checkbox" id="txHistorical"' + (histCheckedExp ? " checked" : "") + '> Historical</label>' +
+        '<div class="check-note">Predates the bank account\'s current opening balance, which already reflects it. Record only — shows in the ledger, doesn\'t reduce its Account (Give/FFA/Investment/Lifestyle) or change any balance.</div>';
+    } else if (txType === "debt_entry") {
+      var debtDir = editingTx ? (editingTx.amount < 0 ? "decrease" : "increase") : "increase";
+      fields =
+        '<div class="field"><label>Debt</label><select class="select" id="txDebt">' + debtOptions(editingTx ? editingTx.debtId : null) + "</select></div>" +
+        '<div class="field"><label>Amount</label><input class="input" type="number" step="0.01" id="txAmount" placeholder="0.00" value="' + amountVal + '"></div>' +
+        '<div class="field"><label>Direction</label><select class="select" id="txDebtDirection"><option value="increase"' + (debtDir === "increase" ? " selected" : "") + '>Increases the balance</option><option value="decrease"' + (debtDir === "decrease" ? " selected" : "") + '>Repayment / reduces the balance</option></select></div>' +
+        '<div class="field"><label>Description</label><input class="input" type="text" id="txDescription" placeholder="e.g. Medical expense owed" value="' + descVal + '"></div>' +
+        '<div class="field"><label>Date</label><input class="input" type="date" id="txDate" value="' + dateVal + '"></div>';
+    } else if (txType === "installment_payment") {
+      var instDir = editingTx ? (editingTx.amount < 0 ? "decrease" : "increase") : "decrease";
+      fields =
+        '<div class="field"><label>Installment</label><select class="select" id="txInstallment">' + installmentOptions(editingTx ? editingTx.installmentId : null) + "</select></div>" +
+        '<div class="field"><label>Amount</label><input class="input" type="number" step="0.01" id="txAmount" placeholder="0.00" value="' + amountVal + '"></div>' +
+        '<div class="field"><label>Direction</label><select class="select" id="txInstDirection"><option value="decrease"' + (instDir === "decrease" ? " selected" : "") + '>Payment / reduces remaining balance</option><option value="increase"' + (instDir === "increase" ? " selected" : "") + '>Increases remaining balance (setup, correction)</option></select></div>' +
+        '<div class="field"><label>Description</label><input class="input" type="text" id="txDescription" placeholder="e.g. Monthly installment" value="' + descVal + '"></div>' +
+        '<div class="field"><label>Date</label><input class="input" type="date" id="txDate" value="' + dateVal + '"></div>' +
+        (editingTx ? "" :
+          '<label class="check-row"><input type="checkbox" id="txInstLate"> This payment was late</label>' +
+          '<div class="check-note">On a real payment (not a setup/correction), this also updates the installment\'s left/late counts in Settings.</div>'
+        );
+    }
+
+    var disabledNote = "";
+    if (txType === "expense" && !state.buckets.length) disabledNote = '<div class="empty-state">Add an Account in Settings first.</div>';
+    if (txType === "debt_entry" && !state.debts.length) disabledNote = '<div class="empty-state">Add a debt in Settings first.</div>';
+    if (txType === "installment_payment" && !state.installments.length) disabledNote = '<div class="empty-state">Add an installment in Settings first.</div>';
+
+    sheet.innerHTML =
+      '<div class="sheet-head"><h3>' + (editingTx ? "Edit transaction" : "Add transaction") + '</h3><button class="icon-btn" id="txClose" aria-label="Close">' + xIcon() + '</button></div>' +
+      segmented + (disabledNote || fields) +
+      (disabledNote ? "" : '<div class="btn-row"><button class="btn btn-primary" id="txSubmit">' + (editingTx ? "Save changes" : "Log it") + '</button></div>');
+
+    sheet.querySelector("#txClose").addEventListener("click", closeTxSheet);
+    sheet.querySelectorAll('[data-action="tx-type"]').forEach(function (btn) {
+      btn.addEventListener("click", function () { txType = btn.getAttribute("data-type"); renderTxSheet(); });
+    });
+    var submitBtn = sheet.querySelector("#txSubmit");
+    if (submitBtn) submitBtn.addEventListener("click", submitTx);
+
+    if (txType === "draw") {
+      var emCheckbox = sheet.querySelector("#txEmergency");
+      var accountField = sheet.querySelector("#txAccountField");
+      emCheckbox.addEventListener("change", function () { accountField.style.display = emCheckbox.checked ? "none" : ""; });
+    }
+  }
+
+  function submitTx() {
+    var amountInput = document.getElementById("txAmount");
+    var amount = round2(amountInput ? parseFloat(amountInput.value) || 0 : 0);
+    if (!amount || amount <= 0) { showToast("Amount must be a positive number."); return; }
+    var dateEl = document.getElementById("txDate");
+    var date = (dateEl && dateEl.value) || todayStr();
+    var record = { type: txType, date: date };
+    var wasEditing = !!editingTxId;
+
+    if (txType === "draw") {
+      var description = (document.getElementById("txDescription").value || "").trim();
+      if (!description) { showToast("Description is required."); return; }
+      var emergency = document.getElementById("txEmergency").checked;
+      var accountId = emergency ? null : document.getElementById("txAccount").value;
+      var split = emergency ? null : computeSplit(amount);
+      var sourceField = document.getElementById("txSource");
+      var sourceId = sourceField ? sourceField.value : defaultIncomeSourceId();
+      var historicalDraw = document.getElementById("txHistorical").checked;
+      Object.assign(record, { amount: amount, description: description, emergency: emergency, accountId: accountId, split: split, sourceId: sourceId, historical: historicalDraw });
+    } else if (txType === "expense") {
+      var desc2 = (document.getElementById("txDescription").value || "").trim();
+      if (!desc2) { showToast("Description is required."); return; }
+      var bucketId = document.getElementById("txBucket").value;
+      var accountId2 = document.getElementById("txAccount").value;
+      var historicalExp = document.getElementById("txHistorical").checked;
+      Object.assign(record, { amount: amount, description: desc2, bucketId: bucketId, accountId: accountId2, historical: historicalExp });
+    } else if (txType === "debt_entry") {
+      var debtId = document.getElementById("txDebt").value;
+      if (!debtId) { showToast("Add a debt in Settings first."); return; }
+      var dir = document.getElementById("txDebtDirection").value;
+      var desc3 = (document.getElementById("txDescription").value || "").trim();
+      if (!desc3) { showToast("Description is required."); return; }
+      Object.assign(record, { amount: dir === "decrease" ? -amount : amount, description: desc3, debtId: debtId });
+    } else if (txType === "installment_payment") {
+      var instId = document.getElementById("txInstallment").value;
+      if (!instId) { showToast("Add an installment in Settings first."); return; }
+      var dir2 = document.getElementById("txInstDirection").value;
+      var desc4 = (document.getElementById("txDescription").value || "").trim();
+      if (!desc4) { showToast("Description is required."); return; }
+      Object.assign(record, { amount: dir2 === "decrease" ? -amount : amount, description: desc4, installmentId: instId });
+      // A real, newly-logged payment (not an edit, not a setup/correction
+      // "increase") also updates the installment's left/late counts — edits
+      // deliberately leave these alone; correct them directly in Settings if
+      // a count itself was wrong, rather than by re-editing a payment.
+      var lateCheckbox = document.getElementById("txInstLate");
+      if (!wasEditing && dir2 === "decrease") {
+        record.late = !!(lateCheckbox && lateCheckbox.checked);
+        record.countedAsPayment = true;
+        var instForCounters = installmentById(instId);
+        if (instForCounters) {
+          instForCounters.installmentsLeft = Math.max(0, (Number(instForCounters.installmentsLeft) || 0) - 1);
+          if (record.late) instForCounters.lateCount = (Number(instForCounters.lateCount) || 0) + 1;
+        }
+      }
+    }
+
+    if (wasEditing) {
+      var existing = state.transactions.find(function (t) { return t.id === editingTxId; });
+      if (existing) { Object.assign(existing, record); existing.updatedAt = Date.now(); }
+    } else {
+      record.id = uid();
+      record.createdAt = Date.now();
+      state.transactions.push(record);
+    }
+
+    persist();
+    closeTxSheet();
+    render();
+    showToast(wasEditing ? "Saved." : "Logged.");
+  }
+
+  /* ---------------- collapsible sections (Prudy artifact style) ---------------- */
+  // The header text AND the always-visible summary card underneath it both
+  // toggle the same body - matches Prudy's artifact, where the whole summary
+  // card is one big click target, not just its title.
+  ["debt", "installment"].forEach(function (key) {
+    var body = document.getElementById(key + "Body");
+    var chevron = document.getElementById(key + "Chevron");
+    var summary = document.getElementById(key + "Summary");
+    function toggle() {
+      var isOpen = body.style.display !== "none";
+      body.style.display = isOpen ? "none" : "";
+      chevron.classList.toggle("open", !isOpen);
+    }
+    document.querySelector('[data-toggle="' + key + '"]').addEventListener("click", toggle);
+    summary.style.cursor = "pointer";
+    summary.addEventListener("click", toggle);
+  });
+  document.querySelector('[data-toggle="ledger"]').addEventListener("click", function () {
+    var body = document.getElementById("ledgerBody");
+    var chevron = document.getElementById("ledgerChevron");
+    var isOpen = body.style.display !== "none";
+    body.style.display = isOpen ? "none" : "";
+    chevron.classList.toggle("open", !isOpen);
+  });
+
+  /* ---------------- ledger actions ---------------- */
+  function handleLedgerActionClick(e) {
+    var btn = e.target.closest("[data-action]");
+    if (!btn) return;
+    var action = btn.getAttribute("data-action");
+    var id = btn.getAttribute("data-id");
+    if (action === "delete") {
+      openConfirm("Delete this transaction? This can't be undone.", "Delete", true).then(function (ok) {
+        if (!ok) return;
+        var deletedTx = state.transactions.find(function (t) { return t.id === id; });
+        if (deletedTx && deletedTx.countedAsPayment) {
+          var inst = installmentById(deletedTx.installmentId);
+          if (inst) {
+            inst.installmentsLeft = (Number(inst.installmentsLeft) || 0) + 1;
+            if (deletedTx.late) inst.lateCount = Math.max(0, (Number(inst.lateCount) || 0) - 1);
+          }
+        }
+        state.transactions = state.transactions.filter(function (t) { return t.id !== id; });
+        // Tombstone the id so this deletion survives a stale client (this
+        // browser's own cache, or Prudy's device) that still has the old
+        // entry and would otherwise push it right back on its next sync.
+        if (!Array.isArray(state.deletedTransactionIds)) state.deletedTransactionIds = [];
+        if (state.deletedTransactionIds.indexOf(id) === -1) state.deletedTransactionIds.push(id);
+        persist(); render();
+        showToast("Deleted.");
+      });
+    } else if (action === "edit") {
+      var tx = state.transactions.find(function (t) { return t.id === id; });
+      if (tx) openEditTxSheet(tx);
+    }
+  }
+  document.getElementById("ledgerSection").addEventListener("click", handleLedgerActionClick);
+  document.getElementById("debtLedgerSection").addEventListener("click", handleLedgerActionClick);
+  document.getElementById("installmentLedgerSection").addEventListener("click", handleLedgerActionClick);
+
+  /* ---------------- settings sheet (live-persist, copied from the company tracker's own pattern) ---------------- */
+  function openSettingsSheet() { document.getElementById("settingsOverlay").classList.add("open"); renderSettingsSheet(); }
+  function closeSettingsSheet() { document.getElementById("settingsOverlay").classList.remove("open"); render(); }
+
+  function renderSettingsSheet() {
+    var sheet = document.getElementById("settingsSheet");
+    var cSum = pctSum();
+
+    var html = '<div class="sheet-head"><h3>Settings</h3><button class="icon-btn" id="setClose" aria-label="Close">' + xIcon() + '</button></div>';
+
+    html += '<div class="settings-section"><h4>General</h4>' +
+      '<div class="field"><label>Name</label><input class="input" id="sPerson" value="' + esc(state.person) + '"></div>' +
+      '<div class="field"><label>Currency label</label><input class="input" id="sCurrency" value="' + esc(state.currency) + '" style="max-width:120px"></div>' +
+      '</div>';
+
+    var multiIncome = state.incomeSources.length > 1;
+    var totalMonthlyIncome = round2(state.incomeSources.reduce(function (s, src) { return s + monthlyEquivalentAmount(src.amount, src.frequency); }, 0));
+    html += '<div class="settings-section"><h4>Income Source</h4>';
+    if (multiIncome) {
+      // Once there's more than one source, "Monthly Income" stops being a
+      // directly-editable amount and becomes a live read-only total across
+      // every source's monthly-equivalent contribution (a Quarterly amount
+      // divided by 3, etc. — see monthlyEquivalentAmount()) — editing now
+      // happens per-source in the list below instead.
+      html += '<div class="field"><label>Monthly Income <span class="sub" style="font-weight:400">(total, all sources)</span></label><input class="input" id="sMonthlyIncomeTotal" value="' + fmt(totalMonthlyIncome) + '" disabled style="opacity:0.7"></div>';
+    } else {
+      html += '<div class="field"><label>Monthly Income</label><input class="input" type="number" step="0.01" min="0" id="sMonthlyIncome" value="' + (state.incomeSources[0] ? state.incomeSources[0].amount || 0 : 0) + '"></div>';
+    }
+    html += '<div style="display:flex; align-items:center; justify-content:space-between; margin:4px 0 ' + (multiIncome ? "14px" : "0") + ';">' +
+        '<span style="font-size:0.83rem; font-weight:600; color:var(--text);">Multiple Sources of Income?</span>' +
+        '<button class="link-btn" id="addIncomeSource">+ Add Income Source</button>' +
+      '</div>';
+    if (multiIncome) {
+      html += state.incomeSources.map(function (src) {
+        return '<div class="acct-edit-row" data-income="' + src.id + '">' +
+          '<div class="acct-edit-top">' +
+            '<input class="input" data-field="name" value="' + esc(src.name) + '" placeholder="Income source name">' +
+            '<button class="del-btn" data-del-income="' + src.id + '" aria-label="Remove income source">' + xIcon() + '</button>' +
+          '</div>' +
+          '<div class="row2">' +
+            '<div class="field"><label>Amount</label><input class="input" type="number" step="0.01" min="0" data-field="amount" value="' + (src.amount || 0) + '"></div>' +
+            '<div class="field"><label>Frequency</label><select class="select" data-field="frequency">' + INCOME_FREQUENCIES.map(function (f) {
+              return '<option value="' + f + '"' + ((src.frequency || "Undefined") === f ? " selected" : "") + '>' + f + '</option>';
+            }).join("") + '</select></div>' +
+          '</div>' +
+        '</div>';
+      }).join("");
+    }
+    html += '</div>';
+
+    html += '<div class="settings-section"><h4>Accounts</h4>';
+    html += state.buckets.map(function (b) {
+      return '<div class="bucket-edit-row" data-bucket="' + b.id + '">' +
+        '<div class="bucket-edit-line">' +
+          '<input class="input" data-field="name" value="' + esc(b.name) + '" placeholder="Name">' +
+          '<div class="pct-input-wrap" style="flex:0 0 84px"><input class="input pct" data-field="cap" type="number" step="1" value="' + b.cap + '"><span class="pct-suffix">%</span></div>' +
+          '<button class="del-btn" data-del-bucket="' + b.id + '" aria-label="Remove Account">' + xIcon() + '</button>' +
+        '</div>' +
+        '<div class="field" style="margin-top:8px"><label>Linked account</label><select class="select" data-field="linkedAccountId"><option value="">Virtual (shared)</option>' + accountOptions(b.linkedAccountId) + '</select></div>' +
+      '</div>';
+    }).join("");
+    html += '<button class="add-row-btn" id="addBucket">+ Add Account</button>';
+    html += '<div class="sum-note ' + (cSum === 100 ? "ok" : "bad") + '">Share total: ' + cSum + '%' + (cSum === 100 ? " — splits nicely into 100%" : " — should add up to 100% or splits will be off") + '</div>';
+    html += '</div>';
+
+    html += '<div class="settings-section"><h4>Bank Accounts</h4><div class="ledger-note" style="margin-top:-6px">Use the arrows to reorder — this order sets the display order everywhere (dashboard, dropdowns).</div>';
+    html += state.accounts.map(function (a, idx) {
+      var isDefault = a.id === state.defaultAccountId || (!state.defaultAccountId && state.accounts[0] && state.accounts[0].id === a.id);
+      return '<div class="acct-edit-row" data-account="' + a.id + '">' +
+        '<div class="acct-edit-top">' +
+          '<div class="reorder-btns">' +
+            '<button class="reorder-btn" data-move-account="' + a.id + '" data-dir="up" aria-label="Move up"' + (idx === 0 ? " disabled" : "") + '>' + upIcon() + '</button>' +
+            '<button class="reorder-btn" data-move-account="' + a.id + '" data-dir="down" aria-label="Move down"' + (idx === state.accounts.length - 1 ? " disabled" : "") + '>' + downIcon() + '</button>' +
+          '</div>' +
+          '<label class="default-radio"><input type="radio" name="defaultAccountRadio" value="' + a.id + '"' + (isDefault ? " checked" : "") + '> Default</label>' +
+          '<input class="input" data-field="name" value="' + esc(a.name) + '" placeholder="Account name">' +
+          '<button class="del-btn" data-del-account="' + a.id + '" aria-label="Remove account">' + xIcon() + '</button>' +
+        '</div>' +
+      '</div>';
+    }).join("");
+    html += '<div class="btn-row"><button class="add-row-btn" id="addAccount">+ Add bank account</button><button class="btn" id="openObBtn">Add Opening Balance</button></div></div>';
+
+    html += '<div class="settings-section"><h4>Debt &amp; net worth</h4>';
+    html += '<div class="field"><label>Debts</label></div>';
+    html += state.debts.map(function (deb) {
+      var debOpening = debtOpeningTx(deb.id);
+      return '<div class="acct-edit-row" data-debt="' + deb.id + '">' +
+        '<div class="acct-edit-top">' +
+          '<input class="input" data-field="name" value="' + esc(deb.name) + '" placeholder="Name">' +
+          '<button class="del-btn" data-del-debt="' + deb.id + '" aria-label="Remove debt">' + xIcon() + '</button>' +
+        '</div>' +
+        '<div class="row2">' +
+          '<div class="field" style="margin:0"><label>Direction</label><select class="select" data-field="direction">' +
+            '<option value="owed_to_me"' + (deb.direction === "owed_to_me" ? " selected" : "") + '>Owed to me</option>' +
+            '<option value="owed_by_me"' + (deb.direction === "owed_by_me" ? " selected" : "") + '>I owe this</option>' +
+          '</select></div>' +
+          '<div class="field" style="margin:0"><label>Opening balance</label><input class="input" type="number" step="0.01" min="0" data-field="openingBalance" value="' + (debOpening ? debOpening.amount : 0) + '"></div>' +
+        '</div>' +
+      '</div>';
+    }).join("");
+    html += '<button class="add-row-btn" id="addDebt">+ Add debt</button>';
+    html += '<hr class="div" style="margin:16px 0">';
+    html += '<div class="field"><label>Installments</label></div>';
+    html += state.installments.map(function (inst) {
+      var instOpening = installmentOpeningTx(inst.id);
+      return '<div class="acct-edit-row" data-installment="' + inst.id + '">' +
+        '<div class="acct-edit-top">' +
+          '<input class="input" data-field="name" value="' + esc(inst.name) + '" placeholder="Name">' +
+          '<button class="del-btn" data-del-installment="' + inst.id + '" aria-label="Remove installment">' + xIcon() + '</button>' +
+        '</div>' +
+        '<div class="row2">' +
+          '<input class="input" type="number" step="0.01" data-field="monthlyAmount" value="' + (inst.monthlyAmount || 0) + '" placeholder="Monthly amount">' +
+          '<input class="input" data-field="purpose" value="' + esc(inst.purpose || "") + '" placeholder="Purpose">' +
+        '</div>' +
+        '<div class="field" style="margin-top:8px"><label>Opening (remaining) balance</label><input class="input" type="number" step="0.01" min="0" data-field="openingBalance" value="' + (instOpening ? instOpening.amount : 0) + '"></div>' +
+        '<div class="row2" style="margin-top:8px">' +
+          '<div class="field" style="margin:0"><label>Installments left / total</label><div class="row2"><input class="input" type="number" step="1" min="0" data-field="installmentsLeft" value="' + (inst.installmentsLeft || 0) + '" placeholder="Left"><input class="input" type="number" step="1" min="0" data-field="installmentsTotal" value="' + (inst.installmentsTotal || 0) + '" placeholder="Total"></div></div>' +
+        '</div>' +
+        '<div class="row2" style="margin-top:8px">' +
+          '<div class="field" style="margin:0"><label>Late count</label><input class="input" type="number" step="1" min="0" data-field="lateCount" value="' + (inst.lateCount || 0) + '"></div>' +
+          '<div class="field" style="margin:0"><label>Balloon</label><input class="input" type="number" step="0.01" min="0" data-field="balloon" value="' + (inst.balloon || 0) + '"></div>' +
+        '</div>' +
+      '</div>';
+    }).join("");
+    html += '<button class="add-row-btn" id="addInstallment">+ Add installment</button></div>';
+
+    html += '<hr class="div">';
+    html += '<div class="settings-section"><h4>Data</h4>' +
+      '<div class="btn-row"><button class="btn" id="exportBtn">Export backup</button><button class="btn" id="importBtn">Import backup</button></div>' +
+      '<input type="file" id="importFile" accept="application/json,.json">' +
+      '<button class="btn btn-danger" id="resetBtn" style="margin-top:10px">Reset all data</button>' +
+      '</div>';
+
+    sheet.innerHTML = html;
+    wireSettingsSheet();
+  }
+
+  function wireSettingsSheet() {
+    var sheet = document.getElementById("settingsSheet");
+    sheet.querySelector("#setClose").addEventListener("click", closeSettingsSheet);
+
+    sheet.querySelector("#sPerson").addEventListener("input", function (e) { state.person = e.target.value; persist(); });
+    sheet.querySelector("#sCurrency").addEventListener("input", function (e) { state.currency = e.target.value; persist(); });
+    var singleIncomeInput = sheet.querySelector("#sMonthlyIncome");
+    if (singleIncomeInput) {
+      singleIncomeInput.addEventListener("input", function (e) {
+        if (!state.incomeSources.length) state.incomeSources.push({ id: uid(), name: "Monthly Income", frequency: "Monthly", amount: 0 });
+        state.incomeSources[0].amount = Math.max(0, parseFloat(e.target.value) || 0);
+        persist(); render();
+      });
+    }
+    function refreshIncomeTotalDisplay() {
+      var totalField = sheet.querySelector("#sMonthlyIncomeTotal");
+      if (totalField) totalField.value = fmt(state.incomeSources.reduce(function (s, src) { return s + monthlyEquivalentAmount(src.amount, src.frequency); }, 0));
+    }
+    sheet.querySelectorAll(".acct-edit-row[data-income]").forEach(function (row) {
+      var id = row.getAttribute("data-income");
+      var src = incomeSourceById(id);
+      row.querySelectorAll("[data-field]").forEach(function (inp) {
+        var evt = inp.tagName === "SELECT" ? "change" : "input";
+        inp.addEventListener(evt, function () {
+          var field = inp.getAttribute("data-field");
+          src[field] = field === "amount" ? (parseFloat(inp.value) || 0) : inp.value;
+          persist();
+          if (field === "amount" || field === "frequency") refreshIncomeTotalDisplay();
+          render();
+        });
+      });
+    });
+    sheet.querySelectorAll("[data-del-income]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var id = btn.getAttribute("data-del-income");
+        if (state.transactions.some(function (t) { return t.type === "draw" && t.sourceId === id; })) { showToast("Can't remove an income source used in existing draws."); return; }
+        state.incomeSources = state.incomeSources.filter(function (s) { return s.id !== id; });
+        persist(); renderSettingsSheet(); render();
+      });
+    });
+    sheet.querySelector("#addIncomeSource").addEventListener("click", function () {
+      state.incomeSources.push({ id: uid(), name: "New source", amount: 0, frequency: "Undefined" });
+      persist(); renderSettingsSheet();
+    });
+
+    sheet.querySelectorAll(".bucket-edit-row").forEach(function (row) {
+      var id = row.getAttribute("data-bucket");
+      var b = bucketById(id);
+      row.querySelectorAll("[data-field]").forEach(function (inp) {
+        var evt = inp.tagName === "SELECT" ? "change" : "input";
+        inp.addEventListener(evt, function () {
+          var field = inp.getAttribute("data-field");
+          if (field === "linkedAccountId") b.linkedAccountId = inp.value || null;
+          else if (field === "cap") b.cap = parseFloat(inp.value) || 0;
+          else b[field] = inp.value;
+          persist();
+          if (field === "cap") {
+            var note = sheet.querySelector(".sum-note");
+            if (note) { var s = pctSum(); note.textContent = "Share total: " + s + "%" + (s === 100 ? " — splits nicely into 100%" : " — should add up to 100% or splits will be off"); note.className = "sum-note " + (s === 100 ? "ok" : "bad"); }
+          }
+          if (evt === "change") render();
+        });
+      });
+    });
+    sheet.querySelectorAll("[data-del-bucket]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var id = btn.getAttribute("data-del-bucket");
+        if (state.buckets.length <= 1) { showToast("You need at least one Account."); return; }
+        if (bucketUsedInTx(id)) { showToast("Can't remove an Account used in existing transactions."); return; }
+        state.buckets = state.buckets.filter(function (b) { return b.id !== id; });
+        persist(); renderSettingsSheet();
+      });
+    });
+    sheet.querySelector("#addBucket").addEventListener("click", function () {
+      state.buckets.push({ id: uid(), name: "New Account", cap: 0, linkedAccountId: null });
+      persist(); renderSettingsSheet();
+    });
+
+    sheet.querySelectorAll(".acct-edit-row[data-account]").forEach(function (row) {
+      var id = row.getAttribute("data-account");
+      var a = accountById(id);
+      row.querySelectorAll("[data-field]").forEach(function (inp) {
+        inp.addEventListener("input", function () { a[inp.getAttribute("data-field")] = inp.value; persist(); });
+      });
+    });
+    sheet.querySelectorAll('input[name="defaultAccountRadio"]').forEach(function (radio) {
+      radio.addEventListener("change", function (e) { state.defaultAccountId = e.target.value; persist(); render(); });
+    });
+    sheet.querySelectorAll("[data-del-account]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var id = btn.getAttribute("data-del-account");
+        if (state.accounts.length <= 1) { showToast("You need at least one bank account."); return; }
+        if (accountUsedInTx(id)) { showToast("Can't remove a bank account used in existing transactions."); return; }
+        if (accountLinkedToBucket(id)) { showToast("Can't remove a bank account linked to an Account — unlink it first."); return; }
+        state.accounts = state.accounts.filter(function (a) { return a.id !== id; });
+        if (state.defaultAccountId === id) state.defaultAccountId = null;
+        persist(); renderSettingsSheet();
+      });
+    });
+    sheet.querySelectorAll("[data-move-account]").forEach(function (btn) {
+      btn.addEventListener("click", function () { moveAccount(btn.getAttribute("data-move-account"), btn.getAttribute("data-dir")); });
+    });
+    sheet.querySelector("#addAccount").addEventListener("click", function () {
+      state.accounts.push({ id: uid(), name: "New bank account" });
+      persist(); renderSettingsSheet();
+    });
+    var openObBtn = sheet.querySelector("#openObBtn");
+    if (openObBtn) openObBtn.addEventListener("click", function () { openObSheet(); });
+
+    sheet.querySelectorAll(".acct-edit-row[data-debt]").forEach(function (row) {
+      var id = row.getAttribute("data-debt");
+      var deb = debtById(id);
+      row.querySelectorAll("[data-field]").forEach(function (inp) {
+        var field = inp.getAttribute("data-field");
+        var evt = inp.tagName === "SELECT" ? "change" : "input";
+        inp.addEventListener(evt, function () {
+          if (field === "openingBalance") { setDebtOpeningBalance(id, Math.max(0, parseFloat(inp.value) || 0)); }
+          else { deb[field] = inp.value; }
+          persist(); render();
+        });
+      });
+    });
+    sheet.querySelectorAll("[data-del-debt]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var id = btn.getAttribute("data-del-debt");
+        if (debtUsedInTx(id)) { showToast("Can't remove a debt used in existing transactions."); return; }
+        state.debts = state.debts.filter(function (d) { return d.id !== id; });
+        persist(); renderSettingsSheet();
+      });
+    });
+    sheet.querySelector("#addDebt").addEventListener("click", function () {
+      state.debts.push({ id: uid(), name: "New debt", direction: "owed_to_me" });
+      persist(); renderSettingsSheet();
+    });
+
+    sheet.querySelectorAll(".acct-edit-row[data-installment]").forEach(function (row) {
+      var id = row.getAttribute("data-installment");
+      var inst = installmentById(id);
+      row.querySelectorAll("[data-field]").forEach(function (inp) {
+        var numericFields = ["monthlyAmount", "installmentsLeft", "installmentsTotal", "lateCount", "balloon"];
+        inp.addEventListener("input", function () {
+          var field = inp.getAttribute("data-field");
+          if (field === "openingBalance") { setInstallmentOpeningBalance(id, Math.max(0, parseFloat(inp.value) || 0)); persist(); render(); return; }
+          inst[field] = numericFields.indexOf(field) !== -1 ? (parseFloat(inp.value) || 0) : inp.value;
+          persist();
+          render();
+        });
+      });
+    });
+    sheet.querySelectorAll("[data-del-installment]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var id = btn.getAttribute("data-del-installment");
+        if (installmentUsedInTx(id)) { showToast("Can't remove an installment used in existing transactions."); return; }
+        state.installments = state.installments.filter(function (i) { return i.id !== id; });
+        persist(); renderSettingsSheet();
+      });
+    });
+    sheet.querySelector("#addInstallment").addEventListener("click", function () {
+      state.installments.push({ id: uid(), name: "New installment", monthlyAmount: 0, purpose: "", installmentsTotal: 0, installmentsLeft: 0, lateCount: 0, balloon: 0 });
+      persist(); renderSettingsSheet();
+    });
+
+    sheet.querySelector("#exportBtn").addEventListener("click", handleExport);
+    sheet.querySelector("#importBtn").addEventListener("click", function () { sheet.querySelector("#importFile").click(); });
+    sheet.querySelector("#importFile").addEventListener("change", handleImport);
+    sheet.querySelector("#resetBtn").addEventListener("click", handleReset);
+  }
+
+  /* ---------------- opening balance sheet ---------------- */
+  function openObSheet() { document.getElementById("obOverlay").classList.add("open"); renderObSheet(); }
+  function closeObSheet() { document.getElementById("obOverlay").classList.remove("open"); }
+
+  function renderObSheet() {
+    var sheet = document.getElementById("obSheet");
+    if (!state.accounts.length) {
+      sheet.innerHTML = '<div class="sheet-head"><h3>Add Opening Balance</h3><button class="icon-btn" id="obClose" aria-label="Close">' + xIcon() + '</button></div>' +
+        '<div class="empty-state">Add a bank account first (Settings → Bank Accounts).</div>';
+      sheet.querySelector("#obClose").addEventListener("click", closeObSheet);
+      return;
+    }
+    var html = '<div class="sheet-head"><h3>Add Opening Balance</h3><button class="icon-btn" id="obClose" aria-label="Close">' + xIcon() + '</button></div>';
+    html += '<div class="ledger-note" style="margin-bottom:14px">Pre-existing cash a bank account already held before this tracker started.</div>';
+    html += '<div class="field"><label>Bank account</label><select class="select" id="obAccount">' +
+      state.accounts.map(function (a) { return '<option value="' + a.id + '">' + esc(a.name) + '</option>'; }).join("") +
+    '</select></div>';
+    html += '<div class="row2">' +
+      '<div class="field"><label>Date</label><input class="input" type="date" id="obDate" value="' + todayStr() + '"></div>' +
+      '<div class="field"><label>Amount</label><input class="input" type="number" step="0.01" min="0" id="obAmount" placeholder="0.00"></div>' +
+    '</div>';
+    html += '<label class="check-row"><input type="checkbox" id="obHistorical"> Historical (no Account split needed)</label>' +
+      '<div class="ledger-note" style="margin:2px 0 10px">For cash that isn\'t part of the Give/FFA/Investment/Lifestyle system — e.g. Cash on hand, a side account. Counts toward the bank total only.</div>';
+    html += '<div class="field" id="obBucketField"><label>Allocate to</label><select class="select" id="obBucket">' +
+      '<option value="__auto__">Split like a draw (Account %)</option>' +
+      state.buckets.map(function (b) { return '<option value="' + b.id + '">' + esc(b.name) + ' only</option>'; }).join("") +
+    '</select></div>';
+    html += '<button class="btn btn-primary" id="obSubmit" style="margin-top:14px">Add opening balance</button>';
+    sheet.innerHTML = html;
+    sheet.querySelector("#obClose").addEventListener("click", closeObSheet);
+    sheet.querySelector("#obSubmit").addEventListener("click", handleObSubmit);
+    sheet.querySelector("#obHistorical").addEventListener("change", function (e) {
+      sheet.querySelector("#obBucketField").style.display = e.target.checked ? "none" : "";
+    });
+  }
+
+  function handleObSubmit() {
+    var sheet = document.getElementById("obSheet");
+    var accountId = sheet.querySelector("#obAccount").value;
+    var date = sheet.querySelector("#obDate").value || todayStr();
+    var amount = round2(parseFloat(sheet.querySelector("#obAmount").value) || 0);
+    if (!amount || amount <= 0) { showToast("Enter an opening balance amount greater than zero."); return; }
+    var historical = sheet.querySelector("#obHistorical").checked;
+    var allocation;
+    if (historical) {
+      allocation = {};
+    } else {
+      var choice = sheet.querySelector("#obBucket").value;
+      if (choice === "__auto__") {
+        var sum = pctSum();
+        if (sum <= 0) { showToast("Set Account share % in Settings first, or pick one specific Account instead."); return; }
+        allocation = computeSplit(amount);
+      } else {
+        allocation = {};
+        allocation[choice] = amount;
+      }
+    }
+    var acct = accountById(accountId);
+    state.transactions.push({
+      id: uid(),
+      type: "opening_balance",
+      date: date,
+      description: "Opening balance — " + (acct ? acct.name : "account"),
+      amount: amount,
+      accountId: accountId,
+      allocation: allocation,
+      createdAt: Date.now()
+    });
+    persist();
+    closeObSheet();
+    renderSettingsSheet();
+    render();
+    showToast("Opening balance added.");
+  }
+
+  /* ---------------- data: export / import / reset ---------------- */
+  function slug(s) { return String(s || "personal-tracker").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "personal-tracker"; }
+
+  function browserDownload(filename, json) {
+    var blob = new Blob([json], { type: "application/json" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast("Backup saved.");
+  }
+
+  function handleExport() { browserDownload(slug(state.person) + "-backup-" + todayStr() + ".json", JSON.stringify(state, null, 2)); }
+
+  function handleImport(e) {
+    var file = e.target.files && e.target.files[0];
+    e.target.value = "";
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      var parsed;
+      try { parsed = JSON.parse(reader.result); } catch (err) { showToast("That file isn't valid JSON."); return; }
+      if (!parsed || !Array.isArray(parsed.buckets) || !Array.isArray(parsed.accounts) || !Array.isArray(parsed.transactions)) {
+        showToast("That file doesn't look like a backup from this app.");
+        return;
+      }
+      openConfirm("Import this backup? It will replace everything currently in the app.", "Import", true).then(function (ok) {
+        if (!ok) return;
+        state = Object.assign(defaultState(), parsed);
+        persist();
+        renderSettingsSheet();
+        render();
+        showToast("Backup imported.");
+      });
+    };
+    reader.readAsText(file);
+  }
+
+  function handleReset() {
+    openConfirm("Reset all data? Accounts, bank accounts, debts, installments, and every transaction will be permanently deleted from this device.", "Reset everything", true).then(function (ok) {
+      if (!ok) return;
+      state = defaultState();
+      persist();
+      renderSettingsSheet();
+      render();
+      showToast("Reset to a blank tracker.");
+    });
+  }
+
+  /* ---------------- global wiring ---------------- */
+  document.getElementById("fabBtn").addEventListener("click", function () { if (!this.disabled) openTxSheet("draw"); });
+  document.getElementById("settingsBtn").addEventListener("click", openSettingsSheet);
+  document.getElementById("syncBtn").addEventListener("click", function () { syncFromServer(false); });
+
+  render();
+  syncFromServer(true);
+})();
+</script>
