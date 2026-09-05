@@ -1245,30 +1245,186 @@
   // Three separate transaction lists, not one - Ledger is cash flow
   // (draw/expense/opening_balance), Debt and Installments each get their
   // own history of just their own entries. All three reuse the same
-  // renderLedgerItem() row so formatting stays identical everywhere.
+  // renderLedgerItem() row AND the same search/sort/filter mechanism
+  // (ported from the company tracker's ledgerFilter/tracker.html), so
+  // formatting and behavior stay identical everywhere - each section just
+  // gets its own filter state (keyed by idPrefix) and, since debt/
+  // installment entries don't touch a bucket or bank account directly,
+  // a leaner filter bar (no type/bucket/account dropdowns).
   var LEDGER_TYPES = { draw: true, expense: true, opening_balance: true };
 
-  function renderFilteredLedger(elId, countElId, predicate, emptyMsg) {
+  var ledgerFilters = {};
+  function ledgerFilterState(idPrefix) {
+    if (!ledgerFilters[idPrefix]) {
+      ledgerFilters[idPrefix] = { search: "", type: "", bucketId: "", accountId: "", dateFrom: "", dateTo: "", amountMin: "", amountMax: "", sortBy: "date-desc" };
+    }
+    return ledgerFilters[idPrefix];
+  }
+
+  function ledgerTxTouchesBucket(tx, bucketId) {
+    if (tx.type === "draw") return !!(tx.split && tx.split.hasOwnProperty(bucketId));
+    if (tx.type === "expense") return tx.bucketId === bucketId;
+    if (tx.type === "opening_balance") return !!(tx.allocation && tx.allocation.hasOwnProperty(bucketId));
+    return false;
+  }
+  function ledgerTxTouchesAccount(tx, accountId) {
+    if (tx.type === "draw" || tx.type === "expense" || tx.type === "opening_balance") return tx.accountId === accountId;
+    return false;
+  }
+  function ledgerSearchText(tx) {
+    var bits = [tx.description || "", tx.type || "", tx.date || ""];
+    if (tx.type === "draw") {
+      Object.keys(tx.split || {}).forEach(function (bid) { var b = bucketById(bid); if (b) bits.push(b.name); });
+      var a = accountById(tx.accountId); if (a) bits.push(a.name);
+      var src = incomeSourceById(tx.sourceId); if (src) bits.push(src.name);
+    } else if (tx.type === "expense") {
+      var b2 = bucketById(tx.bucketId); if (b2) bits.push(b2.name);
+      var a2 = accountById(tx.accountId); if (a2) bits.push(a2.name);
+    } else if (tx.type === "opening_balance") {
+      var a3 = accountById(tx.accountId); if (a3) bits.push(a3.name);
+      Object.keys(tx.allocation || {}).forEach(function (bid) { var b3 = bucketById(bid); if (b3) bits.push(b3.name); });
+    } else if (tx.type === "debt_entry") {
+      var deb = debtById(tx.debtId); if (deb) bits.push(deb.name);
+    } else if (tx.type === "installment_payment") {
+      var inst = installmentById(tx.installmentId); if (inst) bits.push(inst.name);
+    }
+    return bits.join(" ").toLowerCase();
+  }
+  function ledgerFiltersActive(f) {
+    return !!(f.search || f.type || f.bucketId || f.accountId || f.dateFrom || f.dateTo || f.amountMin !== "" || f.amountMax !== "");
+  }
+  function matchesLedgerFilter(tx, f) {
+    if (f.search && ledgerSearchText(tx).indexOf(f.search.toLowerCase()) === -1) return false;
+    if (f.type && tx.type !== f.type) return false;
+    if (f.bucketId && !ledgerTxTouchesBucket(tx, f.bucketId)) return false;
+    if (f.accountId && !ledgerTxTouchesAccount(tx, f.accountId)) return false;
+    if (f.dateFrom && tx.date < f.dateFrom) return false;
+    if (f.dateTo && tx.date > f.dateTo) return false;
+    if (f.amountMin !== "" && Math.abs(tx.amount) < parseFloat(f.amountMin)) return false;
+    if (f.amountMax !== "" && Math.abs(tx.amount) > parseFloat(f.amountMax)) return false;
+    return true;
+  }
+  function sortedFilteredLedger(txs, f) {
+    var filtered = txs.filter(function (tx) { return matchesLedgerFilter(tx, f); });
+    filtered.sort(function (a, b) {
+      if (f.sortBy === "amount-desc") return Math.abs(b.amount) - Math.abs(a.amount);
+      if (f.sortBy === "amount-asc") return Math.abs(a.amount) - Math.abs(b.amount);
+      if (f.sortBy === "date-asc") {
+        if (a.date === b.date) return (a.createdAt || 0) - (b.createdAt || 0);
+        return a.date < b.date ? -1 : 1;
+      }
+      if (a.date === b.date) return (b.createdAt || 0) - (a.createdAt || 0);
+      return a.date < b.date ? 1 : -1;
+    });
+    return filtered;
+  }
+  function ledgerFilterBarHtml(idPrefix, f, showTypeBucketAccount) {
+    var active = ledgerFiltersActive(f);
+    return (
+      '<div class="ledger-filter-bar">' +
+        '<input class="input" id="' + idPrefix + 'Search" type="search" placeholder="Search description, Account, bank account…" value="' + esc(f.search) + '">' +
+        '<details class="ledger-filters-details"' + (active ? " open" : "") + '>' +
+          '<summary>Sort &amp; filter <span class="filter-badge" id="' + idPrefix + 'FilterBadge" style="' + (active ? "" : "display:none") + '">active</span></summary>' +
+          '<div class="field"><label>Sort by</label><select class="select" id="' + idPrefix + 'Sort">' +
+            '<option value="date-desc"' + (f.sortBy === "date-desc" ? " selected" : "") + '>Date (newest first)</option>' +
+            '<option value="date-asc"' + (f.sortBy === "date-asc" ? " selected" : "") + '>Date (oldest first)</option>' +
+            '<option value="amount-desc"' + (f.sortBy === "amount-desc" ? " selected" : "") + '>Amount (high to low)</option>' +
+            '<option value="amount-asc"' + (f.sortBy === "amount-asc" ? " selected" : "") + '>Amount (low to high)</option>' +
+          '</select></div>' +
+          (showTypeBucketAccount ? (
+            '<div class="row2">' +
+              '<div class="field"><label>Type</label><select class="select" id="' + idPrefix + 'TypeFilter">' +
+                '<option value=""' + (!f.type ? " selected" : "") + '>All types</option>' +
+                '<option value="draw"' + (f.type === "draw" ? " selected" : "") + '>Income</option>' +
+                '<option value="expense"' + (f.type === "expense" ? " selected" : "") + '>Expense</option>' +
+                '<option value="opening_balance"' + (f.type === "opening_balance" ? " selected" : "") + '>Opening balance</option>' +
+              '</select></div>' +
+              '<div class="field"><label>Account</label><select class="select" id="' + idPrefix + 'BucketFilter">' +
+                '<option value="">All Accounts</option>' +
+                state.buckets.map(function (b) { return '<option value="' + b.id + '"' + (f.bucketId === b.id ? " selected" : "") + '>' + esc(b.name) + '</option>'; }).join("") +
+              '</select></div>' +
+            '</div>' +
+            '<div class="field"><label>Bank account</label><select class="select" id="' + idPrefix + 'AccountFilter">' +
+              '<option value="">All bank accounts</option>' +
+              state.accounts.map(function (a) { return '<option value="' + a.id + '"' + (f.accountId === a.id ? " selected" : "") + '>' + esc(a.name) + '</option>'; }).join("") +
+            '</select></div>'
+          ) : "") +
+          '<div class="row2">' +
+            '<div class="field"><label>From date</label><input class="input" type="date" id="' + idPrefix + 'DateFrom" value="' + esc(f.dateFrom) + '"></div>' +
+            '<div class="field"><label>To date</label><input class="input" type="date" id="' + idPrefix + 'DateTo" value="' + esc(f.dateTo) + '"></div>' +
+          '</div>' +
+          '<div class="row2">' +
+            '<div class="field"><label>Min amount</label><input class="input" type="number" step="0.01" id="' + idPrefix + 'AmountMin" value="' + esc(f.amountMin) + '" placeholder="0.00"></div>' +
+            '<div class="field"><label>Max amount</label><input class="input" type="number" step="0.01" id="' + idPrefix + 'AmountMax" value="' + esc(f.amountMax) + '" placeholder="0.00"></div>' +
+          '</div>' +
+          '<button class="link-btn" id="' + idPrefix + 'ClearFilters" style="' + (active ? "" : "display:none") + '">Clear all filters</button>' +
+        '</details>' +
+      '</div>'
+    );
+  }
+
+  function renderFilteredLedger(elId, countElId, predicate, emptyMsg, showTypeBucketAccount) {
+    var idPrefix = elId;
+    var f = ledgerFilterState(idPrefix);
     var el = document.getElementById(elId);
     var countEl = countElId ? document.getElementById(countElId) : null;
-    var txs = state.transactions.filter(predicate).sort(function (a, b) {
-      return (b.date || "").localeCompare(a.date || "") || (b.createdAt || 0) - (a.createdAt || 0);
+    var allTxs = state.transactions.filter(predicate);
+
+    function renderList() {
+      var filtered = sortedFilteredLedger(allTxs, f);
+      var active = ledgerFiltersActive(f);
+      if (countEl) countEl.textContent = allTxs.length ? (active ? "(" + filtered.length + " of " + allTxs.length + ")" : "(" + allTxs.length + ")") : "";
+      var badgeEl = document.getElementById(idPrefix + "FilterBadge");
+      if (badgeEl) badgeEl.style.display = active ? "" : "none";
+      var clearBtnEl = document.getElementById(idPrefix + "ClearFilters");
+      if (clearBtnEl) clearBtnEl.style.display = active ? "" : "none";
+      var wrap = document.getElementById(idPrefix + "ListWrap");
+      if (!wrap) return;
+      wrap.innerHTML = filtered.length
+        ? '<div class="ledger-list">' + filtered.map(renderLedgerItem).join("") + "</div>"
+        : '<div class="empty-state">' + (allTxs.length ? "No transactions match your filters." : emptyMsg) + '</div>';
+    }
+
+    if (!allTxs.length) {
+      if (countEl) countEl.textContent = "";
+      el.innerHTML = '<div class="empty-state">' + emptyMsg + '</div>';
+      return;
+    }
+
+    el.innerHTML = ledgerFilterBarHtml(idPrefix, f, showTypeBucketAccount) + '<div id="' + idPrefix + 'ListWrap"></div>';
+    var bar = el.querySelector(".ledger-filter-bar");
+    function on(id, evt, apply) {
+      var input = bar.querySelector("#" + id);
+      if (input) input.addEventListener(evt, function () { apply(input.value); renderList(); });
+    }
+    on(idPrefix + "Search", "input", function (v) { f.search = v; });
+    on(idPrefix + "Sort", "change", function (v) { f.sortBy = v; });
+    on(idPrefix + "TypeFilter", "change", function (v) { f.type = v; });
+    on(idPrefix + "BucketFilter", "change", function (v) { f.bucketId = v; });
+    on(idPrefix + "AccountFilter", "change", function (v) { f.accountId = v; });
+    on(idPrefix + "DateFrom", "change", function (v) { f.dateFrom = v; });
+    on(idPrefix + "DateTo", "change", function (v) { f.dateTo = v; });
+    on(idPrefix + "AmountMin", "input", function (v) { f.amountMin = v; });
+    on(idPrefix + "AmountMax", "input", function (v) { f.amountMax = v; });
+    var clearBtn = bar.querySelector("#" + idPrefix + "ClearFilters");
+    if (clearBtn) clearBtn.addEventListener("click", function () {
+      ledgerFilters[idPrefix] = { search: "", type: "", bucketId: "", accountId: "", dateFrom: "", dateTo: "", amountMin: "", amountMax: "", sortBy: f.sortBy };
+      renderFilteredLedger(elId, countElId, predicate, emptyMsg, showTypeBucketAccount);
     });
-    if (countEl) countEl.textContent = txs.length ? "(" + txs.length + ")" : "";
-    if (!txs.length) { el.innerHTML = '<div class="empty-state">' + emptyMsg + '</div>'; return; }
-    el.innerHTML = '<div class="ledger-list">' + txs.map(renderLedgerItem).join("") + "</div>";
+
+    renderList();
   }
 
   function renderLedger() {
-    renderFilteredLedger("ledgerSection", "ledgerCount", function (t) { return LEDGER_TYPES[t.type]; }, "No transactions logged yet.");
+    renderFilteredLedger("ledgerSection", "ledgerCount", function (t) { return LEDGER_TYPES[t.type]; }, "No transactions logged yet.", true);
   }
 
   function renderDebtLedger() {
-    renderFilteredLedger("debtLedgerSection", null, function (t) { return t.type === "debt_entry"; }, "No debt entries logged yet.");
+    renderFilteredLedger("debtLedgerSection", null, function (t) { return t.type === "debt_entry"; }, "No debt entries logged yet.", false);
   }
 
   function renderInstallmentLedger() {
-    renderFilteredLedger("installmentLedgerSection", null, function (t) { return t.type === "installment_payment"; }, "No installment payments logged yet.");
+    renderFilteredLedger("installmentLedgerSection", null, function (t) { return t.type === "installment_payment"; }, "No installment payments logged yet.", false);
   }
 
   /* ---------------- toast ---------------- */
