@@ -315,9 +315,21 @@ def compute_derived(state):
         elif ttype == "debt_entry":
             if tx.get("debtId") in debt_balances:
                 debt_balances[tx["debtId"]] = round2(debt_balances[tx["debtId"]] + tx["amount"])
+            # Mirrors Personal-tracker.html's computeDerived() - most debt
+            # entries are ledger-only, but when tx.accountId is set, real
+            # cash moved through one of my own accounts too. Sign depends
+            # on which way the debt points (see debt_by_id's direction).
+            if tx.get("accountId") in account_balances:
+                deb_for_acct = debt_by_id(state, tx.get("debtId"))
+                sign = -1 if (deb_for_acct and deb_for_acct.get("direction") == "owed_to_me") else 1
+                account_balances[tx["accountId"]] = round2(account_balances[tx["accountId"]] + sign * tx["amount"])
         elif ttype == "installment_payment":
             if tx.get("installmentId") in installment_balances:
                 installment_balances[tx["installmentId"]] = round2(installment_balances[tx["installmentId"]] + tx["amount"])
+            # An installment is always money I owe, so its raw signed
+            # amount already matches cash-flow direction - no sign flip.
+            if tx.get("accountId") in account_balances:
+                account_balances[tx["accountId"]] = round2(account_balances[tx["accountId"]] + tx["amount"])
         elif ttype == "opening_balance":
             if tx.get("accountId") in account_balances:
                 account_balances[tx["accountId"]] = round2(account_balances[tx["accountId"]] + tx["amount"])
@@ -451,6 +463,7 @@ def log_debt_entry(state, args):
         raise ToolError('direction must be "increase" or "decrease".')
     tx_date = args.get("date") or today_str()
     signed_amount = -amount if direction == "decrease" else amount
+    account_id = resolve_account_id(state, args.get("account"), tool_error_context="log_debt_entry's account") if args.get("account") else None
 
     tx = {
         "id": uid(),
@@ -459,6 +472,7 @@ def log_debt_entry(state, args):
         "description": description,
         "amount": signed_amount,
         "debtId": debt_id,
+        "accountId": account_id,
         "createdAt": int(time.time() * 1000),
         "updatedAt": int(time.time() * 1000),
     }
@@ -466,7 +480,11 @@ def log_debt_entry(state, args):
     currency = state.get("currency", "")
     deb = debt_by_id(state, debt_id)
     verb = "added to" if direction == "increase" else "paid off against"
-    return f'Debt entry logged: {amount:.2f} {currency} {verb} "{deb["name"] if deb else debt_id}" - "{description}" on {tx_date}.'
+    acct_note = ""
+    if account_id:
+        acct = next((a for a in state["accounts"] if a["id"] == account_id), None)
+        acct_note = f' via {acct["name"] if acct else account_id} — also shown in the main Ledger'
+    return f'Debt entry logged: {amount:.2f} {currency} {verb} "{deb["name"] if deb else debt_id}" - "{description}" on {tx_date}{acct_note}.'
 
 
 def log_installment_payment(state, args):
@@ -491,6 +509,7 @@ def log_installment_payment(state, args):
     tx_date = args.get("date") or today_str()
     late = bool(args.get("late", False))
     signed_amount = -amount if direction == "decrease" else amount
+    account_id = resolve_account_id(state, args.get("account"), tool_error_context="log_installment_payment's account") if args.get("account") else None
 
     tx = {
         "id": uid(),
@@ -499,6 +518,7 @@ def log_installment_payment(state, args):
         "description": description,
         "amount": signed_amount,
         "installmentId": inst_id,
+        "accountId": account_id,
         "createdAt": int(time.time() * 1000),
         "updatedAt": int(time.time() * 1000),
     }
@@ -525,7 +545,11 @@ def log_installment_payment(state, args):
     state["transactions"].append(tx)
     currency = state.get("currency", "")
     inst = installment_by_id(state, inst_id)
-    return f'Installment payment logged: {amount:.2f} {currency} against "{inst["name"] if inst else inst_id}" - "{description}" on {tx_date}{counted_note}.'
+    acct_note = ""
+    if account_id:
+        acct = next((a for a in state["accounts"] if a["id"] == account_id), None)
+        acct_note = f' via {acct["name"] if acct else account_id} — also shown in the main Ledger'
+    return f'Installment payment logged: {amount:.2f} {currency} against "{inst["name"] if inst else inst_id}" - "{description}" on {tx_date}{counted_note}{acct_note}.'
 
 
 def list_transactions(state, args):
@@ -579,11 +603,13 @@ def list_transactions(state, args):
             lines.append(f'[{tid}] {t.get("date")} | expense | -{t.get("amount", 0):.2f} {currency} | {b} | "{desc}" | from {acc}{hist}')
         elif ttype == "debt_entry":
             deb = debt_by_id(state, t.get("debtId"))
-            lines.append(f'[{tid}] {t.get("date")} | debt_entry | {t.get("amount", 0):.2f} {currency} | {deb["name"] if deb else t.get("debtId")} | "{desc}"')
+            acct_note = f' | via {account_name(t.get("accountId"))}' if t.get("accountId") else ""
+            lines.append(f'[{tid}] {t.get("date")} | debt_entry | {t.get("amount", 0):.2f} {currency} | {deb["name"] if deb else t.get("debtId")} | "{desc}"{acct_note}')
         elif ttype == "installment_payment":
             inst = installment_by_id(state, t.get("installmentId"))
             late_note = " | late" if t.get("late") else ""
-            lines.append(f'[{tid}] {t.get("date")} | installment_payment | {t.get("amount", 0):.2f} {currency} | {inst["name"] if inst else t.get("installmentId")} | "{desc}"{late_note}')
+            acct_note = f' | via {account_name(t.get("accountId"))}' if t.get("accountId") else ""
+            lines.append(f'[{tid}] {t.get("date")} | installment_payment | {t.get("amount", 0):.2f} {currency} | {inst["name"] if inst else t.get("installmentId")} | "{desc}"{late_note}{acct_note}')
         elif ttype == "opening_balance":
             acc = account_name(t.get("accountId"))
             lines.append(f'[{tid}] {t.get("date")} | opening_balance | +{t.get("amount", 0):.2f} {currency} | "{desc}" | into {acc}')
@@ -801,7 +827,10 @@ TOOLS = [
         "name": "log_debt_entry",
         "description": "Log a change to one of the tracker's debts (money owed to Albaiti or owed by "
         "him). direction=\"increase\" grows the debt in whatever direction it's already tracked in "
-        "(more owed); direction=\"decrease\" is a payment against it (less owed).",
+        "(more owed); direction=\"decrease\" is a payment against it (less owed). Pass account only "
+        "when real cash actually moved through one of Albaiti's own bank accounts (e.g. a Jawaher "
+        "repayment paid out of Barq) - that also shows this entry in the main Ledger, not just the "
+        "Debt section. Leave it out for a ledger-only record (nothing left a tracked account).",
         "inputSchema": {
             "type": "object",
             "properties": {
@@ -810,6 +839,7 @@ TOOLS = [
                 "debt": {"type": "string", "description": 'Which debt, by name (e.g. "Owed to Jawaher")'},
                 "date": {"type": "string", "description": "YYYY-MM-DD, defaults to today"},
                 "direction": {"type": "string", "enum": ["increase", "decrease"], "description": 'Default "increase".'},
+                "account": {"type": "string", "description": "Bank account this really moved through, by name - only if real cash moved. Omit for a ledger-only debt record."},
             },
             "required": ["amount", "description", "debt"],
             "additionalProperties": False,
@@ -820,7 +850,9 @@ TOOLS = [
         "description": "Log a payment (or a setup/correction) against one of the tracker's installment "
         "loans. direction=\"decrease\" (the default) is a real payment - it also reduces that "
         "installment's installments-left count and bumps its late count if late=true. "
-        "direction=\"increase\" is a correction/setup adjustment and does NOT touch those counters.",
+        "direction=\"increase\" is a correction/setup adjustment and does NOT touch those counters. "
+        "Pass account only when real cash actually moved through one of Albaiti's own bank accounts "
+        "- that also shows this entry in the main Ledger, not just the Installments section.",
         "inputSchema": {
             "type": "object",
             "properties": {
@@ -830,6 +862,7 @@ TOOLS = [
                 "date": {"type": "string", "description": "YYYY-MM-DD, defaults to today"},
                 "direction": {"type": "string", "enum": ["increase", "decrease"], "description": 'Default "decrease" (a real payment).'},
                 "late": {"type": "boolean", "description": "Default false. True if this payment was late - only meaningful with direction=\"decrease\"."},
+                "account": {"type": "string", "description": "Bank account this really moved through, by name - only if real cash moved. Omit for a ledger-only record."},
             },
             "required": ["amount", "description", "installment"],
             "additionalProperties": False,

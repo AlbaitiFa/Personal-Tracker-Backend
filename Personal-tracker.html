@@ -877,8 +877,27 @@
         }
       } else if (tx.type === "debt_entry") {
         if (tx.debtId in debtBalances) debtBalances[tx.debtId] = round2(debtBalances[tx.debtId] + tx.amount);
+        // Most debt entries are ledger-only (a paper record of who owes
+        // what), but when real cash actually moved through one of my own
+        // accounts (tx.accountId set), it also hits that account - sign
+        // depends on which way the debt points: for "owed_by_me" the raw
+        // signed amount already matches cash flow (increase = money in,
+        // decrease/repayment = money out), but for "owed_to_me" it's the
+        // opposite (increase = I lent more, money out; decrease = they
+        // repaid me, money in), so that direction flips the sign.
+        if (tx.accountId && tx.accountId in accountBalances) {
+          var debForAcct = debtById(tx.debtId);
+          var debtAcctSign = (debForAcct && debForAcct.direction === "owed_to_me") ? -1 : 1;
+          accountBalances[tx.accountId] = round2(accountBalances[tx.accountId] + debtAcctSign * tx.amount);
+        }
       } else if (tx.type === "installment_payment") {
         if (tx.installmentId in installmentBalances) installmentBalances[tx.installmentId] = round2(installmentBalances[tx.installmentId] + tx.amount);
+        // Same idea as debt_entry above - an installment is always money I
+        // owe, so its raw signed amount (negative for a real payment)
+        // already matches the cash-flow direction, no sign flip needed.
+        if (tx.accountId && tx.accountId in accountBalances) {
+          accountBalances[tx.accountId] = round2(accountBalances[tx.accountId] + tx.amount);
+        }
       } else if (tx.type === "opening_balance") {
         // Pre-existing cash, not a draw: never counted toward the Owner's Pay
         // entitlement (receivedBySource only sums "draw" transactions),
@@ -1212,9 +1231,17 @@
     } else if (tx.type === "debt_entry") {
       var deb = debtById(tx.debtId);
       note = deb ? esc(deb.name) : "(deleted debt)";
+      if (tx.accountId) {
+        var debAcct = accountById(tx.accountId);
+        note += " · " + (debAcct ? "via " + esc(debAcct.name) : "(deleted account)");
+      }
     } else if (tx.type === "installment_payment") {
       var inst = installmentById(tx.installmentId);
       note = inst ? esc(inst.name) : "(deleted installment)";
+      if (tx.accountId) {
+        var instAcct = accountById(tx.accountId);
+        note += " · " + (instAcct ? "via " + esc(instAcct.name) : "(deleted account)");
+      }
       if (tx.late) chips = '<div class="chip-row"><span class="chip emergency">Late</span></div>';
     } else if (tx.type === "opening_balance") {
       var acct3 = accountById(tx.accountId);
@@ -1243,15 +1270,25 @@
   }
 
   // Three separate transaction lists, not one - Ledger is cash flow
-  // (draw/expense/opening_balance), Debt and Installments each get their
-  // own history of just their own entries. All three reuse the same
-  // renderLedgerItem() row AND the same search/sort/filter mechanism
-  // (ported from the company tracker's ledgerFilter/tracker.html), so
-  // formatting and behavior stay identical everywhere - each section just
-  // gets its own filter state (keyed by idPrefix) and, since debt/
-  // installment entries don't touch a bucket or bank account directly,
-  // a leaner filter bar (no type/bucket/account dropdowns).
-  var LEDGER_TYPES = { draw: true, expense: true, opening_balance: true };
+  // (draw/expense/opening_balance) PLUS any debt_entry/installment_payment
+  // that actually moved real cash through one of my own accounts
+  // (tx.accountId set) - a debt/installment entry with no accountId is a
+  // ledger-only record (nothing left a tracked account) and stays out of
+  // the main Ledger, visible only in its own Debt/Installment section.
+  // Debt and Installments each ALSO get their own history of every one of
+  // their own entries regardless of accountId, so nothing is ever hidden,
+  // just not double-shown unless it's a real account-level cash move. All
+  // three reuse the same renderLedgerItem() row AND the same search/sort/
+  // filter mechanism (ported from the company tracker's ledgerFilter/
+  // tracker.html), so formatting and behavior stay identical everywhere -
+  // each section just gets its own filter state (keyed by idPrefix) and a
+  // leaner filter bar for Debt/Installment (no type/bucket dropdowns,
+  // since those sections are always one fixed type with no bucket concept).
+  function txInMainLedger(t) {
+    if (t.type === "draw" || t.type === "expense" || t.type === "opening_balance") return true;
+    if (t.type === "debt_entry" || t.type === "installment_payment") return !!t.accountId;
+    return false;
+  }
 
   var ledgerFilters = {};
   function ledgerFilterState(idPrefix) {
@@ -1268,7 +1305,7 @@
     return false;
   }
   function ledgerTxTouchesAccount(tx, accountId) {
-    if (tx.type === "draw" || tx.type === "expense" || tx.type === "opening_balance") return tx.accountId === accountId;
+    if (tx.type === "draw" || tx.type === "expense" || tx.type === "opening_balance" || tx.type === "debt_entry" || tx.type === "installment_payment") return tx.accountId === accountId;
     return false;
   }
   function ledgerSearchText(tx) {
@@ -1285,8 +1322,10 @@
       Object.keys(tx.allocation || {}).forEach(function (bid) { var b3 = bucketById(bid); if (b3) bits.push(b3.name); });
     } else if (tx.type === "debt_entry") {
       var deb = debtById(tx.debtId); if (deb) bits.push(deb.name);
+      var a4 = accountById(tx.accountId); if (a4) bits.push(a4.name);
     } else if (tx.type === "installment_payment") {
       var inst = installmentById(tx.installmentId); if (inst) bits.push(inst.name);
+      var a5 = accountById(tx.accountId); if (a5) bits.push(a5.name);
     }
     return bits.join(" ").toLowerCase();
   }
@@ -1416,7 +1455,7 @@
   }
 
   function renderLedger() {
-    renderFilteredLedger("ledgerSection", "ledgerCount", function (t) { return LEDGER_TYPES[t.type]; }, "No transactions logged yet.", true);
+    renderFilteredLedger("ledgerSection", "ledgerCount", txInMainLedger, "No transactions logged yet.", true);
   }
 
   function renderDebtLedger() {
@@ -1540,20 +1579,28 @@
         '<div class="check-note">Predates the bank account\'s current opening balance, which already reflects it. Record only — shows in the ledger, doesn\'t reduce its Account (Give/FFA/Investment/Lifestyle) or change any balance.</div>';
     } else if (txType === "debt_entry") {
       var debtDir = editingTx ? (editingTx.amount < 0 ? "decrease" : "increase") : "increase";
+      var debtAcctChecked = editingTx ? !!editingTx.accountId : false;
       fields =
         '<div class="field"><label>Debt</label><select class="select" id="txDebt">' + debtOptions(editingTx ? editingTx.debtId : null) + "</select></div>" +
         '<div class="field"><label>Amount</label><input class="input" type="number" step="0.01" id="txAmount" placeholder="0.00" value="' + amountVal + '"></div>' +
         '<div class="field"><label>Direction</label><select class="select" id="txDebtDirection"><option value="increase"' + (debtDir === "increase" ? " selected" : "") + '>Increases the balance</option><option value="decrease"' + (debtDir === "decrease" ? " selected" : "") + '>Repayment / reduces the balance</option></select></div>' +
         '<div class="field"><label>Description</label><input class="input" type="text" id="txDescription" placeholder="e.g. Medical expense owed" value="' + descVal + '"></div>' +
-        '<div class="field"><label>Date</label><input class="input" type="date" id="txDate" value="' + dateVal + '"></div>';
+        '<div class="field"><label>Date</label><input class="input" type="date" id="txDate" value="' + dateVal + '"></div>' +
+        '<label class="check-row"><input type="checkbox" id="txDebtHasAccount"' + (debtAcctChecked ? " checked" : "") + '> Real money moved through one of my accounts</label>' +
+        '<div class="check-note">Only check this if actual cash left or entered a tracked bank account. Also shows this entry in the main Ledger, not just the Debt section.</div>' +
+        '<div class="field" id="txDebtAccountField" style="' + (debtAcctChecked ? "" : "display:none") + '"><label>Account</label><select class="select" id="txDebtAccount">' + accountOptions(editingTx ? editingTx.accountId : state.defaultAccountId) + "</select></div>";
     } else if (txType === "installment_payment") {
       var instDir = editingTx ? (editingTx.amount < 0 ? "decrease" : "increase") : "decrease";
+      var instAcctChecked = editingTx ? !!editingTx.accountId : false;
       fields =
         '<div class="field"><label>Installment</label><select class="select" id="txInstallment">' + installmentOptions(editingTx ? editingTx.installmentId : null) + "</select></div>" +
         '<div class="field"><label>Amount</label><input class="input" type="number" step="0.01" id="txAmount" placeholder="0.00" value="' + amountVal + '"></div>' +
         '<div class="field"><label>Direction</label><select class="select" id="txInstDirection"><option value="decrease"' + (instDir === "decrease" ? " selected" : "") + '>Payment / reduces remaining balance</option><option value="increase"' + (instDir === "increase" ? " selected" : "") + '>Increases remaining balance (setup, correction)</option></select></div>' +
         '<div class="field"><label>Description</label><input class="input" type="text" id="txDescription" placeholder="e.g. Monthly installment" value="' + descVal + '"></div>' +
         '<div class="field"><label>Date</label><input class="input" type="date" id="txDate" value="' + dateVal + '"></div>' +
+        '<label class="check-row"><input type="checkbox" id="txInstHasAccount"' + (instAcctChecked ? " checked" : "") + '> Real money moved through one of my accounts</label>' +
+        '<div class="check-note">Only check this if actual cash left or entered a tracked bank account. Also shows this entry in the main Ledger, not just the Installments section.</div>' +
+        '<div class="field" id="txInstAccountField" style="' + (instAcctChecked ? "" : "display:none") + '"><label>Account</label><select class="select" id="txInstAccount">' + accountOptions(editingTx ? editingTx.accountId : state.defaultAccountId) + "</select></div>" +
         (editingTx ? "" :
           '<label class="check-row"><input type="checkbox" id="txInstLate"> This payment was late</label>' +
           '<div class="check-note">On a real payment (not a setup/correction), this also updates the installment\'s left/late counts in Settings.</div>'
@@ -1581,6 +1628,14 @@
       var emCheckbox = sheet.querySelector("#txEmergency");
       var accountField = sheet.querySelector("#txAccountField");
       emCheckbox.addEventListener("change", function () { accountField.style.display = emCheckbox.checked ? "none" : ""; });
+    } else if (txType === "debt_entry") {
+      var debtAcctCheckbox = sheet.querySelector("#txDebtHasAccount");
+      var debtAcctField = sheet.querySelector("#txDebtAccountField");
+      debtAcctCheckbox.addEventListener("change", function () { debtAcctField.style.display = debtAcctCheckbox.checked ? "" : "none"; });
+    } else if (txType === "installment_payment") {
+      var instAcctCheckbox = sheet.querySelector("#txInstHasAccount");
+      var instAcctField = sheet.querySelector("#txInstAccountField");
+      instAcctCheckbox.addEventListener("change", function () { instAcctField.style.display = instAcctCheckbox.checked ? "" : "none"; });
     }
   }
 
@@ -1616,14 +1671,18 @@
       var dir = document.getElementById("txDebtDirection").value;
       var desc3 = (document.getElementById("txDescription").value || "").trim();
       if (!desc3) { showToast("Description is required."); return; }
-      Object.assign(record, { amount: dir === "decrease" ? -amount : amount, description: desc3, debtId: debtId });
+      var debtHasAccount = document.getElementById("txDebtHasAccount").checked;
+      var debtAccountId = debtHasAccount ? document.getElementById("txDebtAccount").value : null;
+      Object.assign(record, { amount: dir === "decrease" ? -amount : amount, description: desc3, debtId: debtId, accountId: debtAccountId });
     } else if (txType === "installment_payment") {
       var instId = document.getElementById("txInstallment").value;
       if (!instId) { showToast("Add an installment in Settings first."); return; }
       var dir2 = document.getElementById("txInstDirection").value;
       var desc4 = (document.getElementById("txDescription").value || "").trim();
       if (!desc4) { showToast("Description is required."); return; }
-      Object.assign(record, { amount: dir2 === "decrease" ? -amount : amount, description: desc4, installmentId: instId });
+      var instHasAccount = document.getElementById("txInstHasAccount").checked;
+      var instAccountId = instHasAccount ? document.getElementById("txInstAccount").value : null;
+      Object.assign(record, { amount: dir2 === "decrease" ? -amount : amount, description: desc4, installmentId: instId, accountId: instAccountId });
       // A real, newly-logged payment (not an edit, not a setup/correction
       // "increase") also updates the installment's left/late counts — edits
       // deliberately leave these alone; correct them directly in Settings if
