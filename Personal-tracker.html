@@ -133,14 +133,15 @@
     outline: 2px solid var(--focus); outline-offset: 2px;
   }
 
-  /* Bank Accounts + Buckets - frozen (pinned right under the topbar,
-     rest of the page scrolls underneath) by default. Auto-unfreezes only
-     while scrolled down AND the subtle unfreeze-arrow below is tapped;
-     scrolling back to the top re-arms it for next time (updateFreezeUI()
-     in the global wiring section), so there's no separate on/off setting
-     to manage or get stuck in. --topbar-h is measured in JS (the header's
-     height isn't fixed, it's padding-based) since a sticky element's `top`
-     has to match whatever's already stuck above it. */
+  /* Bank Accounts + Buckets - NOT pinned by default, scrolls normally with
+     everything else. Once scrolled down past a threshold, a subtle
+     freeze-arrow fades in offering to pin it right under the topbar for
+     that scroll-down session; scrolling back to the top resets to the
+     unfrozen default for next time (updateFreezeUI() in the global wiring
+     section), so there's no separate on/off setting to manage or get
+     stuck in. --topbar-h is measured in JS (the header's height isn't
+     fixed, it's padding-based) since a sticky element's `top` has to
+     match whatever's already stuck above it. */
   .frozen-top { background: var(--paper); padding-bottom: 10px; position: relative; }
   .frozen-top.is-frozen {
     position: sticky; top: var(--topbar-h, 64px); z-index: 15;
@@ -157,7 +158,11 @@
     opacity: 0; pointer-events: none; transition: opacity 0.15s ease;
     z-index: 16;
   }
-  .frozen-top.is-frozen.is-scrolled .unfreeze-arrow { opacity: 1; pointer-events: auto; }
+  /* Only offer to freeze while scrolled AND not already frozen - once
+     tapped, is-frozen applies and this condition no longer matches, so
+     the arrow disappears along with the now-pinned block's own reason
+     for it. */
+  .frozen-top.is-scrolled:not(.is-frozen) .unfreeze-arrow { opacity: 1; pointer-events: auto; }
   .stats-row {
     display: flex; flex-direction: column; gap: 8px; padding: 12px 16px 0; max-width: var(--content-max); margin: 0 auto;
   }
@@ -538,7 +543,7 @@
     <h2>Buckets</h2>
     <div id="bucketGrid"></div>
   </section>
-  <button class="unfreeze-arrow" id="unfreezeArrow" aria-label="Unfreeze Bank Accounts & Buckets" title="Unfreeze Bank Accounts & Buckets">
+  <button class="unfreeze-arrow" id="unfreezeArrow" aria-label="Freeze Bank Accounts & Buckets" title="Freeze Bank Accounts & Buckets">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="7 8 12 13 17 8"/><polyline points="7 14 12 19 17 14"/></svg>
   </button>
 </div>
@@ -2401,18 +2406,18 @@
   updateTopbarHeightVar();
   window.addEventListener("resize", updateTopbarHeightVar);
 
-  // Bank Accounts + Buckets freeze by default once scrolled - no separate
-  // on/off setting to manage. The subtle unfreeze-arrow only shows up
-  // past FREEZE_SCROLL_THRESHOLD (no point unfreezing something that
-  // isn't even pinned yet); tapping it unfreezes for this scroll-down
-  // session only - scrolling back near the top re-arms freezing for next
-  // time, so there's no way to get permanently stuck either way.
+  // Bank Accounts + Buckets stay unfrozen (normal scroll) by default - no
+  // separate on/off setting to manage. The subtle freeze-arrow only shows
+  // up past FREEZE_SCROLL_THRESHOLD (no point offering to pin something
+  // already at the top); tapping it freezes for this scroll-down session
+  // only - scrolling back near the top resets to unfrozen for next time,
+  // so there's no way to get permanently stuck either way.
   var FREEZE_SCROLL_THRESHOLD = 24;
-  var manuallyUnfrozen = false;
+  var manuallyFrozen = false;
   function updateFreezeUI() {
     var scrolled = window.scrollY > FREEZE_SCROLL_THRESHOLD;
-    if (!scrolled) manuallyUnfrozen = false;
-    var frozen = !manuallyUnfrozen;
+    if (!scrolled) manuallyFrozen = false;
+    var frozen = manuallyFrozen;
     document.getElementById("frozenTop").classList.toggle("is-frozen", frozen);
     document.getElementById("frozenTop").classList.toggle("is-scrolled", scrolled);
     document.querySelector("header.topbar").classList.toggle("frozen-active", frozen);
@@ -2420,7 +2425,7 @@
   window.addEventListener("scroll", updateFreezeUI, { passive: true });
   updateFreezeUI();
   document.getElementById("unfreezeArrow").addEventListener("click", function () {
-    manuallyUnfrozen = true;
+    manuallyFrozen = true;
     updateFreezeUI();
   });
 
