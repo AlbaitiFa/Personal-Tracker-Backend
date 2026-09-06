@@ -2463,18 +2463,29 @@
   window.addEventListener("resize", updateTopbarHeightVar);
 
   // Bank Accounts + Buckets stay unfrozen (normal scroll) by default - no
-  // separate on/off setting to manage. The freeze-arrow is only eligible
-  // to show at all once scrolled past FREEZE_SCROLL_THRESHOLD and not
-  // already frozen (no point offering to pin something already at the
-  // top, or something already pinned) - within that, it fades in while
-  // actively scrolling and on hover (CSS :hover, see .eligible above),
-  // fading back out once scrolling stops and the mouse isn't over it.
-  // Tapping it freezes for this scroll-down session only - scrolling back
-  // near the top resets to unfrozen for next time either way.
+  // separate on/off setting to manage. The arrow is only eligible to show
+  // at all once scrolled past FREEZE_SCROLL_THRESHOLD (no point offering
+  // to pin/collapse something already at the top) - within that, it fades
+  // in while actively scrolling and on hover (CSS :hover, see .eligible
+  // above), fading back out once scrolling stops and the mouse isn't over
+  // it. It's a single toggle that flips both look and job with the frozen
+  // state: double-down "pin it" when unfrozen, double-up "collapse it"
+  // when frozen (updateArrowVisual below) - tapping it either freezes for
+  // this scroll-down session, or collapses back to unfrozen right away.
+  // Scrolling back near the top also resets to unfrozen either way.
   var FREEZE_SCROLL_THRESHOLD = 24;
   var SCROLL_IDLE_MS = 900;
   var manuallyFrozen = false;
   var scrollIdleTimer = null;
+  var ARROW_ICON_DOWN = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="7 8 12 13 17 8"/><polyline points="7 14 12 19 17 14"/></svg>';
+  var ARROW_ICON_UP = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="7 13 12 8 17 13"/><polyline points="7 19 12 14 17 19"/></svg>';
+  function updateArrowVisual(frozen) {
+    var btn = document.getElementById("unfreezeArrow");
+    var label = frozen ? "Collapse Bank Accounts & Buckets" : "Freeze Bank Accounts & Buckets";
+    btn.setAttribute("aria-label", label);
+    btn.setAttribute("title", label);
+    btn.innerHTML = frozen ? ARROW_ICON_UP : ARROW_ICON_DOWN;
+  }
   function updateFreezeUI() {
     var scrolled = window.scrollY > FREEZE_SCROLL_THRESHOLD;
     if (!scrolled) manuallyFrozen = false;
@@ -2482,7 +2493,8 @@
     document.getElementById("frozenTop").classList.toggle("is-frozen", frozen);
     document.getElementById("frozenTop").classList.toggle("is-scrolled", scrolled);
     document.querySelector("header.topbar").classList.toggle("frozen-active", frozen);
-    document.getElementById("unfreezeArrow").classList.toggle("eligible", scrolled && !frozen);
+    document.getElementById("unfreezeArrow").classList.toggle("eligible", scrolled);
+    updateArrowVisual(frozen);
     // frozen-active drops the header's 1px bottom border (avoids a doubled
     // line against .frozen-top's own border) - that shrinks the header by
     // 1px, so --topbar-h has to be remeasured right here, or .frozen-top's
@@ -2500,7 +2512,7 @@
   window.addEventListener("scroll", function () { updateFreezeUI(); markActivelyScrolling(); }, { passive: true });
   updateFreezeUI();
   document.getElementById("unfreezeArrow").addEventListener("click", function () {
-    manuallyFrozen = true;
+    manuallyFrozen = !manuallyFrozen;
     updateFreezeUI();
   });
 
