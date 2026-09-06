@@ -146,6 +146,10 @@
   .frozen-top.is-frozen {
     position: sticky; top: var(--topbar-h, 64px); z-index: 15;
     border-bottom: 1px solid var(--border);
+    /* Same translucent-blur treatment as header.topbar, so the pinned
+       block reads as one continuous glassy surface with it. */
+    background: color-mix(in srgb, var(--paper) 88%, transparent);
+    backdrop-filter: blur(8px);
   }
   /* The topbar's own bottom border becomes a redundant doubled line right
      above .frozen-top's own border once frozen - hide it only then. */
