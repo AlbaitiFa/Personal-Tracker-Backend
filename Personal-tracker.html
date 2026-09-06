@@ -1127,30 +1127,88 @@
     el.innerHTML = html;
   }
 
+  function monthYearLabel(monthStr) {
+    var parts = monthStr.split("-");
+    var d = new Date(Number(parts[0]), Number(parts[1]) - 1, 1);
+    return d.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+  }
+  function addMonths(monthStr, delta) {
+    var parts = monthStr.split("-");
+    var d = new Date(Number(parts[0]), Number(parts[1]) - 1 + delta, 1);
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
+  }
+  function backIcon() {
+    return '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>';
+  }
+
   var expenseBreakdownChart = null;
+  var expensesChartView = "monthly";
+  var expensesMonthOffset = 0;
+  var expensesYearOffset = 0;
   // Modeled on Prudy's original personal-finances-tracker artifact's
-  // "Expenses breakdown" card (a doughnut over a per-Bucket legend) -
-  // scoped to the current calendar month, matching the "This month"
-  // convention the Income panel above already uses. Historical expenses
-  // are excluded since they don't touch any Bucket balance (same reasoning
-  // renderLedgerItem uses for them), so they'd misrepresent a Bucket
-  // breakdown built on top of them.
+  // "Expenses breakdown" card (a doughnut over a per-Bucket legend), with
+  // month/year navigation and a Monthly/Yearly toggle mirroring the company
+  // tracker's income chart (renderIncomeChart in tracker.html) - same
+  // per-period breakdown, just aggregated over a whole year instead of one
+  // month when toggled. Historical expenses are excluded throughout since
+  // they don't touch any Bucket balance (same reasoning renderLedgerItem
+  // uses for them), so they'd misrepresent a Bucket breakdown built on top
+  // of them.
   function renderExpensesSummary(derived) {
     var el = document.getElementById("expensesSummary");
-    var targetMonth = todayStr().slice(0, 7);
-    var monthExpenses = state.transactions.filter(function (t) {
+    var toggleHtml =
+      '<div class="segmented segmented-compact" style="max-width:180px; margin-top:8px">' +
+        '<button data-expenses-view="monthly" class="' + (expensesChartView === "monthly" ? "active" : "") + '">Monthly</button>' +
+        '<button data-expenses-view="yearly" class="' + (expensesChartView === "yearly" ? "active" : "") + '">Yearly</button>' +
+      '</div>';
+    if (expensesChartView === "yearly") renderExpensesSummaryYearly(el, toggleHtml);
+    else renderExpensesSummaryMonthly(el, toggleHtml);
+  }
+
+  function renderExpensesSummaryMonthly(el, toggleHtml) {
+    var targetMonth = addMonths(todayStr().slice(0, 7), expensesMonthOffset);
+    var navHtml =
+      '<div class="income-chart-nav">' +
+        '<button type="button" class="icon-btn" id="expensesMonthPrev" aria-label="Previous month">' + backIcon() + '</button>' +
+        '<div class="income-chart-nav-label">' + esc(monthYearLabel(targetMonth)) + '</div>' +
+        '<button type="button" class="icon-btn" id="expensesMonthNext" aria-label="Next month" style="transform:rotate(180deg)">' + backIcon() + '</button>' +
+      '</div>';
+    var periodExpenses = state.transactions.filter(function (t) {
       return t.type === "expense" && !t.historical && (t.date || "").slice(0, 7) === targetMonth;
     });
-    if (!monthExpenses.length) {
+    renderExpensesBreakdownCard(el, toggleHtml, navHtml, periodExpenses, monthYearLabel(targetMonth));
+    wireExpensesChartToggle(el);
+    wireExpensesMonthNav(el);
+  }
+
+  function renderExpensesSummaryYearly(el, toggleHtml) {
+    var targetYear = String(Number(todayStr().slice(0, 4)) + expensesYearOffset);
+    var navHtml =
+      '<div class="income-chart-nav">' +
+        '<button type="button" class="icon-btn" id="expensesYearPrev" aria-label="Previous year">' + backIcon() + '</button>' +
+        '<div class="income-chart-nav-label">' + esc(targetYear) + '</div>' +
+        '<button type="button" class="icon-btn" id="expensesYearNext" aria-label="Next year" style="transform:rotate(180deg)">' + backIcon() + '</button>' +
+      '</div>';
+    var periodExpenses = state.transactions.filter(function (t) {
+      return t.type === "expense" && !t.historical && (t.date || "").slice(0, 4) === targetYear;
+    });
+    renderExpensesBreakdownCard(el, toggleHtml, navHtml, periodExpenses, targetYear);
+    wireExpensesChartToggle(el);
+    wireExpensesYearNav(el);
+  }
+
+  function renderExpensesBreakdownCard(el, toggleHtml, navHtml, periodExpenses, periodLabel) {
+    if (!periodExpenses.length) {
       el.innerHTML = '<div class="panel" style="margin-bottom:8px">' +
-        '<div class="comp-title">Expenses breakdown <span class="sub">This month</span></div>' +
-        '<div class="empty-state">No expenses logged this month.</div>' +
+        '<div class="comp-title">Expenses breakdown</div>' +
+        toggleHtml + navHtml +
+        '<div class="empty-state" style="margin-top:12px">No expenses logged in ' + esc(periodLabel) + '.</div>' +
       '</div>';
       return;
     }
 
     var byBucket = {};
-    monthExpenses.forEach(function (t) {
+    periodExpenses.forEach(function (t) {
       var key = t.bucketId || "_uncategorized";
       byBucket[key] = round2((byBucket[key] || 0) + (Number(t.amount) || 0));
     });
@@ -1169,12 +1227,13 @@
     }).join("");
 
     el.innerHTML = '<div class="panel" style="margin-bottom:8px">' +
-      '<div class="comp-title">Expenses breakdown <span class="sub">This month · ' + curr() + ' ' + fmt(total) + '</span></div>' +
-      '<div class="expense-breakdown-row">' +
+      '<div class="comp-title">Expenses breakdown <span class="sub">' + curr() + ' ' + fmt(total) + '</span></div>' +
+      toggleHtml + navHtml +
+      '<div class="expense-breakdown-row" style="margin-top:12px">' +
         '<div class="expense-chart-box"><canvas id="expenseBreakdownChart"></canvas></div>' +
         '<div class="expense-legend">' + legendHtml + '</div>' +
       '</div>' +
-      '<div class="bucket-caption" style="margin-top:8px">' + monthExpenses.length + ' expense' + (monthExpenses.length === 1 ? "" : "s") + ' this month · click for the log</div>' +
+      '<div class="bucket-caption" style="margin-top:8px">' + periodExpenses.length + ' expense' + (periodExpenses.length === 1 ? "" : "s") + ' in ' + esc(periodLabel) + ' · click for the log</div>' +
     '</div>';
 
     if (expenseBreakdownChart) { expenseBreakdownChart.destroy(); expenseBreakdownChart = null; }
@@ -1211,6 +1270,32 @@
         }
       });
     }
+  }
+
+  // Nav arrows and the Monthly/Yearly toggle live inside #expensesSummary,
+  // which is itself one big click target that expands/collapses the log
+  // below (see the collapsible-sections wiring) - stopPropagation here so
+  // using them doesn't also toggle that collapse.
+  function wireExpensesMonthNav(el) {
+    var prevBtn = el.querySelector("#expensesMonthPrev");
+    var nextBtn = el.querySelector("#expensesMonthNext");
+    if (prevBtn) prevBtn.addEventListener("click", function (e) { e.stopPropagation(); expensesMonthOffset -= 1; renderExpensesSummary(lastDerived); });
+    if (nextBtn) nextBtn.addEventListener("click", function (e) { e.stopPropagation(); expensesMonthOffset += 1; renderExpensesSummary(lastDerived); });
+  }
+  function wireExpensesYearNav(el) {
+    var prevBtn = el.querySelector("#expensesYearPrev");
+    var nextBtn = el.querySelector("#expensesYearNext");
+    if (prevBtn) prevBtn.addEventListener("click", function (e) { e.stopPropagation(); expensesYearOffset -= 1; renderExpensesSummary(lastDerived); });
+    if (nextBtn) nextBtn.addEventListener("click", function (e) { e.stopPropagation(); expensesYearOffset += 1; renderExpensesSummary(lastDerived); });
+  }
+  function wireExpensesChartToggle(el) {
+    el.querySelectorAll("[data-expenses-view]").forEach(function (btn) {
+      btn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        expensesChartView = btn.getAttribute("data-expenses-view");
+        renderExpensesSummary(lastDerived);
+      });
+    });
   }
 
   function renderExpensesLedger() {
