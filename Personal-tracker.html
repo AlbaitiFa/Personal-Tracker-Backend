@@ -181,7 +181,13 @@
      but a swipe keeps re-triggering .is-active-scroll the same way
      scrolling does). */
   .unfreeze-arrow {
-    position: sticky; top: calc(var(--topbar-h, 64px) + 4px);
+    /* --arrow-dock-top (JS-measured, see updateArrowDockVar) is topbar-h+4
+       while unfrozen, but topbar-h + the WHOLE pinned block's height once
+       frozen - the block stays pinned taking up real screen space instead
+       of scrolling away, so docking at the shallow unfrozen offset would
+       land the arrow in the middle of the pinned content instead of below
+       it. */
+    position: sticky; top: var(--arrow-dock-top, 64px);
     display: flex; align-items: center; justify-content: center;
     width: 30px; height: 22px; margin: 0 auto; border-radius: 999px;
     background: var(--surface); border: 1px solid var(--border); color: var(--text-muted);
@@ -2460,7 +2466,10 @@
     if (header) document.documentElement.style.setProperty("--topbar-h", header.getBoundingClientRect().height + "px");
   }
   updateTopbarHeightVar();
-  window.addEventListener("resize", updateTopbarHeightVar);
+  window.addEventListener("resize", function () {
+    updateTopbarHeightVar();
+    updateArrowDockVar(manuallyFrozen);
+  });
 
   // Bank Accounts + Buckets stay unfrozen (normal scroll) by default - no
   // separate on/off setting to manage. The arrow is only eligible to show
@@ -2486,6 +2495,18 @@
     btn.setAttribute("title", label);
     btn.innerHTML = frozen ? ARROW_ICON_UP : ARROW_ICON_DOWN;
   }
+  // Unfrozen, the arrow docks just under the header (topbar-h+4) because
+  // by the time it reaches that point .frozen-top has already scrolled out
+  // of the way. Frozen, .frozen-top stays pinned and occupies real screen
+  // space instead - docking at that same shallow offset would land the
+  // arrow in the middle of the pinned accounts/buckets content instead of
+  // below it, so it needs to target topbar-h + the whole pinned block's
+  // own height instead.
+  function updateArrowDockVar(frozen) {
+    var topbarH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--topbar-h")) || 64;
+    var dock = frozen ? topbarH + document.getElementById("frozenTop").offsetHeight : topbarH + 4;
+    document.documentElement.style.setProperty("--arrow-dock-top", dock + "px");
+  }
   function updateFreezeUI() {
     var scrolled = window.scrollY > FREEZE_SCROLL_THRESHOLD;
     if (!scrolled) manuallyFrozen = false;
@@ -2501,6 +2522,7 @@
     // sticky `top` stays pinned to the old (taller) height and leaves a
     // 1px void above it.
     updateTopbarHeightVar();
+    updateArrowDockVar(frozen);
   }
   function markActivelyScrolling() {
     document.getElementById("unfreezeArrow").classList.add("is-active-scroll");
