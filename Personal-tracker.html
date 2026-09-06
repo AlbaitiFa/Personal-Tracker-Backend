@@ -150,19 +150,24 @@
   /* The topbar's own bottom border becomes a redundant doubled line right
      above .frozen-top's own border once frozen - hide it only then. */
   header.topbar.frozen-active { border-bottom: none; }
-  /* Fixed to the viewport (not frozenTop's own box) so it stays put at
-     the same spot below the header instead of scrolling away with the
-     unfrozen block underneath it. "Eligible" (scrolled past the
-     threshold, not already frozen - JS toggles this) just makes it
-     hoverable; actually VISIBLE needs either active scrolling
-     (.is-active-scroll, JS-timed) or a real :hover - so it shows while
-     you're scrolling, fades after you stop, and comes back the instant
-     the mouse rests where it was (touch has no hover, but a swipe keeps
-     re-triggering .is-active-scroll the same way scrolling does). */
+  /* Sits in normal flow right after the Buckets block (a sibling of
+     .frozen-top, not a child - it needs the whole rest of the page as
+     its sticky containing block, not just frozenTop's own short box).
+     That's what makes it travel: it starts at its natural spot right
+     under Buckets and, as you scroll, rides up with the page until it
+     hits `top`, then holds there for the rest of the scroll - it only
+     drops back to its natural spot once you scroll back near the top.
+     "Eligible" (scrolled past the threshold, not already frozen - JS
+     toggles this) just makes it hoverable; actually VISIBLE needs either
+     active scrolling (.is-active-scroll, JS-timed) or a real :hover - so
+     it shows while you're scrolling, fades after you stop, and comes
+     back the instant the mouse rests where it was (touch has no hover,
+     but a swipe keeps re-triggering .is-active-scroll the same way
+     scrolling does). */
   .unfreeze-arrow {
-    position: fixed; left: 50%; top: calc(var(--topbar-h, 64px) + 4px); transform: translateX(-50%);
+    position: sticky; top: calc(var(--topbar-h, 64px) + 4px);
     display: flex; align-items: center; justify-content: center;
-    width: 30px; height: 22px; border-radius: 999px;
+    width: 30px; height: 22px; margin: 0 auto; border-radius: 999px;
     background: var(--surface); border: 1px solid var(--border); color: var(--text-muted);
     opacity: 0; pointer-events: none; transition: opacity 0.2s ease;
     z-index: 16;
@@ -549,10 +554,10 @@
     <h2>Buckets</h2>
     <div id="bucketGrid"></div>
   </section>
-  <button class="unfreeze-arrow" id="unfreezeArrow" aria-label="Freeze Bank Accounts & Buckets" title="Freeze Bank Accounts & Buckets">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="7 8 12 13 17 8"/><polyline points="7 14 12 19 17 14"/></svg>
-  </button>
 </div>
+<button class="unfreeze-arrow" id="unfreezeArrow" aria-label="Freeze Bank Accounts & Buckets" title="Freeze Bank Accounts & Buckets">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="7 8 12 13 17 8"/><polyline points="7 14 12 19 17 14"/></svg>
+</button>
 
 <section class="block">
   <h2>Income</h2>
