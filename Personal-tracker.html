@@ -144,7 +144,19 @@
      match whatever's already stuck above it. */
   .frozen-top { background: var(--paper); padding-bottom: 10px; position: relative; }
   .frozen-top.is-frozen {
-    position: sticky; top: var(--topbar-h, 64px); z-index: 15;
+    /* Pinned 8px (the blur radius) higher than the header's edge and tucked
+       behind it (lower z-index) - two adjacent boxes each running their own
+       backdrop-filter can't blur across their shared edge, so butting them
+       together exactly at that edge leaves a visible seam/shadow where one
+       blur abruptly cuts off and the other begins. Overlapping them by the
+       blur radius hides the seam entirely behind the header - the header's
+       own blur then reads a bit of this layer instead of raw scrolled
+       content there, so the two blend rather than meet at a hard line. */
+    position: sticky; top: calc(var(--topbar-h, 64px) - 8px); z-index: 15;
+    /* Compensates the 8px pull upward above (padding, not margin - a
+       child's margin-top here collapses through into the parent's own
+       box and cancels the offset out; padding can't collapse). */
+    padding-top: 8px;
     border-bottom: 1px solid var(--border);
     /* Same translucent-blur treatment as header.topbar, so the pinned
        block reads as one continuous glassy surface with it. */
