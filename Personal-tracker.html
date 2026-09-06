@@ -296,6 +296,15 @@
 
   .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px; }
   .comp-title { font-size: 0.8rem; font-weight: 600; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  /* Expenses breakdown card - a doughnut (Chart.js) + legend, modeled on
+     Prudy's original personal-finances-tracker artifact's expense card. */
+  .expense-breakdown-row { display: flex; align-items: center; gap: 16px; }
+  .expense-chart-box { width: 92px; height: 92px; flex-shrink: 0; position: relative; }
+  .expense-legend { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+  .expense-legend-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 0.76rem; }
+  .expense-legend-row .name { display: flex; align-items: center; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .expense-legend-row .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; flex-shrink: 0; }
+  .expense-legend-row .pctval { font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
   .income-chart-nav { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 10px; }
   .income-chart-nav .icon-btn { width: 30px; height: 30px; }
   .income-chart-nav-label { font-size: 0.82rem; font-weight: 600; }
@@ -587,6 +596,14 @@
 </section>
 
 <section class="block">
+  <h2 class="collapsible-header" data-toggle="expenses">Expenses <span class="chevron" id="expensesChevron">▾</span></h2>
+  <div id="expensesSummary"></div>
+  <div id="expensesBody" class="collapsible-body" style="display:none">
+    <div id="expensesLedgerSection" style="margin-top:14px;"></div>
+  </div>
+</section>
+
+<section class="block">
   <h2 class="collapsible-header" data-toggle="debt">Debt <span class="chevron" id="debtChevron">▾</span></h2>
   <div id="debtSummary"></div>
   <div id="debtBody" class="collapsible-body" style="display:none">
@@ -647,6 +664,7 @@
   .chip.historical { background: var(--surface-2); color: var(--text-muted); }
 </style>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
 <script>
 (function () {
   "use strict";
@@ -995,11 +1013,13 @@
     renderAccountCards(derived);
     renderBuckets(derived);
     renderEntitlementPanel(derived);
+    renderExpensesSummary(derived);
     renderDebtSummary(derived);
     renderDebts(derived);
     renderInstallmentSummary(derived);
     renderInstallments(derived);
     renderLedger();
+    renderExpensesLedger();
     renderDebtLedger();
     renderInstallmentLedger();
     var fab = document.getElementById("fabBtn");
@@ -1105,6 +1125,96 @@
       '</div></div>';
     }).join("") + '</div>';
     el.innerHTML = html;
+  }
+
+  var expenseBreakdownChart = null;
+  // Modeled on Prudy's original personal-finances-tracker artifact's
+  // "Expenses breakdown" card (a doughnut over a per-Bucket legend) -
+  // scoped to the current calendar month, matching the "This month"
+  // convention the Income panel above already uses. Historical expenses
+  // are excluded since they don't touch any Bucket balance (same reasoning
+  // renderLedgerItem uses for them), so they'd misrepresent a Bucket
+  // breakdown built on top of them.
+  function renderExpensesSummary(derived) {
+    var el = document.getElementById("expensesSummary");
+    var targetMonth = todayStr().slice(0, 7);
+    var monthExpenses = state.transactions.filter(function (t) {
+      return t.type === "expense" && !t.historical && (t.date || "").slice(0, 7) === targetMonth;
+    });
+    if (!monthExpenses.length) {
+      el.innerHTML = '<div class="panel" style="margin-bottom:8px">' +
+        '<div class="comp-title">Expenses breakdown <span class="sub">This month</span></div>' +
+        '<div class="empty-state">No expenses logged this month.</div>' +
+      '</div>';
+      return;
+    }
+
+    var byBucket = {};
+    monthExpenses.forEach(function (t) {
+      var key = t.bucketId || "_uncategorized";
+      byBucket[key] = round2((byBucket[key] || 0) + (Number(t.amount) || 0));
+    });
+    var total = round2(Object.keys(byBucket).reduce(function (s, k) { return s + byBucket[k]; }, 0));
+    var rows = state.buckets.map(function (b, i) {
+      return { name: b.name, hue: bucketColor(i), amount: byBucket[b.id] || 0 };
+    }).filter(function (r) { return r.amount > 0; });
+    if (byBucket._uncategorized) rows.push({ name: "Uncategorized", hue: "clay", amount: byBucket._uncategorized });
+
+    var legendHtml = rows.map(function (r) {
+      var pct = total > 0 ? round2((r.amount / total) * 100) : 0;
+      return '<div class="expense-legend-row">' +
+        '<span class="name"><span class="dot" style="background:var(--' + r.hue + ')"></span>' + esc(r.name) + '</span>' +
+        '<span class="pctval" style="color:var(--' + r.hue + ')">' + pct.toFixed(1) + '% · ' + fmt(r.amount) + '</span>' +
+      '</div>';
+    }).join("");
+
+    el.innerHTML = '<div class="panel" style="margin-bottom:8px">' +
+      '<div class="comp-title">Expenses breakdown <span class="sub">This month · ' + curr() + ' ' + fmt(total) + '</span></div>' +
+      '<div class="expense-breakdown-row">' +
+        '<div class="expense-chart-box"><canvas id="expenseBreakdownChart"></canvas></div>' +
+        '<div class="expense-legend">' + legendHtml + '</div>' +
+      '</div>' +
+      '<div class="bucket-caption" style="margin-top:8px">' + monthExpenses.length + ' expense' + (monthExpenses.length === 1 ? "" : "s") + ' this month · click for the log</div>' +
+    '</div>';
+
+    if (expenseBreakdownChart) { expenseBreakdownChart.destroy(); expenseBreakdownChart = null; }
+    if (window.Chart) {
+      var canvas = document.getElementById("expenseBreakdownChart");
+      var css = getComputedStyle(document.documentElement);
+      expenseBreakdownChart = new Chart(canvas, {
+        type: "doughnut",
+        data: {
+          labels: rows.map(function (r) { return r.name; }),
+          datasets: [{
+            data: rows.map(function (r) { return r.amount; }),
+            backgroundColor: rows.map(function (r) { return css.getPropertyValue("--" + r.hue).trim(); }),
+            borderWidth: 2,
+            borderColor: css.getPropertyValue("--surface").trim()
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: "65%",
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function (ctx) {
+                  var val = ctx.parsed;
+                  var pct = total > 0 ? (val / total * 100).toFixed(1) : "0.0";
+                  return ctx.label + ": " + pct + "% (" + curr().replace(/<[^>]+>/g, "") + " " + fmt(val) + ")";
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+  }
+
+  function renderExpensesLedger() {
+    renderFilteredLedger("expensesLedgerSection", null, function (t) { return t.type === "expense"; }, "No expenses logged yet.", false);
   }
 
   function renderDebtSummary(derived) {
@@ -1962,7 +2072,7 @@
   // The header text AND the always-visible summary card underneath it both
   // toggle the same body - matches Prudy's artifact, where the whole summary
   // card is one big click target, not just its title.
-  ["debt", "installment"].forEach(function (key) {
+  ["expenses", "debt", "installment"].forEach(function (key) {
     var body = document.getElementById(key + "Body");
     var chevron = document.getElementById(key + "Chevron");
     var summary = document.getElementById(key + "Summary");
