@@ -296,11 +296,13 @@
 
   .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px; }
   .comp-title { font-size: 0.8rem; font-weight: 600; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
-  /* Expenses breakdown card - a doughnut (Chart.js) + legend, modeled on
-     Prudy's original personal-finances-tracker artifact's expense card. */
-  .expense-breakdown-row { display: flex; align-items: center; gap: 16px; }
-  .expense-chart-box { width: 92px; height: 92px; flex-shrink: 0; position: relative; }
-  .expense-legend { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+  /* Expenses breakdown card - a horizontal-bar (Chart.js) + legend, modeled
+     on Prudy's original personal-finances-tracker artifact's expense card
+     (which used a doughnut - switched to a bar since this app's real data
+     skews too hard toward one Bucket for a doughnut's slices to stay
+     legible). Height is set inline per render (scales with row count). */
+  .expense-chart-box { width: 100%; position: relative; }
+  .expense-legend { display: flex; flex-direction: column; gap: 6px; }
   .expense-legend-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 0.76rem; }
   .expense-legend-row .name { display: flex; align-items: center; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .expense-legend-row .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; flex-shrink: 0; }
@@ -1226,13 +1228,17 @@
       '</div>';
     }).join("");
 
+    // Horizontal bar, not a donut - a donut reads fine when shares are close,
+    // but this app's real data skews hard toward one Bucket (e.g. Lifestyle
+    // at 95%+ some months), which shrinks the rest to slivers too thin to
+    // see or read a value off. A bar keeps every Bucket legible regardless
+    // of how lopsided the split is.
+    var chartHeight = Math.max(60, rows.length * 28);
     el.innerHTML = '<div class="panel" style="margin-bottom:8px">' +
       '<div class="comp-title">Expenses breakdown <span class="sub">' + curr() + ' ' + fmt(total) + '</span></div>' +
       toggleHtml + navHtml +
-      '<div class="expense-breakdown-row" style="margin-top:12px">' +
-        '<div class="expense-chart-box"><canvas id="expenseBreakdownChart"></canvas></div>' +
-        '<div class="expense-legend">' + legendHtml + '</div>' +
-      '</div>' +
+      '<div class="expense-chart-box" style="height:' + chartHeight + 'px; margin-top:12px"><canvas id="expenseBreakdownChart"></canvas></div>' +
+      '<div class="expense-legend" style="margin-top:10px">' + legendHtml + '</div>' +
       '<div class="bucket-caption" style="margin-top:8px">' + periodExpenses.length + ' expense' + (periodExpenses.length === 1 ? "" : "s") + ' in ' + esc(periodLabel) + ' · click for the log</div>' +
     '</div>';
 
@@ -1240,29 +1246,35 @@
     if (window.Chart) {
       var canvas = document.getElementById("expenseBreakdownChart");
       var css = getComputedStyle(document.documentElement);
+      var borderVal = css.getPropertyValue("--border").trim();
+      var mutedVal = css.getPropertyValue("--text-muted").trim();
       expenseBreakdownChart = new Chart(canvas, {
-        type: "doughnut",
+        type: "bar",
         data: {
           labels: rows.map(function (r) { return r.name; }),
           datasets: [{
             data: rows.map(function (r) { return r.amount; }),
             backgroundColor: rows.map(function (r) { return css.getPropertyValue("--" + r.hue).trim(); }),
-            borderWidth: 2,
-            borderColor: css.getPropertyValue("--surface").trim()
+            borderRadius: 4,
+            maxBarThickness: 18
           }]
         },
         options: {
+          indexAxis: "y",
           responsive: true,
           maintainAspectRatio: false,
-          cutout: "65%",
+          scales: {
+            x: { display: false },
+            y: { grid: { display: false }, ticks: { color: mutedVal, font: { size: 11 } }, border: { color: borderVal } }
+          },
           plugins: {
             legend: { display: false },
             tooltip: {
               callbacks: {
                 label: function (ctx) {
-                  var val = ctx.parsed;
+                  var val = ctx.parsed.x;
                   var pct = total > 0 ? (val / total * 100).toFixed(1) : "0.0";
-                  return ctx.label + ": " + pct + "% (" + curr().replace(/<[^>]+>/g, "") + " " + fmt(val) + ")";
+                  return pct + "% (" + curr().replace(/<[^>]+>/g, "") + " " + fmt(val) + ")";
                 }
               }
             }
