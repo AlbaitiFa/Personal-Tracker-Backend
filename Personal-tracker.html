@@ -1210,32 +1210,65 @@
   // when spending overshoots the allocation (spent bar longer than
   // allocated), the shorter allocated bar still reads as sitting flush
   // against the longer one rather than floating in its middle.
-  function expenseAllocationBottomAlignPlugin(spentValues, boldColors) {
+  // Mobile gets a vertical (column) chart instead of horizontal bars -
+  // bucket names along the bottom read fine at narrow widths, and it
+  // matches the app's own existing 460px breakpoint (see the stats-row
+  // media query) rather than inventing a new one.
+  function isMobileViewport() { return window.innerWidth < 460; }
+
+  function expenseAllocationAlignPlugin(spentValues, boldColors, vertical) {
     return {
-      id: "expenseAllocationBottomAlign",
+      id: "expenseAllocationAlign",
       afterDatasetsDraw: function (chart) {
         var meta = chart.getDatasetMeta(0);
-        var xScale = chart.scales.x;
         var ctx = chart.ctx;
         var THIN = 8;
-        meta.data.forEach(function (bar, i) {
-          var bottomY = bar.y + bar.height / 2;
-          var xStart = xScale.getPixelForValue(0);
-          var xEnd = xScale.getPixelForValue(spentValues[i]);
-          var w = Math.max(xEnd - xStart, 0);
-          if (!w) return;
-          var r = 3;
-          ctx.save();
-          ctx.fillStyle = boldColors[i];
-          ctx.beginPath();
-          ctx.moveTo(xStart, bottomY - THIN);
-          ctx.lineTo(xStart + w - r, bottomY - THIN);
-          ctx.arcTo(xStart + w, bottomY - THIN, xStart + w, bottomY - THIN + r, r);
-          ctx.lineTo(xStart + w, bottomY);
-          ctx.lineTo(xStart, bottomY);
-          ctx.closePath();
-          ctx.fill();
-        });
+        var r = 3;
+        if (vertical) {
+          // Columns grow upward from a shared baseline already, so there's
+          // no "centered vs flush" issue in the growth direction like the
+          // horizontal case has - the bold column just needs to be
+          // narrower than (not centered within) the pale one, flush
+          // against its left edge.
+          var yScale = chart.scales.y;
+          meta.data.forEach(function (bar, i) {
+            var leftX = bar.x - bar.width / 2;
+            var yBase = yScale.getPixelForValue(0);
+            var yTop = yScale.getPixelForValue(spentValues[i]);
+            var h = Math.max(yBase - yTop, 0);
+            if (!h) return;
+            ctx.save();
+            ctx.fillStyle = boldColors[i];
+            ctx.beginPath();
+            ctx.moveTo(leftX, yBase);
+            ctx.lineTo(leftX, yTop + r);
+            ctx.arcTo(leftX, yTop, leftX + THIN, yTop, r);
+            ctx.lineTo(leftX + THIN, yBase);
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+          });
+        } else {
+          var xScale = chart.scales.x;
+          meta.data.forEach(function (bar, i) {
+            var bottomY = bar.y + bar.height / 2;
+            var xStart = xScale.getPixelForValue(0);
+            var xEnd = xScale.getPixelForValue(spentValues[i]);
+            var w = Math.max(xEnd - xStart, 0);
+            if (!w) return;
+            ctx.save();
+            ctx.fillStyle = boldColors[i];
+            ctx.beginPath();
+            ctx.moveTo(xStart, bottomY - THIN);
+            ctx.lineTo(xStart + w - r, bottomY - THIN);
+            ctx.arcTo(xStart + w, bottomY - THIN, xStart + w, bottomY - THIN + r, r);
+            ctx.lineTo(xStart + w, bottomY);
+            ctx.lineTo(xStart, bottomY);
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+          });
+        }
       }
     };
   }
@@ -1275,14 +1308,17 @@
       '</div>';
     }).join("");
 
-    // Horizontal bar with two layers per Bucket - a pale "allocated" bar
-    // (how much of this period's income split landed here) and, bottom-
-    // aligned against it, a bold "actually spent" bar. Not a donut, and
+    // Two layers per Bucket - a pale "allocated" bar (how much of this
+    // period's income split landed here) and, aligned flush against it
+    // rather than centered, a bold "actually spent" bar. Not a donut, and
     // not just a spending-only bar either: this app's real data skews hard
     // toward one Bucket some months, and a single spending number without
     // its allocation for context doesn't say whether that's normal or
-    // overspending - the two bars together do.
-    var chartHeight = Math.max(70, rows.length * 46);
+    // overspending - the two bars together do. Horizontal on desktop;
+    // vertical columns on mobile, where bucket names along the bottom fit
+    // a narrow screen better than a wide label column would.
+    var vertical = isMobileViewport();
+    var chartHeight = vertical ? 200 : Math.max(70, rows.length * 46);
     el.innerHTML = '<div class="panel" style="margin-bottom:8px">' +
       '<div class="comp-title">Expenses breakdown <span class="sub">' + curr() + ' ' + fmt(spentTotal) + ' spent</span></div>' +
       toggleHtml + navHtml +
@@ -1301,28 +1337,27 @@
       var boldColors = rows.map(function (r) { return css.getPropertyValue("--" + r.hue).trim(); });
       var spentValues = rows.map(function (r) { return r.spent; });
       var allocatedValues = rows.map(function (r) { return r.allocated; });
+      var valueScale = { grid: { color: borderVal }, ticks: { color: mutedVal, font: { size: 10 } } };
+      var categoryScale = { grid: { display: false }, ticks: { color: mutedVal, font: { size: 11 } }, border: { color: borderVal } };
       expenseBreakdownChart = new Chart(canvas, {
         type: "bar",
         data: {
           labels: rows.map(function (r) { return r.name; }),
           datasets: [
             { label: "Allocated", data: allocatedValues, backgroundColor: paleColors, borderRadius: 3, barThickness: 20, grouped: false },
-            // Zero-opacity - exists only so Chart.js's auto x-scale accounts
+            // Zero-opacity - exists only so Chart.js's auto scale accounts
             // for spent values too (spending can exceed allocation), not to
             // be drawn; the plugin below paints the real "spent" bar,
-            // bottom-aligned against its allocated bar instead of centered.
+            // aligned flush against its allocated bar instead of centered.
             { label: "Spent (scale only)", data: spentValues, backgroundColor: "rgba(0,0,0,0)", barThickness: 0.01, grouped: false }
           ]
         },
-        plugins: [expenseAllocationBottomAlignPlugin(spentValues, boldColors)],
+        plugins: [expenseAllocationAlignPlugin(spentValues, boldColors, vertical)],
         options: {
-          indexAxis: "y",
+          indexAxis: vertical ? "x" : "y",
           responsive: true,
           maintainAspectRatio: false,
-          scales: {
-            x: { grid: { color: borderVal }, ticks: { color: mutedVal, font: { size: 10 } } },
-            y: { grid: { display: false }, ticks: { color: mutedVal, font: { size: 11 } }, border: { color: borderVal } }
-          },
+          scales: vertical ? { x: categoryScale, y: valueScale } : { x: valueScale, y: categoryScale },
           plugins: {
             legend: { display: false },
             tooltip: {
@@ -2732,6 +2767,10 @@
   window.addEventListener("resize", function () {
     updateTopbarHeightVar();
     updateArrowDockVar(manuallyFrozen);
+    // Re-render so the Expenses breakdown chart's orientation (vertical
+    // columns on mobile, horizontal bars above 460px) tracks a resize or
+    // orientation change, not just the width at the last full render().
+    if (lastDerived) renderExpensesSummary(lastDerived);
   });
 
   // Bank Accounts + Buckets stay unfrozen (normal scroll) by default - no
