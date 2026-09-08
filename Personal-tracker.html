@@ -1242,7 +1242,9 @@
             ctx.beginPath();
             ctx.moveTo(leftX, yBase);
             ctx.lineTo(leftX, yTop + r);
-            ctx.arcTo(leftX, yTop, leftX + THIN, yTop, r);
+            ctx.arcTo(leftX, yTop, leftX + r, yTop, r);
+            ctx.lineTo(leftX + THIN - r, yTop);
+            ctx.arcTo(leftX + THIN, yTop, leftX + THIN, yTop + r, r);
             ctx.lineTo(leftX + THIN, yBase);
             ctx.closePath();
             ctx.fill();
@@ -1262,7 +1264,8 @@
             ctx.moveTo(xStart, bottomY - THIN);
             ctx.lineTo(xStart + w - r, bottomY - THIN);
             ctx.arcTo(xStart + w, bottomY - THIN, xStart + w, bottomY - THIN + r, r);
-            ctx.lineTo(xStart + w, bottomY);
+            ctx.lineTo(xStart + w, bottomY - r);
+            ctx.arcTo(xStart + w, bottomY, xStart + w - r, bottomY, r);
             ctx.lineTo(xStart, bottomY);
             ctx.closePath();
             ctx.fill();
@@ -1337,19 +1340,24 @@
       var boldColors = rows.map(function (r) { return css.getPropertyValue("--" + r.hue).trim(); });
       var spentValues = rows.map(function (r) { return r.spent; });
       var allocatedValues = rows.map(function (r) { return r.allocated; });
-      var valueScale = { grid: { color: borderVal }, ticks: { color: mutedVal, font: { size: 10 } } };
+      // A second (invisible) dataset used to be here purely so Chart.js's
+      // auto-scale would account for spent values too (spending can exceed
+      // allocation) - but a second bar dataset, even at grouped:false,
+      // nudged the one real "Allocated" bar off-center from where the
+      // plugin (using that bar's own true position) expects it, so the
+      // manually-drawn "spent" bar landed beside it instead of over it.
+      // Computing the axis range directly removes the need for a second
+      // dataset at all, and gives round, evenly-stepped ticks for free.
+      var STEP = 1000;
+      var axisMax = (Math.floor(Math.max.apply(null, allocatedValues.concat(spentValues)) / STEP) + 1) * STEP;
+      var valueScale = { min: 0, max: axisMax, grid: { color: borderVal }, ticks: { color: mutedVal, font: { size: 10 }, stepSize: STEP } };
       var categoryScale = { grid: { display: false }, ticks: { color: mutedVal, font: { size: 11 } }, border: { color: borderVal } };
       expenseBreakdownChart = new Chart(canvas, {
         type: "bar",
         data: {
           labels: rows.map(function (r) { return r.name; }),
           datasets: [
-            { label: "Allocated", data: allocatedValues, backgroundColor: paleColors, borderRadius: 3, barThickness: 20, grouped: false },
-            // Zero-opacity - exists only so Chart.js's auto scale accounts
-            // for spent values too (spending can exceed allocation), not to
-            // be drawn; the plugin below paints the real "spent" bar,
-            // aligned flush against its allocated bar instead of centered.
-            { label: "Spent (scale only)", data: spentValues, backgroundColor: "rgba(0,0,0,0)", barThickness: 0.01, grouped: false }
+            { label: "Allocated", data: allocatedValues, backgroundColor: paleColors, borderRadius: 3, barThickness: 20 }
           ]
         },
         plugins: [expenseAllocationAlignPlugin(spentValues, boldColors, vertical)],
