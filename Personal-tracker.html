@@ -1178,7 +1178,10 @@
     var periodExpenses = state.transactions.filter(function (t) {
       return t.type === "expense" && !t.historical && (t.date || "").slice(0, 7) === targetMonth;
     });
-    renderExpensesBreakdownCard(el, toggleHtml, navHtml, periodExpenses, monthYearLabel(targetMonth));
+    var periodDraws = state.transactions.filter(function (t) {
+      return t.type === "draw" && !t.historical && !t.emergency && t.split && (t.date || "").slice(0, 7) === targetMonth;
+    });
+    renderExpensesBreakdownCard(el, toggleHtml, navHtml, periodExpenses, periodDraws, monthYearLabel(targetMonth));
     wireExpensesChartToggle(el);
     wireExpensesMonthNav(el);
   }
@@ -1194,48 +1197,94 @@
     var periodExpenses = state.transactions.filter(function (t) {
       return t.type === "expense" && !t.historical && (t.date || "").slice(0, 4) === targetYear;
     });
-    renderExpensesBreakdownCard(el, toggleHtml, navHtml, periodExpenses, targetYear);
+    var periodDraws = state.transactions.filter(function (t) {
+      return t.type === "draw" && !t.historical && !t.emergency && t.split && (t.date || "").slice(0, 4) === targetYear;
+    });
+    renderExpensesBreakdownCard(el, toggleHtml, navHtml, periodExpenses, periodDraws, targetYear);
     wireExpensesChartToggle(el);
     wireExpensesYearNav(el);
   }
 
-  function renderExpensesBreakdownCard(el, toggleHtml, navHtml, periodExpenses, periodLabel) {
-    if (!periodExpenses.length) {
+  // Bottom-aligns each bucket's "actually spent" bar against its own
+  // "allocated" bar instead of Chart.js's default vertical centering - so
+  // when spending overshoots the allocation (spent bar longer than
+  // allocated), the shorter allocated bar still reads as sitting flush
+  // against the longer one rather than floating in its middle.
+  function expenseAllocationBottomAlignPlugin(spentValues, boldColors) {
+    return {
+      id: "expenseAllocationBottomAlign",
+      afterDatasetsDraw: function (chart) {
+        var meta = chart.getDatasetMeta(0);
+        var xScale = chart.scales.x;
+        var ctx = chart.ctx;
+        var THIN = 8;
+        meta.data.forEach(function (bar, i) {
+          var bottomY = bar.y + bar.height / 2;
+          var xStart = xScale.getPixelForValue(0);
+          var xEnd = xScale.getPixelForValue(spentValues[i]);
+          var w = Math.max(xEnd - xStart, 0);
+          if (!w) return;
+          var r = 3;
+          ctx.save();
+          ctx.fillStyle = boldColors[i];
+          ctx.beginPath();
+          ctx.moveTo(xStart, bottomY - THIN);
+          ctx.lineTo(xStart + w - r, bottomY - THIN);
+          ctx.arcTo(xStart + w, bottomY - THIN, xStart + w, bottomY - THIN + r, r);
+          ctx.lineTo(xStart + w, bottomY);
+          ctx.lineTo(xStart, bottomY);
+          ctx.closePath();
+          ctx.fill();
+        });
+      }
+    };
+  }
+
+  function renderExpensesBreakdownCard(el, toggleHtml, navHtml, periodExpenses, periodDraws, periodLabel) {
+    if (!periodExpenses.length && !periodDraws.length) {
       el.innerHTML = '<div class="panel" style="margin-bottom:8px">' +
         '<div class="comp-title">Expenses breakdown</div>' +
         toggleHtml + navHtml +
-        '<div class="empty-state" style="margin-top:12px">No expenses logged in ' + esc(periodLabel) + '.</div>' +
+        '<div class="empty-state" style="margin-top:12px">No income allocated or expenses logged in ' + esc(periodLabel) + '.</div>' +
       '</div>';
       return;
     }
 
-    var byBucket = {};
+    var spentByBucket = {};
     periodExpenses.forEach(function (t) {
       var key = t.bucketId || "_uncategorized";
-      byBucket[key] = round2((byBucket[key] || 0) + (Number(t.amount) || 0));
+      spentByBucket[key] = round2((spentByBucket[key] || 0) + (Number(t.amount) || 0));
     });
-    var total = round2(Object.keys(byBucket).reduce(function (s, k) { return s + byBucket[k]; }, 0));
+    var allocatedByBucket = {};
+    periodDraws.forEach(function (t) {
+      Object.keys(t.split).forEach(function (bid) {
+        allocatedByBucket[bid] = round2((allocatedByBucket[bid] || 0) + (Number(t.split[bid]) || 0));
+      });
+    });
+    var spentTotal = round2(Object.keys(spentByBucket).reduce(function (s, k) { return s + spentByBucket[k]; }, 0));
+
     var rows = state.buckets.map(function (b, i) {
-      return { name: b.name, hue: bucketColor(i), amount: byBucket[b.id] || 0 };
-    }).filter(function (r) { return r.amount > 0; });
-    if (byBucket._uncategorized) rows.push({ name: "Uncategorized", hue: "clay", amount: byBucket._uncategorized });
+      return { name: b.name, hue: bucketColor(i), allocated: allocatedByBucket[b.id] || 0, spent: spentByBucket[b.id] || 0 };
+    }).filter(function (r) { return r.allocated > 0 || r.spent > 0; });
+    if (spentByBucket._uncategorized) rows.push({ name: "Uncategorized", hue: "clay", allocated: 0, spent: spentByBucket._uncategorized });
 
     var legendHtml = rows.map(function (r) {
-      var pct = total > 0 ? round2((r.amount / total) * 100) : 0;
       return '<div class="expense-legend-row">' +
         '<span class="name"><span class="dot" style="background:var(--' + r.hue + ')"></span>' + esc(r.name) + '</span>' +
-        '<span class="pctval" style="color:var(--' + r.hue + ')">' + pct.toFixed(1) + '% · ' + fmt(r.amount) + '</span>' +
+        '<span class="pctval" style="color:var(--' + r.hue + ')">Alloc ' + fmt(r.allocated) + ' · Spent ' + fmt(r.spent) + '</span>' +
       '</div>';
     }).join("");
 
-    // Horizontal bar, not a donut - a donut reads fine when shares are close,
-    // but this app's real data skews hard toward one Bucket (e.g. Lifestyle
-    // at 95%+ some months), which shrinks the rest to slivers too thin to
-    // see or read a value off. A bar keeps every Bucket legible regardless
-    // of how lopsided the split is.
-    var chartHeight = Math.max(60, rows.length * 28);
+    // Horizontal bar with two layers per Bucket - a pale "allocated" bar
+    // (how much of this period's income split landed here) and, bottom-
+    // aligned against it, a bold "actually spent" bar. Not a donut, and
+    // not just a spending-only bar either: this app's real data skews hard
+    // toward one Bucket some months, and a single spending number without
+    // its allocation for context doesn't say whether that's normal or
+    // overspending - the two bars together do.
+    var chartHeight = Math.max(70, rows.length * 46);
     el.innerHTML = '<div class="panel" style="margin-bottom:8px">' +
-      '<div class="comp-title">Expenses breakdown <span class="sub">' + curr() + ' ' + fmt(total) + '</span></div>' +
+      '<div class="comp-title">Expenses breakdown <span class="sub">' + curr() + ' ' + fmt(spentTotal) + ' spent</span></div>' +
       toggleHtml + navHtml +
       '<div class="expense-chart-box" style="height:' + chartHeight + 'px; margin-top:12px"><canvas id="expenseBreakdownChart"></canvas></div>' +
       '<div class="expense-legend" style="margin-top:10px">' + legendHtml + '</div>' +
@@ -1248,33 +1297,40 @@
       var css = getComputedStyle(document.documentElement);
       var borderVal = css.getPropertyValue("--border").trim();
       var mutedVal = css.getPropertyValue("--text-muted").trim();
+      var paleColors = rows.map(function (r) { return css.getPropertyValue("--" + r.hue + "-soft").trim(); });
+      var boldColors = rows.map(function (r) { return css.getPropertyValue("--" + r.hue).trim(); });
+      var spentValues = rows.map(function (r) { return r.spent; });
+      var allocatedValues = rows.map(function (r) { return r.allocated; });
       expenseBreakdownChart = new Chart(canvas, {
         type: "bar",
         data: {
           labels: rows.map(function (r) { return r.name; }),
-          datasets: [{
-            data: rows.map(function (r) { return r.amount; }),
-            backgroundColor: rows.map(function (r) { return css.getPropertyValue("--" + r.hue).trim(); }),
-            borderRadius: 4,
-            maxBarThickness: 18
-          }]
+          datasets: [
+            { label: "Allocated", data: allocatedValues, backgroundColor: paleColors, borderRadius: 3, barThickness: 20, grouped: false },
+            // Zero-opacity - exists only so Chart.js's auto x-scale accounts
+            // for spent values too (spending can exceed allocation), not to
+            // be drawn; the plugin below paints the real "spent" bar,
+            // bottom-aligned against its allocated bar instead of centered.
+            { label: "Spent (scale only)", data: spentValues, backgroundColor: "rgba(0,0,0,0)", barThickness: 0.01, grouped: false }
+          ]
         },
+        plugins: [expenseAllocationBottomAlignPlugin(spentValues, boldColors)],
         options: {
           indexAxis: "y",
           responsive: true,
           maintainAspectRatio: false,
           scales: {
-            x: { display: false },
+            x: { grid: { color: borderVal }, ticks: { color: mutedVal, font: { size: 10 } } },
             y: { grid: { display: false }, ticks: { color: mutedVal, font: { size: 11 } }, border: { color: borderVal } }
           },
           plugins: {
             legend: { display: false },
             tooltip: {
+              filter: function (ctx) { return ctx.datasetIndex === 0; },
               callbacks: {
                 label: function (ctx) {
-                  var val = ctx.parsed.x;
-                  var pct = total > 0 ? (val / total * 100).toFixed(1) : "0.0";
-                  return pct + "% (" + curr().replace(/<[^>]+>/g, "") + " " + fmt(val) + ")";
+                  var i = ctx.dataIndex;
+                  return "Allocated " + fmt(allocatedValues[i]) + " · Spent " + fmt(spentValues[i]);
                 }
               }
             }
