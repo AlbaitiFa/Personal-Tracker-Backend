@@ -495,6 +495,7 @@
   .btn-primary { background: var(--accent); border-color: var(--accent); color: var(--paper); }
   .btn-danger { background: var(--danger); border-color: var(--danger); color: var(--paper); }
   .btn-ghost { background: transparent; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
   .btn-row { display: flex; gap: 10px; margin-top: 6px; }
   .btn-row .btn { width: auto; flex: 1; }
 
@@ -914,6 +915,27 @@
     var tx = installmentOpeningTx(installmentId);
     if (tx) { tx.amount = amount; }
     else { state.transactions.push({ id: uid(), type: "installment_payment", installmentId: installmentId, amount: amount, date: todayStr(), description: "Opening balance", opening: true, createdAt: Date.now() }); }
+  }
+  function installmentsPaidCount(inst) { return Math.max(0, (Number(inst.installmentsTotal) || 0) - (Number(inst.installmentsLeft) || 0)); }
+  // Full calendar months between two YYYY-MM-DD dates (negative if `to` is
+  // before `from`) - the day-of-month comparison keeps a start date of the
+  // 20th from counting as a full month elapsed on the 5th of the next one.
+  function monthsBetween(fromStr, toStr) {
+    var from = new Date(fromStr), to = new Date(toStr);
+    var months = (to.getFullYear() - from.getFullYear()) * 12 + (to.getMonth() - from.getMonth());
+    if (to.getDate() < from.getDate()) months -= 1;
+    return months;
+  }
+  // "Late" used to be a manually-typed counter, editable independently of
+  // whatever was actually paid - it could say anything. Deriving it from
+  // the start date instead means it can't drift: how many payments SHOULD
+  // have happened by today (one at signing, one per elapsed month after,
+  // capped at the loan's term) minus how many actually have.
+  function installmentDerivedLate(inst) {
+    if (!inst.startDate || !inst.installmentsTotal) return null;
+    var elapsed = monthsBetween(inst.startDate, todayStr()) + 1;
+    var expected = Math.min(Math.max(elapsed, 0), inst.installmentsTotal);
+    return Math.max(0, expected - installmentsPaidCount(inst));
   }
   function incomeSourceById(id) { return state.incomeSources.find(function (s) { return s.id === id; }); }
   function defaultIncomeSourceId() { return state.incomeSources[0] ? state.incomeSources[0].id : null; }
@@ -1553,18 +1575,18 @@
     var el = document.getElementById("installmentSection");
     if (!state.installments.length) { el.innerHTML = '<div class="empty-state">No installments tracked. Add some in Settings.</div>'; return; }
 
-    var lateOnes = state.installments.filter(function (i) { return (Number(i.lateCount) || 0) > 0; });
+    var lateOnes = state.installments.filter(function (i) { return (installmentDerivedLate(i) || 0) > 0; });
     var lateNote = lateOnes.length
       ? '<div class="ledger-note" style="margin-bottom:10px">' + lateOnes.length + ' of ' + state.installments.length +
         ' loan' + (state.installments.length === 1 ? "" : "s") + ' ' + (lateOnes.length === 1 ? "has" : "have") + ' at least one late installment: ' +
-        lateOnes.map(function (i) { return esc(i.name) + ' (' + (Number(i.lateCount) || 0) + '/' + (i.installmentsTotal || "?") + ')'; }).join(", ") + '.</div>'
+        lateOnes.map(function (i) { return esc(i.name) + ' (' + (installmentDerivedLate(i) || 0) + '/' + (i.installmentsTotal || "?") + ')'; }).join(", ") + '.</div>'
       : "";
 
     el.innerHTML = lateNote + '<div class="item-list">' + state.installments.map(function (inst) {
       var bal = derived.installmentBalances[inst.id] || 0;
       var total = Number(inst.installmentsTotal) || 0;
       var left = Number(inst.installmentsLeft) || 0;
-      var late = Number(inst.lateCount) || 0;
+      var late = installmentDerivedLate(inst) || 0;
       var hasSchedule = total > 0;
       var isMonthly = (Number(inst.monthlyAmount) || 0) > 0;
       var paid = hasSchedule ? Math.max(0, total - left) : 0;
@@ -2003,9 +2025,34 @@
   /* ---------------- transaction sheet ---------------- */
   var txType = "draw";
   var editingTxId = null;
-  function openTxSheet(type) { txType = type || "draw"; editingTxId = null; document.getElementById("txOverlay").classList.add("open"); renderTxSheet(); }
-  function openEditTxSheet(tx) { txType = tx.type; editingTxId = tx.id; document.getElementById("txOverlay").classList.add("open"); renderTxSheet(); }
-  function closeTxSheet() { editingTxId = null; document.getElementById("txOverlay").classList.remove("open"); }
+  var presetInstallmentId = null;
+  // Set when "+ Add payment" (inside the Debt/Installment edit view) opens
+  // this sheet, so closing it - via X or a successful submit, both call
+  // closeTxSheet() - returns to that same installment's edit view instead
+  // of just dropping back to the dashboard.
+  var returnToItemEditAfterTx = false;
+  function openTxSheet(type, presetInstId) { txType = type || "draw"; editingTxId = null; presetInstallmentId = presetInstId || null; document.getElementById("txOverlay").classList.add("open"); renderTxSheet(); }
+  function openEditTxSheet(tx) { txType = tx.type; editingTxId = tx.id; presetInstallmentId = null; document.getElementById("txOverlay").classList.add("open"); renderTxSheet(); }
+  function closeTxSheet() {
+    editingTxId = null; presetInstallmentId = null;
+    document.getElementById("txOverlay").classList.remove("open");
+    if (returnToItemEditAfterTx) {
+      returnToItemEditAfterTx = false;
+      document.getElementById("settingsOverlay").classList.add("open");
+      renderSettingsSheet();
+    }
+  }
+  // Opens the exact same Add Transaction flow the "+" FAB uses (Installment
+  // type), pre-selecting this installment so logging a real payment - not
+  // a bare counter edit - is what updates its paid/remaining figures. Hides
+  // the Settings overlay rather than stacking a second one on top of it
+  // (both .overlay elements share one z-index, so two open at once paint
+  // in DOM order, not visually "on top" the way you'd expect).
+  function openPaymentForInstallment(id) {
+    document.getElementById("settingsOverlay").classList.remove("open");
+    returnToItemEditAfterTx = true;
+    openTxSheet("installment_payment", id);
+  }
 
   function accountOptions(selectedId) {
     return state.accounts.map(function (a) { return '<option value="' + a.id + '"' + (a.id === selectedId ? " selected" : "") + '>' + esc(a.name) + "</option>"; }).join("");
@@ -2181,7 +2228,7 @@
       var instDir = editingTx ? (editingTx.amount < 0 ? "decrease" : "increase") : "decrease";
       var instAcctChecked = editingTx ? !!editingTx.accountId : false;
       fields =
-        '<div class="field"><label>Installment</label><select class="select" id="txInstallment">' + installmentOptions(editingTx ? editingTx.installmentId : null) + "</select></div>" +
+        '<div class="field"><label>Installment</label><select class="select" id="txInstallment">' + installmentOptions(editingTx ? editingTx.installmentId : presetInstallmentId) + "</select></div>" +
         '<div class="field"><label>Amount</label><input class="input" type="number" step="0.01" id="txAmount" placeholder="0.00" value="' + amountVal + '"></div>' +
         '<div class="field"><label>Direction</label><select class="select" id="txInstDirection"><option value="decrease"' + (instDir === "decrease" ? " selected" : "") + '>Payment / reduces remaining balance</option><option value="increase"' + (instDir === "increase" ? " selected" : "") + '>Increases remaining balance (setup, correction)</option></select></div>' +
         '<div class="field"><label>Description</label><input class="input" type="text" id="txDescription" placeholder="e.g. Monthly installment" value="' + descVal + '"></div>' +
@@ -2303,18 +2350,19 @@
       var instAccountId = instHasAccount ? document.getElementById("txInstAccount").value : null;
       Object.assign(record, { amount: dir2 === "decrease" ? -amount : amount, description: desc4, installmentId: instId, accountId: instAccountId });
       // A real, newly-logged payment (not an edit, not a setup/correction
-      // "increase") also updates the installment's left/late counts — edits
-      // deliberately leave these alone; correct them directly in Settings if
-      // a count itself was wrong, rather than by re-editing a payment.
+      // "increase") also updates the installment's remaining count — edits
+      // deliberately leave this alone; correct it directly in Settings if
+      // the count itself was wrong, rather than by re-editing a payment.
+      // "Late" is no longer a manually-incremented counter (see
+      // installmentDerivedLate) - the checkbox still tags this specific
+      // payment's own record, useful as history even though the aggregate
+      // late figure is now computed from start date + how many are paid.
       var lateCheckbox = document.getElementById("txInstLate");
       if (!wasEditing && dir2 === "decrease") {
         record.late = !!(lateCheckbox && lateCheckbox.checked);
         record.countedAsPayment = true;
         var instForCounters = installmentById(instId);
-        if (instForCounters) {
-          instForCounters.installmentsLeft = Math.max(0, (Number(instForCounters.installmentsLeft) || 0) - 1);
-          if (record.late) instForCounters.lateCount = (Number(instForCounters.lateCount) || 0) + 1;
-        }
+        if (instForCounters) instForCounters.installmentsLeft = Math.max(0, (Number(instForCounters.installmentsLeft) || 0) - 1);
       }
     }
 
@@ -2370,10 +2418,7 @@
         var deletedTx = state.transactions.find(function (t) { return t.id === id; });
         if (deletedTx && deletedTx.countedAsPayment) {
           var inst = installmentById(deletedTx.installmentId);
-          if (inst) {
-            inst.installmentsLeft = (Number(inst.installmentsLeft) || 0) + 1;
-            if (deletedTx.late) inst.lateCount = Math.max(0, (Number(inst.lateCount) || 0) - 1);
-          }
+          if (inst) inst.installmentsLeft = (Number(inst.installmentsLeft) || 0) + 1;
         }
         state.transactions = state.transactions.filter(function (t) { return t.id !== id; });
         // Tombstone the id so this deletion survives a stale client (this
@@ -2509,7 +2554,8 @@
     html += '<div class="field"><label>Installments</label></div>';
     html += state.installments.map(function (inst, idx) {
       var bal = (lastDerived && lastDerived.installmentBalances[inst.id]) || 0;
-      var sub = curr() + ' ' + fmt(inst.monthlyAmount || 0) + '/mo · ' + (inst.installmentsLeft || 0) + '/' + (inst.installmentsTotal || 0) + ' left · ' + curr() + ' ' + fmt(bal) + ' remaining' + (inst.lateCount ? ' · ' + inst.lateCount + ' late' : '');
+      var derivedLate = installmentDerivedLate(inst);
+      var sub = curr() + ' ' + fmt(inst.monthlyAmount || 0) + '/mo · ' + installmentsPaidCount(inst) + '/' + (inst.installmentsTotal || 0) + ' paid · ' + curr() + ' ' + fmt(bal) + ' remaining' + (derivedLate ? ' · ' + derivedLate + ' late' : '');
       return '<div class="acct-edit-row">' +
         '<div class="acct-edit-top">' +
           '<div class="reorder-btns">' +
@@ -2681,7 +2727,7 @@
       });
     });
     sheet.querySelector("#addInstallment").addEventListener("click", function () {
-      state.installments.push({ id: uid(), name: "New installment", monthlyAmount: 0, purpose: "", installmentsTotal: 0, installmentsLeft: 0, lateCount: 0, balloon: 0 });
+      state.installments.push({ id: uid(), name: "New installment", monthlyAmount: 0, purpose: "", startDate: todayStr(), installmentsTotal: 0, installmentsLeft: 0, balloon: 0 });
       persist(); renderSettingsSheet();
     });
 
@@ -2698,15 +2744,19 @@
   // Settings, showing every field on its own labeled line instead of the
   // old cramped inline row where several fields only had placeholder text
   // (which vanishes once filled in, making the form unreadable at a
-  // glance). Fields still write straight to state on input/change, same
-  // live-edit convention as every other Settings field in this app - no
-  // draft object, no separate Save button.
+  // glance). Unlike the rest of Settings, this view uses a draft + Save
+  // button rather than live-write-on-input - itemDraft holds pending edits
+  // until Save commits them to the real debt/installment.
+  var itemDraft = null;
+  var itemDirty = false;
   function openItemEditSheet(kind, id) {
     editingItemKind = kind; editingItemId = id;
+    itemDraft = null; itemDirty = false;
     renderSettingsSheet();
   }
   function closeItemEditSheet() {
     editingItemKind = null; editingItemId = null;
+    itemDraft = null; itemDirty = false;
     renderSettingsSheet();
   }
   function renderItemEditSheet(sheet) {
@@ -2715,71 +2765,109 @@
     var item = isDebt ? debtById(id) : installmentById(id);
     if (!item) { closeItemEditSheet(); return; }
 
+    if (!itemDraft || itemDraft.id !== id) {
+      var openingTx = isDebt ? debtOpeningTx(id) : installmentOpeningTx(id);
+      itemDraft = Object.assign({ id: id, openingBalance: openingTx ? openingTx.amount : 0 }, item);
+      itemDirty = false;
+    }
+    var d = itemDraft;
+
     var html = '<div class="sheet-head">' +
       '<button class="icon-btn" id="itemEditBack" aria-label="Back">' + backIcon() + '</button>' +
       '<h3>' + (isDebt ? "Edit Debt" : "Edit Installment") + '</h3>' +
       '<button class="link-btn danger" id="itemEditDelete">Delete</button>' +
     '</div>';
 
-    html += '<div class="field"><label>Name</label><input class="input" id="ieName" value="' + esc(item.name) + '" placeholder="Name"></div>';
+    html += '<div class="field"><label>Name</label><input class="input" id="ieName" value="' + esc(d.name) + '" placeholder="Name"></div>';
 
     if (isDebt) {
-      var debOpening = debtOpeningTx(id);
       html += '<div class="field"><label>Direction</label><select class="select" id="ieDirection">' +
-        '<option value="owed_to_me"' + (item.direction === "owed_to_me" ? " selected" : "") + '>Owed to me</option>' +
-        '<option value="owed_by_me"' + (item.direction === "owed_by_me" ? " selected" : "") + '>I owe this</option>' +
+        '<option value="owed_to_me"' + (d.direction === "owed_to_me" ? " selected" : "") + '>Owed to me</option>' +
+        '<option value="owed_by_me"' + (d.direction === "owed_by_me" ? " selected" : "") + '>I owe this</option>' +
       '</select></div>';
-      html += '<div class="field"><label>Opening balance</label><input class="input" type="number" step="0.01" min="0" id="ieOpeningBalance" value="' + (debOpening ? debOpening.amount : 0) + '"></div>';
+      html += '<div class="field"><label>Opening balance</label><input class="input" type="number" step="0.01" min="0" id="ieOpeningBalance" value="' + d.openingBalance + '"></div>';
     } else {
-      var instOpening = installmentOpeningTx(id);
-      html += '<div class="row2">' +
-        '<div class="field"><label>Monthly amount</label><input class="input" type="number" step="0.01" id="ieMonthlyAmount" value="' + (item.monthlyAmount || 0) + '"></div>' +
-        '<div class="field"><label>Purpose</label><input class="input" id="iePurpose" value="' + esc(item.purpose || "") + '" placeholder="Purpose"></div>' +
+      // Purpose usually needs more room than a single input line gives it
+      // (loans carry a longer note than "Groceries" does) - taller and
+      // first, with Monthly amount moved beside it instead of leading.
+      html += '<div class="row2" style="align-items:start">' +
+        '<div class="field"><label>Purpose</label><textarea class="input" id="iePurpose" placeholder="Purpose" style="height:120px; resize:vertical">' + esc(d.purpose || "") + '</textarea></div>' +
+        '<div class="field"><label>Monthly amount</label><input class="input" type="number" step="0.01" id="ieMonthlyAmount" value="' + (d.monthlyAmount || 0) + '"></div>' +
       '</div>';
-      html += '<div class="field"><label>Opening (remaining) balance</label><input class="input" type="number" step="0.01" min="0" id="ieOpeningBalance" value="' + (instOpening ? instOpening.amount : 0) + '"></div>';
+      html += '<div class="field"><label>Start date</label><input class="input" type="date" id="ieStartDate" value="' + (d.startDate || "") + '"></div>';
+      html += '<div class="field"><label>Opening (remaining) balance</label><input class="input" type="number" step="0.01" min="0" id="ieOpeningBalance" value="' + d.openingBalance + '"></div>';
+      // Installments paid isn't a field - it's total minus however many are
+      // actually left, which only ever changes for real via a logged
+      // payment (the same Add Transaction flow the "+" FAB uses, opened
+      // here pre-set to this installment), never by typing a new number.
+      var paidNow = installmentsPaidCount(item);
+      var lateNow = installmentDerivedLate(item);
       html += '<div class="row2">' +
-        '<div class="field"><label>Installments left</label><input class="input" type="number" step="1" min="0" id="ieInstallmentsLeft" value="' + (item.installmentsLeft || 0) + '"></div>' +
-        '<div class="field"><label>Installments total</label><input class="input" type="number" step="1" min="0" id="ieInstallmentsTotal" value="' + (item.installmentsTotal || 0) + '"></div>' +
+        '<div class="field"><label>Installments paid</label><input class="input" value="' + paidNow + ' of ' + (item.installmentsTotal || 0) + '" disabled></div>' +
+        '<div class="field"><label>Installments total</label><input class="input" type="number" step="1" min="0" id="ieInstallmentsTotal" value="' + (d.installmentsTotal || 0) + '"></div>' +
       '</div>';
-      html += '<div class="row2">' +
-        '<div class="field"><label>Late count</label><input class="input" type="number" step="1" min="0" id="ieLateCount" value="' + (item.lateCount || 0) + '"></div>' +
-        '<div class="field"><label>Balloon</label><input class="input" type="number" step="0.01" min="0" id="ieBalloon" value="' + (item.balloon || 0) + '"></div>' +
-      '</div>';
+      html += '<button type="button" class="add-row-btn" id="ieAddPayment" style="margin:-4px 0 12px">+ Add payment</button>';
+      if (lateNow) html += '<div class="ledger-note" style="margin:-8px 0 12px">' + lateNow + ' payment' + (lateNow === 1 ? "" : "s") + ' late, based on the start date and what\'s been paid.</div>';
+      html += '<div class="field"><label>Balloon</label><input class="input" type="number" step="0.01" min="0" id="ieBalloon" value="' + (d.balloon || 0) + '"></div>';
     }
+
+    html += '<button type="button" class="btn btn-primary" id="itemEditSave" style="margin-top:14px"' + (itemDirty ? "" : " disabled") + '>Save</button>';
 
     sheet.innerHTML = html;
     sheet.querySelector("#itemEditBack").addEventListener("click", closeItemEditSheet);
     sheet.querySelector("#itemEditDelete").addEventListener("click", function () {
       if (isDebt) {
         if (debtUsedInTx(id)) { showToast("Can't remove a debt used in existing transactions."); return; }
-        state.debts = state.debts.filter(function (d) { return d.id !== id; });
+        state.debts = state.debts.filter(function (deb) { return deb.id !== id; });
       } else {
         if (installmentUsedInTx(id)) { showToast("Can't remove an installment used in existing transactions."); return; }
-        state.installments = state.installments.filter(function (i) { return i.id !== id; });
+        state.installments = state.installments.filter(function (inst) { return inst.id !== id; });
       }
       persist();
       closeItemEditSheet();
     });
+    var addPaymentBtn = sheet.querySelector("#ieAddPayment");
+    if (addPaymentBtn) addPaymentBtn.addEventListener("click", function () { openPaymentForInstallment(id); });
 
-    function bind(fieldId, apply) {
+    function markDirty() {
+      itemDirty = true;
+      var saveBtn = sheet.querySelector("#itemEditSave");
+      if (saveBtn) saveBtn.disabled = false;
+    }
+    function bindDraft(fieldId, apply) {
       var inp = sheet.querySelector("#" + fieldId);
       if (!inp) return;
       var evt = inp.tagName === "SELECT" ? "change" : "input";
-      inp.addEventListener(evt, function () { apply(inp.value); persist(); render(); });
+      inp.addEventListener(evt, function () { apply(inp.value); markDirty(); });
     }
-    bind("ieName", function (v) { item.name = v; });
+    bindDraft("ieName", function (v) { d.name = v; });
     if (isDebt) {
-      bind("ieDirection", function (v) { item.direction = v; });
-      bind("ieOpeningBalance", function (v) { setDebtOpeningBalance(id, Math.max(0, parseFloat(v) || 0)); });
+      bindDraft("ieDirection", function (v) { d.direction = v; });
+      bindDraft("ieOpeningBalance", function (v) { d.openingBalance = Math.max(0, parseFloat(v) || 0); });
     } else {
-      bind("ieMonthlyAmount", function (v) { item.monthlyAmount = parseFloat(v) || 0; });
-      bind("iePurpose", function (v) { item.purpose = v; });
-      bind("ieOpeningBalance", function (v) { setInstallmentOpeningBalance(id, Math.max(0, parseFloat(v) || 0)); });
-      bind("ieInstallmentsLeft", function (v) { item.installmentsLeft = parseFloat(v) || 0; });
-      bind("ieInstallmentsTotal", function (v) { item.installmentsTotal = parseFloat(v) || 0; });
-      bind("ieLateCount", function (v) { item.lateCount = parseFloat(v) || 0; });
-      bind("ieBalloon", function (v) { item.balloon = parseFloat(v) || 0; });
+      bindDraft("iePurpose", function (v) { d.purpose = v; });
+      bindDraft("ieMonthlyAmount", function (v) { d.monthlyAmount = parseFloat(v) || 0; });
+      bindDraft("ieStartDate", function (v) { d.startDate = v; });
+      bindDraft("ieOpeningBalance", function (v) { d.openingBalance = Math.max(0, parseFloat(v) || 0); });
+      bindDraft("ieInstallmentsTotal", function (v) { d.installmentsTotal = parseFloat(v) || 0; });
+      bindDraft("ieBalloon", function (v) { d.balloon = parseFloat(v) || 0; });
     }
+
+    sheet.querySelector("#itemEditSave").addEventListener("click", function () {
+      if (isDebt) {
+        item.name = d.name; item.direction = d.direction;
+        setDebtOpeningBalance(id, d.openingBalance);
+      } else {
+        item.name = d.name; item.purpose = d.purpose; item.monthlyAmount = d.monthlyAmount;
+        item.startDate = d.startDate; item.installmentsTotal = d.installmentsTotal; item.balloon = d.balloon;
+        setInstallmentOpeningBalance(id, d.openingBalance);
+      }
+      persist();
+      itemDirty = false; itemDraft = null;
+      render();
+      renderItemEditSheet(sheet);
+      showToast("Saved.");
+    });
   }
 
   /* ---------------- opening balance sheet ---------------- */
