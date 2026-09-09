@@ -1216,6 +1216,25 @@
   // media query) rather than inventing a new one.
   function isMobileViewport() { return window.innerWidth < 460; }
 
+  // Shared axis-tick convention for every chart in this app (and its
+  // sibling, tracker.html's own copy of the same function) - snap to the
+  // standard 1/2/5x10^n "nice number" sequence targeting ~4 ticks, not a
+  // hardcoded step. A fixed step only looks right by coincidence at
+  // whatever magnitude the data happened to be at when it was picked - the
+  // company tracker's income chart shipped with a step that degraded into
+  // 36 cramped ticks once real numbers grew past a certain range, and this
+  // app's own first cut of the same axis used a hardcoded 1000 step for
+  // the identical reason. See [[chart-axis-tick-convention]] in memory
+  // before writing new tick logic anywhere in either tracker.
+  function niceAxisStep(maxVal, targetTicks) {
+    var raw = maxVal / Math.max(1, targetTicks);
+    if (raw <= 0) return 1;
+    var mag = Math.pow(10, Math.floor(Math.log10(raw)));
+    var norm = raw / mag;
+    var niceNorm = norm <= 1 ? 1 : norm <= 2 ? 2 : norm <= 5 ? 5 : 10;
+    return niceNorm * mag;
+  }
+
   function expenseAllocationAlignPlugin(spentValues, boldColors, vertical) {
     return {
       id: "expenseAllocationAlign",
@@ -1348,9 +1367,15 @@
       // manually-drawn "spent" bar landed beside it instead of over it.
       // Computing the axis range directly removes the need for a second
       // dataset at all, and gives round, evenly-stepped ticks for free.
-      var STEP = 1000;
-      var axisMax = (Math.floor(Math.max.apply(null, allocatedValues.concat(spentValues)) / STEP) + 1) * STEP;
-      var valueScale = { min: 0, max: axisMax, grid: { color: borderVal }, ticks: { color: mutedVal, font: { size: 10 }, stepSize: STEP } };
+      // Same convention as tracker.html's income chart: niceAxisStep picks
+      // a clean 1/2/5x10^n step for ~4 ticks at whatever magnitude this
+      // period's numbers happen to be, rather than a step hardcoded for
+      // today's numbers that would degrade into a cramped axis (or an
+      // overly sparse one) once real amounts move to a different range.
+      var chartMaxVal = Math.max(1, Math.max.apply(null, allocatedValues.concat(spentValues)));
+      var tickStep = niceAxisStep(chartMaxVal * 1.15, 4);
+      var axisMax = Math.ceil((chartMaxVal * 1.15) / tickStep) * tickStep || tickStep;
+      var valueScale = { min: 0, max: axisMax, grid: { color: borderVal }, ticks: { color: mutedVal, font: { size: 10 }, stepSize: tickStep } };
       var categoryScale = { grid: { display: false }, ticks: { color: mutedVal, font: { size: 11 } }, border: { color: borderVal } };
       expenseBreakdownChart = new Chart(canvas, {
         type: "bar",
