@@ -1735,6 +1735,13 @@
   }
 
   var ledgerFilters = {};
+  // Long ledgers (this one's main list is well past 80 entries) render
+  // every card at once by default - a lot of DOM for a list most people
+  // only skim the top of. Paginate the default chronological view; a
+  // search/filter already narrows results down to something worth
+  // showing in full, so the limit only applies when nothing's filtered.
+  var ledgerShowCount = {};
+  var LEDGER_PAGE_SIZE = 20;
   function ledgerFilterState(idPrefix) {
     if (!ledgerFilters[idPrefix]) {
       ledgerFilters[idPrefix] = { search: "", type: "", bucketId: "", accountId: "", dateFrom: "", dateTo: "", amountMin: "", amountMax: "", sortBy: "date-desc" };
@@ -1864,9 +1871,27 @@
       if (clearBtnEl) clearBtnEl.style.display = active ? "" : "none";
       var wrap = document.getElementById(idPrefix + "ListWrap");
       if (!wrap) return;
-      wrap.innerHTML = filtered.length
-        ? '<div class="ledger-list">' + groupAdjacentSplits(filtered).map(function (g) { return g.kind === "split" ? renderSplitLedgerGroup(g.rows) : renderLedgerItem(g.tx); }).join("") + "</div>"
-        : '<div class="empty-state">' + (allTxs.length ? "No transactions match your filters." : emptyMsg) + '</div>';
+      if (!filtered.length) {
+        wrap.innerHTML = '<div class="empty-state">' + (allTxs.length ? "No transactions match your filters." : emptyMsg) + '</div>';
+        return;
+      }
+      // A split group counts as one entry for pagination purposes (its
+      // rows are grouped before slicing) so "Show more" never cuts a
+      // split group in half between two loads.
+      var groups = groupAdjacentSplits(filtered);
+      var shown = active ? groups.length : Math.min(ledgerShowCount[idPrefix] || LEDGER_PAGE_SIZE, groups.length);
+      var visible = groups.slice(0, shown);
+      var remaining = groups.length - shown;
+      var itemsHtml = visible.map(function (g) { return g.kind === "split" ? renderSplitLedgerGroup(g.rows) : renderLedgerItem(g.tx); }).join("");
+      var showMoreHtml = remaining > 0
+        ? '<button class="btn" id="' + idPrefix + 'ShowMore" style="margin-top:4px">Show ' + Math.min(remaining, LEDGER_PAGE_SIZE) + ' more (' + remaining + ' left)</button>'
+        : "";
+      wrap.innerHTML = '<div class="ledger-list">' + itemsHtml + '</div>' + showMoreHtml;
+      var showMoreBtn = document.getElementById(idPrefix + "ShowMore");
+      if (showMoreBtn) showMoreBtn.addEventListener("click", function () {
+        ledgerShowCount[idPrefix] = (ledgerShowCount[idPrefix] || LEDGER_PAGE_SIZE) + LEDGER_PAGE_SIZE;
+        renderList();
+      });
     }
 
     if (!allTxs.length) {
@@ -2348,6 +2373,7 @@
   document.getElementById("ledgerSection").addEventListener("click", handleLedgerActionClick);
   document.getElementById("debtLedgerSection").addEventListener("click", handleLedgerActionClick);
   document.getElementById("installmentLedgerSection").addEventListener("click", handleLedgerActionClick);
+  document.getElementById("expensesLedgerSection").addEventListener("click", handleLedgerActionClick);
 
   /* ---------------- settings sheet (live-persist, copied from the company tracker's own pattern) ---------------- */
   function openSettingsSheet() { document.getElementById("settingsOverlay").classList.add("open"); renderSettingsSheet(); }
@@ -2483,6 +2509,7 @@
     html += '<hr class="div">';
     html += '<div class="settings-section"><h4>Data</h4>' +
       '<div class="btn-row"><button class="btn" id="exportBtn">Export backup</button><button class="btn" id="importBtn">Import backup</button></div>' +
+      '<button class="btn" id="exportCsvBtn" style="margin-top:8px; width:100%">Export ledger as CSV</button>' +
       '<input type="file" id="importFile" accept="application/json,.json">' +
       '<button class="btn btn-danger" id="resetBtn" style="margin-top:10px">Reset all data</button>' +
       '</div>';
@@ -2654,6 +2681,7 @@
     });
 
     sheet.querySelector("#exportBtn").addEventListener("click", handleExport);
+    sheet.querySelector("#exportCsvBtn").addEventListener("click", handleExportCsv);
     sheet.querySelector("#importBtn").addEventListener("click", function () { sheet.querySelector("#importFile").click(); });
     sheet.querySelector("#importFile").addEventListener("change", handleImport);
     sheet.querySelector("#resetBtn").addEventListener("click", handleReset);
@@ -2748,6 +2776,79 @@
   }
 
   function handleExport() { browserDownload(slug(state.person) + "-backup-" + todayStr() + ".json", JSON.stringify(state, null, 2)); }
+
+  // CSV export - a spreadsheet-readable ledger, distinct from "Export
+  // backup" above (a JSON state dump meant only for Import back into this
+  // same app, not for opening in Excel/Numbers or handing to anyone else).
+  function csvEscape(v) {
+    var s = v === null || v === undefined ? "" : String(v);
+    return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  }
+  function transactionCsvDetail(tx) {
+    if (tx.type === "draw") {
+      if (tx.historical) return inflowTypeOf(tx);
+      if (tx.emergency) return "Emergency (entitlement only)";
+      return Object.keys(tx.split || {}).map(function (bid) {
+        var b = bucketById(bid);
+        return (b ? b.name : bid) + " " + fmt(tx.split[bid]);
+      }).join("; ");
+    }
+    if (tx.type === "expense") {
+      if (tx.historical) return "Historical";
+      var b2 = bucketById(tx.bucketId);
+      return b2 ? b2.name : "";
+    }
+    if (tx.type === "opening_balance") {
+      return Object.keys(tx.allocation || {}).map(function (bid) {
+        var b3 = bucketById(bid);
+        return (b3 ? b3.name : bid) + " " + fmt(tx.allocation[bid]);
+      }).join("; ");
+    }
+    if (tx.type === "debt_entry") {
+      var deb = debtById(tx.debtId);
+      return deb ? deb.name : "";
+    }
+    if (tx.type === "installment_payment") {
+      var inst = installmentById(tx.installmentId);
+      return (inst ? inst.name : "") + (tx.late ? " (late)" : "");
+    }
+    return "";
+  }
+  // Same signed-amount convention renderLedgerItem uses, so the sign in
+  // the spreadsheet matches what's shown in the app.
+  function transactionCsvAmount(tx) {
+    var isOut = tx.type === "expense";
+    return (tx.type === "debt_entry" || tx.type === "installment_payment") ? tx.amount : (isOut ? -tx.amount : tx.amount);
+  }
+  function buildLedgerCsv() {
+    var rows = [["Date", "Type", "Description", "Amount", "Bank Account", "Detail"]];
+    state.transactions.slice().sort(function (a, b) {
+      if (a.date === b.date) return (a.createdAt || 0) - (b.createdAt || 0);
+      return a.date < b.date ? -1 : 1;
+    }).forEach(function (tx) {
+      var acct = accountById(tx.accountId);
+      rows.push([
+        tx.date,
+        txTypeLabel(tx),
+        tx.description || "",
+        round2(transactionCsvAmount(tx)).toFixed(2),
+        acct ? acct.name : "",
+        transactionCsvDetail(tx)
+      ]);
+    });
+    return rows.map(function (r) { return r.map(csvEscape).join(","); }).join("\r\n");
+  }
+  function handleExportCsv() {
+    // UTF-8 BOM so Excel (which otherwise guesses the system codepage)
+    // renders the currency symbol and any non-Latin text correctly.
+    var blob = new Blob(["﻿" + buildLedgerCsv()], { type: "text/csv;charset=utf-8;" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = slug(state.person) + "-ledger-" + todayStr() + ".csv";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast("CSV exported.");
+  }
 
   function handleImport(e) {
     var file = e.target.files && e.target.files[0];
