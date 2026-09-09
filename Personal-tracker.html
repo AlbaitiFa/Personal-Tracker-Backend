@@ -419,7 +419,7 @@
   .ledger-note { font-size: 0.72rem; color: var(--text-muted); margin-top: 6px; }
   .recurring-badge { background: var(--gold-soft); color: var(--gold); font-family: var(--font-body); font-weight: 600; }
   .ledger-user-note { font-style: italic; color: var(--text); white-space: pre-wrap; }
-  .ledger-actions { display: flex; gap: 8px; margin-top: 9px; }
+  .ledger-actions, .item-actions { display: flex; gap: 8px; margin-top: 9px; }
   .link-btn { font-size: 0.75rem; color: var(--accent); background: none; border: none; padding: 0; text-decoration: underline; text-underline-offset: 2px; }
   .link-btn.danger { color: var(--danger); }
 
@@ -1619,6 +1619,10 @@
         '</div>' +
         '<div class="bucket-caption">' + curr() + ' ' + fmt(inst.monthlyAmount || 0) + '/mo</div>' +
         progressHtml + chipRow +
+        '<div class="item-actions">' +
+          '<button class="link-btn" data-action="edit-installment" data-id="' + inst.id + '">Edit</button>' +
+          '<button class="link-btn" data-action="add-payment" data-id="' + inst.id + '">Add payment</button>' +
+        '</div>' +
       '</div>';
     }).join("") + "</div>";
   }
@@ -2768,6 +2772,14 @@
   var itemDraft = null;
   var itemDirty = false;
   var savedListScrollTop = 0;
+  // Entry point for the "Edit" button on a dashboard Installment card -
+  // openItemEditSheet on its own assumes Settings is already open (every
+  // other caller is a button inside the Settings sheet itself), so this
+  // opens the overlay first.
+  function openInstallmentEditFromDashboard(id) {
+    document.getElementById("settingsOverlay").classList.add("open");
+    openItemEditSheet("installment", id);
+  }
   function openItemEditSheet(kind, id) {
     var sheetEl = document.getElementById("settingsSheet");
     savedListScrollTop = sheetEl ? sheetEl.scrollTop : 0;
@@ -3100,6 +3112,13 @@
   document.getElementById("settingsBtn").addEventListener("click", openSettingsSheet);
   document.getElementById("syncBtn").addEventListener("click", function () { syncFromServer(false); });
   document.getElementById("settingsOverlay").addEventListener("click", function (e) { if (e.target.id === "settingsOverlay") closeSettingsSheet(); });
+  document.getElementById("installmentSection").addEventListener("click", function (e) {
+    var btn = e.target.closest("[data-action]");
+    if (!btn) return;
+    var id = btn.getAttribute("data-id");
+    if (btn.getAttribute("data-action") === "edit-installment") openInstallmentEditFromDashboard(id);
+    else if (btn.getAttribute("data-action") === "add-payment") openTxSheet("installment_payment", id);
+  });
 
   // The topbar's height is padding-based, not fixed - .frozen-top (Bank
   // Accounts + Buckets, pinned below it) needs that exact height as its
