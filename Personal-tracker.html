@@ -2778,24 +2778,26 @@
       '<button class="link-btn danger" id="itemEditDelete">Delete</button>' +
     '</div>';
 
-    html += '<div class="field"><label>Name</label><input class="input" id="ieName" value="' + esc(d.name) + '" placeholder="Name"></div>';
-
     if (isDebt) {
+      html += '<div class="field"><label>Name</label><input class="input" id="ieName" value="' + esc(d.name) + '" placeholder="Name"></div>';
       html += '<div class="field"><label>Direction</label><select class="select" id="ieDirection">' +
         '<option value="owed_to_me"' + (d.direction === "owed_to_me" ? " selected" : "") + '>Owed to me</option>' +
         '<option value="owed_by_me"' + (d.direction === "owed_by_me" ? " selected" : "") + '>I owe this</option>' +
       '</select></div>';
       html += '<div class="field"><label>Opening balance</label><input class="input" type="number" step="0.01" min="0" id="ieOpeningBalance" value="' + d.openingBalance + '"></div>';
     } else {
-      // Purpose usually needs more room than a single input line gives it
-      // (loans carry a longer note than "Groceries" does) - taller and
-      // first, with Monthly amount moved beside it instead of leading.
       html += '<div class="row2" style="align-items:start">' +
-        '<div class="field"><label>Purpose</label><textarea class="input" id="iePurpose" placeholder="Purpose" style="height:120px; resize:vertical">' + esc(d.purpose || "") + '</textarea></div>' +
+        '<div class="field"><label>Name</label><input class="input" id="ieName" value="' + esc(d.name) + '" placeholder="Name"></div>' +
+        '<div class="field"><label>Start date</label><input class="input" type="date" id="ieStartDate" value="' + (d.startDate || "") + '"></div>' +
+      '</div>';
+      html += '<div class="row2" style="align-items:start">' +
+        '<div class="field"><label>Opening (remaining) balance</label><input class="input" type="number" step="0.01" min="0" id="ieOpeningBalance" value="' + d.openingBalance + '"></div>' +
         '<div class="field"><label>Monthly amount</label><input class="input" type="number" step="0.01" id="ieMonthlyAmount" value="' + (d.monthlyAmount || 0) + '"></div>' +
       '</div>';
-      html += '<div class="field"><label>Start date</label><input class="input" type="date" id="ieStartDate" value="' + (d.startDate || "") + '"></div>';
-      html += '<div class="field"><label>Opening (remaining) balance</label><input class="input" type="number" step="0.01" min="0" id="ieOpeningBalance" value="' + d.openingBalance + '"></div>';
+      // Purpose usually needs more room than a single input line gives it
+      // (loans carry a longer note than "Groceries" does), so it gets its
+      // own full-width row rather than sharing one.
+      html += '<div class="field"><label>Purpose</label><textarea class="input" id="iePurpose" placeholder="Purpose" style="height:120px; resize:vertical">' + esc(d.purpose || "") + '</textarea></div>';
       // Installments paid isn't a field - it's total minus however many are
       // actually left, which only ever changes for real via a logged
       // payment (the same Add Transaction flow the "+" FAB uses, opened
