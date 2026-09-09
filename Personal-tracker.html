@@ -2031,6 +2031,7 @@
   // closeTxSheet() - returns to that same installment's edit view instead
   // of just dropping back to the dashboard.
   var returnToItemEditAfterTx = false;
+  var savedItemEditScrollTop = 0;
   function openTxSheet(type, presetInstId) { txType = type || "draw"; editingTxId = null; presetInstallmentId = presetInstId || null; document.getElementById("txOverlay").classList.add("open"); renderTxSheet(); }
   function openEditTxSheet(tx) { txType = tx.type; editingTxId = tx.id; presetInstallmentId = null; document.getElementById("txOverlay").classList.add("open"); renderTxSheet(); }
   function closeTxSheet() {
@@ -2039,6 +2040,7 @@
     if (returnToItemEditAfterTx) {
       returnToItemEditAfterTx = false;
       document.getElementById("settingsOverlay").classList.add("open");
+      pendingScrollRestore = savedItemEditScrollTop;
       renderSettingsSheet();
     }
   }
@@ -2049,6 +2051,8 @@
   // (both .overlay elements share one z-index, so two open at once paint
   // in DOM order, not visually "on top" the way you'd expect).
   function openPaymentForInstallment(id) {
+    var sheetEl = document.getElementById("settingsSheet");
+    savedItemEditScrollTop = sheetEl ? sheetEl.scrollTop : 0;
     document.getElementById("settingsOverlay").classList.remove("open");
     returnToItemEditAfterTx = true;
     openTxSheet("installment_payment", id);
@@ -2446,6 +2450,19 @@
   var editingItemKind = null; // null | "debt" | "installment"
   var editingItemId = null;
 
+  // Rebuilding #settingsSheet's innerHTML (every render here) resets its
+  // scroll to 0 - fine for opening fresh, but drilling into an item's edit
+  // view and coming back (or round-tripping through "+ Add payment") should
+  // land you back where you were, not at the top. Whoever is about to
+  // navigate AWAY from a view saves its scroll position; whoever renders
+  // the view being navigated BACK to consumes it once, right after paint.
+  var pendingScrollRestore = null;
+  function applyPendingScrollRestore(sheet) {
+    if (pendingScrollRestore === null) return;
+    sheet.scrollTop = pendingScrollRestore;
+    pendingScrollRestore = null;
+  }
+
   function renderSettingsSheet() {
     var sheet = document.getElementById("settingsSheet");
     if (editingItemKind) { renderItemEditSheet(sheet); return; }
@@ -2736,6 +2753,7 @@
     sheet.querySelector("#importBtn").addEventListener("click", function () { sheet.querySelector("#importFile").click(); });
     sheet.querySelector("#importFile").addEventListener("change", handleImport);
     sheet.querySelector("#resetBtn").addEventListener("click", handleReset);
+    applyPendingScrollRestore(sheet);
   }
 
   /* ---------------- debt/installment edit sheet ---------------- */
@@ -2749,7 +2767,10 @@
   // until Save commits them to the real debt/installment.
   var itemDraft = null;
   var itemDirty = false;
+  var savedListScrollTop = 0;
   function openItemEditSheet(kind, id) {
+    var sheetEl = document.getElementById("settingsSheet");
+    savedListScrollTop = sheetEl ? sheetEl.scrollTop : 0;
     editingItemKind = kind; editingItemId = id;
     itemDraft = null; itemDirty = false;
     renderSettingsSheet();
@@ -2757,6 +2778,7 @@
   function closeItemEditSheet() {
     editingItemKind = null; editingItemId = null;
     itemDraft = null; itemDirty = false;
+    pendingScrollRestore = savedListScrollTop;
     renderSettingsSheet();
   }
   function renderItemEditSheet(sheet) {
@@ -2867,9 +2889,12 @@
       persist();
       itemDirty = false; itemDraft = null;
       render();
+      pendingScrollRestore = sheet.scrollTop;
       renderItemEditSheet(sheet);
       showToast("Saved.");
     });
+
+    applyPendingScrollRestore(sheet);
   }
 
   /* ---------------- opening balance sheet ---------------- */
@@ -3074,6 +3099,7 @@
   document.getElementById("fabBtn").addEventListener("click", function () { if (!this.disabled) openTxSheet("draw"); });
   document.getElementById("settingsBtn").addEventListener("click", openSettingsSheet);
   document.getElementById("syncBtn").addEventListener("click", function () { syncFromServer(false); });
+  document.getElementById("settingsOverlay").addEventListener("click", function (e) { if (e.target.id === "settingsOverlay") closeSettingsSheet(); });
 
   // The topbar's height is padding-based, not fixed - .frozen-top (Bank
   // Accounts + Buckets, pinned below it) needs that exact height as its
