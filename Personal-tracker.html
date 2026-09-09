@@ -1616,7 +1616,7 @@
         : '<div class="bucket-caption" style="margin-top:6px">Ongoing — no fixed end date</div>';
 
       var chips = [];
-      if (late) chips.push('<span class="chip emergency">' + late + (hasSchedule ? "/" + total : "") + ' late</span>');
+      if (late) chips.push('<span class="chip emergency">' + late + ' late</span>');
       if (inst.balloon) chips.push('<span class="chip">Balloon ' + curr() + ' ' + fmt(inst.balloon) + '</span>');
       var chipRow = chips.length ? '<div class="chip-row">' + chips.join("") + '</div>' : "<div></div>";
       var actions = '<div class="item-actions">' +
