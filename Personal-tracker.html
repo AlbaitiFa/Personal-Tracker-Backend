@@ -534,6 +534,13 @@
   .pct-suffix { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 0.82rem; color: var(--text-muted); pointer-events: none; }
 
   .del-btn { flex: 0 0 auto; width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); display: flex; align-items: center; justify-content: center; color: var(--danger); }
+  /* Debts/Installments compact row - tapping the summary drills into
+     renderItemEditSheet() (all fields, one per line with a real label)
+     instead of cramming them inline; matches .input's visual weight so
+     the row reads the same as Bank Accounts' row above it. */
+  .item-summary-btn { flex: 1; min-width: 0; text-align: left; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 8px 12px; }
+  .item-summary-btn .item-name { font-size: 0.88rem; font-weight: 600; }
+  .item-summary-btn .item-sub { font-size: 0.72rem; color: var(--text-muted); margin-top: 1px; }
   .reorder-btns { display: flex; flex-direction: column; gap: 2px; flex: 0 0 auto; }
   .reorder-btn { width: 22px; height: 17px; border-radius: 5px; border: 1px solid var(--border); background: var(--surface); display: flex; align-items: center; justify-content: center; color: var(--text-muted); padding: 0; }
   .reorder-btn:disabled { opacity: 0.35; }
@@ -1980,6 +1987,18 @@
     state.accounts[target] = tmp;
     persist(); renderSettingsSheet(); render();
   }
+  function moveListItem(list, id, dir) {
+    var idx = list.findIndex(function (x) { return x.id === id; });
+    if (idx === -1) return;
+    var target = dir === "up" ? idx - 1 : idx + 1;
+    if (target < 0 || target >= list.length) return;
+    var tmp = list[idx];
+    list[idx] = list[target];
+    list[target] = tmp;
+    persist(); renderSettingsSheet(); render();
+  }
+  function moveDebt(id, dir) { moveListItem(state.debts, id, dir); }
+  function moveInstallment(id, dir) { moveListItem(state.installments, id, dir); }
 
   /* ---------------- transaction sheet ---------------- */
   var txType = "draw";
@@ -2377,10 +2396,14 @@
 
   /* ---------------- settings sheet (live-persist, copied from the company tracker's own pattern) ---------------- */
   function openSettingsSheet() { document.getElementById("settingsOverlay").classList.add("open"); renderSettingsSheet(); }
-  function closeSettingsSheet() { document.getElementById("settingsOverlay").classList.remove("open"); render(); }
+  function closeSettingsSheet() { document.getElementById("settingsOverlay").classList.remove("open"); editingItemKind = null; editingItemId = null; render(); }
+
+  var editingItemKind = null; // null | "debt" | "installment"
+  var editingItemId = null;
 
   function renderSettingsSheet() {
     var sheet = document.getElementById("settingsSheet");
+    if (editingItemKind) { renderItemEditSheet(sheet); return; }
     var cSum = pctSum();
 
     var html = '<div class="sheet-head"><h3>Settings</h3><button class="icon-btn" id="setClose" aria-label="Close">' + xIcon() + '</button></div>';
@@ -2464,43 +2487,40 @@
 
     html += '<div class="settings-section"><h4>Debt &amp; net worth</h4>';
     html += '<div class="field"><label>Debts</label></div>';
-    html += state.debts.map(function (deb) {
-      var debOpening = debtOpeningTx(deb.id);
-      return '<div class="acct-edit-row" data-debt="' + deb.id + '">' +
+    html += state.debts.map(function (deb, idx) {
+      var bal = (lastDerived && lastDerived.debtBalances[deb.id]) || 0;
+      var dirLabel = deb.direction === "owed_by_me" ? "I owe this" : "Owed to me";
+      return '<div class="acct-edit-row">' +
         '<div class="acct-edit-top">' +
-          '<input class="input" data-field="name" value="' + esc(deb.name) + '" placeholder="Name">' +
+          '<div class="reorder-btns">' +
+            '<button class="reorder-btn" data-move-debt="' + deb.id + '" data-dir="up" aria-label="Move up"' + (idx === 0 ? " disabled" : "") + '>' + upIcon() + '</button>' +
+            '<button class="reorder-btn" data-move-debt="' + deb.id + '" data-dir="down" aria-label="Move down"' + (idx === state.debts.length - 1 ? " disabled" : "") + '>' + downIcon() + '</button>' +
+          '</div>' +
+          '<button type="button" class="item-summary-btn" data-edit-debt="' + deb.id + '">' +
+            '<div class="item-name">' + esc(deb.name) + '</div>' +
+            '<div class="item-sub">' + dirLabel + ' · ' + curr() + ' ' + fmt(bal) + '</div>' +
+          '</button>' +
           '<button class="del-btn" data-del-debt="' + deb.id + '" aria-label="Remove debt">' + xIcon() + '</button>' +
-        '</div>' +
-        '<div class="row2">' +
-          '<div class="field" style="margin:0"><label>Direction</label><select class="select" data-field="direction">' +
-            '<option value="owed_to_me"' + (deb.direction === "owed_to_me" ? " selected" : "") + '>Owed to me</option>' +
-            '<option value="owed_by_me"' + (deb.direction === "owed_by_me" ? " selected" : "") + '>I owe this</option>' +
-          '</select></div>' +
-          '<div class="field" style="margin:0"><label>Opening balance</label><input class="input" type="number" step="0.01" min="0" data-field="openingBalance" value="' + (debOpening ? debOpening.amount : 0) + '"></div>' +
         '</div>' +
       '</div>';
     }).join("");
     html += '<button class="add-row-btn" id="addDebt">+ Add debt</button>';
     html += '<hr class="div" style="margin:16px 0">';
     html += '<div class="field"><label>Installments</label></div>';
-    html += state.installments.map(function (inst) {
-      var instOpening = installmentOpeningTx(inst.id);
-      return '<div class="acct-edit-row" data-installment="' + inst.id + '">' +
+    html += state.installments.map(function (inst, idx) {
+      var bal = (lastDerived && lastDerived.installmentBalances[inst.id]) || 0;
+      var sub = curr() + ' ' + fmt(inst.monthlyAmount || 0) + '/mo · ' + (inst.installmentsLeft || 0) + '/' + (inst.installmentsTotal || 0) + ' left · ' + curr() + ' ' + fmt(bal) + ' remaining' + (inst.lateCount ? ' · ' + inst.lateCount + ' late' : '');
+      return '<div class="acct-edit-row">' +
         '<div class="acct-edit-top">' +
-          '<input class="input" data-field="name" value="' + esc(inst.name) + '" placeholder="Name">' +
+          '<div class="reorder-btns">' +
+            '<button class="reorder-btn" data-move-installment="' + inst.id + '" data-dir="up" aria-label="Move up"' + (idx === 0 ? " disabled" : "") + '>' + upIcon() + '</button>' +
+            '<button class="reorder-btn" data-move-installment="' + inst.id + '" data-dir="down" aria-label="Move down"' + (idx === state.installments.length - 1 ? " disabled" : "") + '>' + downIcon() + '</button>' +
+          '</div>' +
+          '<button type="button" class="item-summary-btn" data-edit-installment="' + inst.id + '">' +
+            '<div class="item-name">' + esc(inst.name) + '</div>' +
+            '<div class="item-sub">' + sub + '</div>' +
+          '</button>' +
           '<button class="del-btn" data-del-installment="' + inst.id + '" aria-label="Remove installment">' + xIcon() + '</button>' +
-        '</div>' +
-        '<div class="row2">' +
-          '<input class="input" type="number" step="0.01" data-field="monthlyAmount" value="' + (inst.monthlyAmount || 0) + '" placeholder="Monthly amount">' +
-          '<input class="input" data-field="purpose" value="' + esc(inst.purpose || "") + '" placeholder="Purpose">' +
-        '</div>' +
-        '<div class="field" style="margin-top:8px"><label>Opening (remaining) balance</label><input class="input" type="number" step="0.01" min="0" data-field="openingBalance" value="' + (instOpening ? instOpening.amount : 0) + '"></div>' +
-        '<div class="row2" style="margin-top:8px">' +
-          '<div class="field" style="margin:0"><label>Installments left / total</label><div class="row2"><input class="input" type="number" step="1" min="0" data-field="installmentsLeft" value="' + (inst.installmentsLeft || 0) + '" placeholder="Left"><input class="input" type="number" step="1" min="0" data-field="installmentsTotal" value="' + (inst.installmentsTotal || 0) + '" placeholder="Total"></div></div>' +
-        '</div>' +
-        '<div class="row2" style="margin-top:8px">' +
-          '<div class="field" style="margin:0"><label>Late count</label><input class="input" type="number" step="1" min="0" data-field="lateCount" value="' + (inst.lateCount || 0) + '"></div>' +
-          '<div class="field" style="margin:0"><label>Balloon</label><input class="input" type="number" step="0.01" min="0" data-field="balloon" value="' + (inst.balloon || 0) + '"></div>' +
         '</div>' +
       '</div>';
     }).join("");
@@ -2627,18 +2647,11 @@
     var openObBtn = sheet.querySelector("#openObBtn");
     if (openObBtn) openObBtn.addEventListener("click", function () { openObSheet(); });
 
-    sheet.querySelectorAll(".acct-edit-row[data-debt]").forEach(function (row) {
-      var id = row.getAttribute("data-debt");
-      var deb = debtById(id);
-      row.querySelectorAll("[data-field]").forEach(function (inp) {
-        var field = inp.getAttribute("data-field");
-        var evt = inp.tagName === "SELECT" ? "change" : "input";
-        inp.addEventListener(evt, function () {
-          if (field === "openingBalance") { setDebtOpeningBalance(id, Math.max(0, parseFloat(inp.value) || 0)); }
-          else { deb[field] = inp.value; }
-          persist(); render();
-        });
-      });
+    sheet.querySelectorAll("[data-edit-debt]").forEach(function (btn) {
+      btn.addEventListener("click", function () { openItemEditSheet("debt", btn.getAttribute("data-edit-debt")); });
+    });
+    sheet.querySelectorAll("[data-move-debt]").forEach(function (btn) {
+      btn.addEventListener("click", function () { moveDebt(btn.getAttribute("data-move-debt"), btn.getAttribute("data-dir")); });
     });
     sheet.querySelectorAll("[data-del-debt]").forEach(function (btn) {
       btn.addEventListener("click", function () {
@@ -2653,19 +2666,11 @@
       persist(); renderSettingsSheet();
     });
 
-    sheet.querySelectorAll(".acct-edit-row[data-installment]").forEach(function (row) {
-      var id = row.getAttribute("data-installment");
-      var inst = installmentById(id);
-      row.querySelectorAll("[data-field]").forEach(function (inp) {
-        var numericFields = ["monthlyAmount", "installmentsLeft", "installmentsTotal", "lateCount", "balloon"];
-        inp.addEventListener("input", function () {
-          var field = inp.getAttribute("data-field");
-          if (field === "openingBalance") { setInstallmentOpeningBalance(id, Math.max(0, parseFloat(inp.value) || 0)); persist(); render(); return; }
-          inst[field] = numericFields.indexOf(field) !== -1 ? (parseFloat(inp.value) || 0) : inp.value;
-          persist();
-          render();
-        });
-      });
+    sheet.querySelectorAll("[data-edit-installment]").forEach(function (btn) {
+      btn.addEventListener("click", function () { openItemEditSheet("installment", btn.getAttribute("data-edit-installment")); });
+    });
+    sheet.querySelectorAll("[data-move-installment]").forEach(function (btn) {
+      btn.addEventListener("click", function () { moveInstallment(btn.getAttribute("data-move-installment"), btn.getAttribute("data-dir")); });
     });
     sheet.querySelectorAll("[data-del-installment]").forEach(function (btn) {
       btn.addEventListener("click", function () {
@@ -2685,6 +2690,96 @@
     sheet.querySelector("#importBtn").addEventListener("click", function () { sheet.querySelector("#importFile").click(); });
     sheet.querySelector("#importFile").addEventListener("change", handleImport);
     sheet.querySelector("#resetBtn").addEventListener("click", handleReset);
+  }
+
+  /* ---------------- debt/installment edit sheet ---------------- */
+  // Drills into the same #settingsSheet element (no separate overlay - see
+  // editingItemKind above) rather than stacking a second modal on top of
+  // Settings, showing every field on its own labeled line instead of the
+  // old cramped inline row where several fields only had placeholder text
+  // (which vanishes once filled in, making the form unreadable at a
+  // glance). Fields still write straight to state on input/change, same
+  // live-edit convention as every other Settings field in this app - no
+  // draft object, no separate Save button.
+  function openItemEditSheet(kind, id) {
+    editingItemKind = kind; editingItemId = id;
+    renderSettingsSheet();
+  }
+  function closeItemEditSheet() {
+    editingItemKind = null; editingItemId = null;
+    renderSettingsSheet();
+  }
+  function renderItemEditSheet(sheet) {
+    var kind = editingItemKind, id = editingItemId;
+    var isDebt = kind === "debt";
+    var item = isDebt ? debtById(id) : installmentById(id);
+    if (!item) { closeItemEditSheet(); return; }
+
+    var html = '<div class="sheet-head">' +
+      '<button class="icon-btn" id="itemEditBack" aria-label="Back">' + backIcon() + '</button>' +
+      '<h3>' + (isDebt ? "Edit Debt" : "Edit Installment") + '</h3>' +
+      '<button class="link-btn danger" id="itemEditDelete">Delete</button>' +
+    '</div>';
+
+    html += '<div class="field"><label>Name</label><input class="input" id="ieName" value="' + esc(item.name) + '" placeholder="Name"></div>';
+
+    if (isDebt) {
+      var debOpening = debtOpeningTx(id);
+      html += '<div class="field"><label>Direction</label><select class="select" id="ieDirection">' +
+        '<option value="owed_to_me"' + (item.direction === "owed_to_me" ? " selected" : "") + '>Owed to me</option>' +
+        '<option value="owed_by_me"' + (item.direction === "owed_by_me" ? " selected" : "") + '>I owe this</option>' +
+      '</select></div>';
+      html += '<div class="field"><label>Opening balance</label><input class="input" type="number" step="0.01" min="0" id="ieOpeningBalance" value="' + (debOpening ? debOpening.amount : 0) + '"></div>';
+    } else {
+      var instOpening = installmentOpeningTx(id);
+      html += '<div class="row2">' +
+        '<div class="field"><label>Monthly amount</label><input class="input" type="number" step="0.01" id="ieMonthlyAmount" value="' + (item.monthlyAmount || 0) + '"></div>' +
+        '<div class="field"><label>Purpose</label><input class="input" id="iePurpose" value="' + esc(item.purpose || "") + '" placeholder="Purpose"></div>' +
+      '</div>';
+      html += '<div class="field"><label>Opening (remaining) balance</label><input class="input" type="number" step="0.01" min="0" id="ieOpeningBalance" value="' + (instOpening ? instOpening.amount : 0) + '"></div>';
+      html += '<div class="row2">' +
+        '<div class="field"><label>Installments left</label><input class="input" type="number" step="1" min="0" id="ieInstallmentsLeft" value="' + (item.installmentsLeft || 0) + '"></div>' +
+        '<div class="field"><label>Installments total</label><input class="input" type="number" step="1" min="0" id="ieInstallmentsTotal" value="' + (item.installmentsTotal || 0) + '"></div>' +
+      '</div>';
+      html += '<div class="row2">' +
+        '<div class="field"><label>Late count</label><input class="input" type="number" step="1" min="0" id="ieLateCount" value="' + (item.lateCount || 0) + '"></div>' +
+        '<div class="field"><label>Balloon</label><input class="input" type="number" step="0.01" min="0" id="ieBalloon" value="' + (item.balloon || 0) + '"></div>' +
+      '</div>';
+    }
+
+    sheet.innerHTML = html;
+    sheet.querySelector("#itemEditBack").addEventListener("click", closeItemEditSheet);
+    sheet.querySelector("#itemEditDelete").addEventListener("click", function () {
+      if (isDebt) {
+        if (debtUsedInTx(id)) { showToast("Can't remove a debt used in existing transactions."); return; }
+        state.debts = state.debts.filter(function (d) { return d.id !== id; });
+      } else {
+        if (installmentUsedInTx(id)) { showToast("Can't remove an installment used in existing transactions."); return; }
+        state.installments = state.installments.filter(function (i) { return i.id !== id; });
+      }
+      persist();
+      closeItemEditSheet();
+    });
+
+    function bind(fieldId, apply) {
+      var inp = sheet.querySelector("#" + fieldId);
+      if (!inp) return;
+      var evt = inp.tagName === "SELECT" ? "change" : "input";
+      inp.addEventListener(evt, function () { apply(inp.value); persist(); render(); });
+    }
+    bind("ieName", function (v) { item.name = v; });
+    if (isDebt) {
+      bind("ieDirection", function (v) { item.direction = v; });
+      bind("ieOpeningBalance", function (v) { setDebtOpeningBalance(id, Math.max(0, parseFloat(v) || 0)); });
+    } else {
+      bind("ieMonthlyAmount", function (v) { item.monthlyAmount = parseFloat(v) || 0; });
+      bind("iePurpose", function (v) { item.purpose = v; });
+      bind("ieOpeningBalance", function (v) { setInstallmentOpeningBalance(id, Math.max(0, parseFloat(v) || 0)); });
+      bind("ieInstallmentsLeft", function (v) { item.installmentsLeft = parseFloat(v) || 0; });
+      bind("ieInstallmentsTotal", function (v) { item.installmentsTotal = parseFloat(v) || 0; });
+      bind("ieLateCount", function (v) { item.lateCount = parseFloat(v) || 0; });
+      bind("ieBalloon", function (v) { item.balloon = parseFloat(v) || 0; });
+    }
   }
 
   /* ---------------- opening balance sheet ---------------- */
