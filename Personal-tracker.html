@@ -1002,6 +1002,16 @@
   function installmentBaseAmount(inst) {
     return round2((Number(inst.installmentsLeft) || 0) * (Number(inst.amount) || 0) + (Number(inst.balloon) || 0));
   }
+  // The full price of whatever was financed - down payment plus every
+  // scheduled installment plus a balloon, if there is one. Paid-so-far is
+  // just that total minus what installmentBaseAmount says is still left, so
+  // the two always agree by construction.
+  function installmentTotalAmount(inst) {
+    return round2((Number(inst.downPayment) || 0) + (Number(inst.installmentsTotal) || 0) * (Number(inst.amount) || 0) + (Number(inst.balloon) || 0));
+  }
+  function installmentPaidAmount(inst) {
+    return round2(installmentTotalAmount(inst) - installmentBaseAmount(inst));
+  }
   // Full calendar months between two YYYY-MM-DD dates (negative if `to` is
   // before `from`) - the day-of-month comparison keeps a start date of the
   // 20th from counting as a full month elapsed on the 5th of the next one.
@@ -1700,7 +1710,14 @@
       var hasSchedule = total > 0;
       var hasCycle = !!installmentCycleMonths(inst.cadence);
       var paid = hasSchedule ? Math.max(0, total - left) : 0;
-      var pct = hasSchedule ? Math.max(0, Math.min(100, (paid / total) * 100)) : 0;
+      // Currency-based, not installment-count-based - with a balloon or a
+      // down payment in the mix, how much of the money is actually paid off
+      // can differ meaningfully from how many of the count-based
+      // installments are (SNB's balloon alone is over a third of its total,
+      // so "58/60 paid" reads far more done than the money actually is).
+      var totalAmt = installmentTotalAmount(inst);
+      var paidAmt = installmentPaidAmount(inst);
+      var pct = totalAmt > 0 ? Math.max(0, Math.min(100, (paidAmt / totalAmt) * 100)) : 0;
       // Same reasoning as the segment bar's "due" flag: "installments left"
       // only converts cleanly into a calendar estimate for a fixed cadence -
       // for a "custom" one, guessing a due-date countdown would just be
@@ -1714,7 +1731,7 @@
 
       var progressHtml = hasSchedule
         ? buildInstallmentSegBar(total, paid, late, hasCycle) +
-          '<div class="bucket-caption" style="margin-top:5px">' + paid + '/' + total + ' paid (' + pct.toFixed(0) + '%)' + trailer + '</div>'
+          '<div class="bucket-caption" style="margin-top:5px">' + curr() + ' ' + fmt(paidAmt) + ' / ' + curr() + ' ' + fmt(totalAmt) + ' paid (' + pct.toFixed(0) + '%)' + trailer + '</div>'
         : '<div class="bucket-caption" style="margin-top:6px">Ongoing — no fixed end date</div>';
 
       var chips = [];
@@ -2687,7 +2704,7 @@
     html += state.installments.map(function (inst, idx) {
       var bal = (lastDerived && lastDerived.installmentBalances[inst.id]) || 0;
       var derivedLate = installmentDerivedLate(inst);
-      var sub = curr() + ' ' + fmt(inst.amount || 0) + installmentCadenceSuffix(inst.cadence) + ' · ' + installmentsPaidCount(inst) + '/' + (inst.installmentsTotal || 0) + ' paid · ' + curr() + ' ' + fmt(bal) + ' remaining' + (derivedLate ? ' · ' + derivedLate + ' late' : '');
+      var sub = curr() + ' ' + fmt(inst.amount || 0) + installmentCadenceSuffix(inst.cadence) + ' · ' + curr() + ' ' + fmt(installmentPaidAmount(inst)) + '/' + curr() + ' ' + fmt(installmentTotalAmount(inst)) + ' paid · ' + curr() + ' ' + fmt(bal) + ' remaining' + (derivedLate ? ' · ' + derivedLate + ' late' : '');
       return '<div class="acct-edit-row">' +
         '<div class="acct-edit-top">' +
           '<div class="reorder-btns">' +
