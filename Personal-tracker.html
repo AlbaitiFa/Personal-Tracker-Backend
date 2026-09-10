@@ -937,14 +937,12 @@
   // "Late" used to be a manually-typed counter, editable independently of
   // whatever was actually paid - it could say anything. Deriving it from
   // the start date instead means it can't drift: how many payments SHOULD
-  // have happened by today (one per full month elapsed since the start
-  // date - the first isn't due until a cycle after signing, capped at the
-  // loan's term) minus how many actually have.
+  // have happened by today (one at signing, one more per full month
+  // elapsed since, capped at the loan's term) minus how many actually
+  // have.
   function installmentDerivedLate(inst) {
     if (!inst.startDate || !inst.installmentsTotal) return null;
-    // The first payment is due one full cycle AFTER the start date, not on
-    // it - a loan signed today shouldn't already read as owing a payment.
-    var elapsed = monthsBetween(inst.startDate, todayStr());
+    var elapsed = monthsBetween(inst.startDate, todayStr()) + 1;
     var expected = Math.min(Math.max(elapsed, 0), inst.installmentsTotal);
     return Math.max(0, expected - installmentsPaidCount(inst));
   }
