@@ -783,6 +783,53 @@
 
   var state = loadState();
 
+  // One-time reshape of old-format installments: they used to carry
+  // monthlyAmount (0 doubling as "not actually monthly, hide /mo and any
+  // due-date math") and a manually-typed "opening balance" set through a
+  // specially-flagged ledger transaction. Now the remaining balance is
+  // always derived (installmentBaseAmount) and cadence is explicit, so any
+  // installment still in the old shape (no cadence field) gets migrated:
+  // monthlyAmount -> amount, a cadence inferred from whether it was ever
+  // monthly (falling back to a per-installment amount backed out of its old
+  // opening-balance transaction when it wasn't), and downPayment defaulted
+  // to 0. The old opening-balance transactions are dropped once migrated -
+  // left in place they'd double-count against the new derived baseline.
+  function migrateInstallments() {
+    var changed = false;
+    state.installments.forEach(function (inst) {
+      if (inst.cadence) return;
+      changed = true;
+      if (Number(inst.monthlyAmount) > 0) {
+        inst.cadence = "monthly";
+        inst.amount = Number(inst.monthlyAmount) || 0;
+      } else {
+        inst.cadence = "custom";
+        var openingTx = state.transactions.find(function (t) { return t.type === "installment_payment" && t.installmentId === inst.id && t.opening; });
+        var left = Number(inst.installmentsLeft) || 1;
+        inst.amount = openingTx ? round2((openingTx.amount - (Number(inst.balloon) || 0)) / left) : 0;
+      }
+      inst.downPayment = Number(inst.downPayment) || 0;
+      delete inst.monthlyAmount;
+    });
+    var toRemove = state.transactions.filter(function (t) { return t.type === "installment_payment" && t.opening; });
+    if (toRemove.length) {
+      changed = true;
+      state.transactions = state.transactions.filter(function (t) { return !(t.type === "installment_payment" && t.opening); });
+      // A plain removal here isn't enough - the server merges rather than
+      // overwrites on every push (reconcile_state, mirroring this file's
+      // own reconcileState), so a ended-up-missing id alone doesn't delete
+      // it there. Same tombstone mechanism handleLedgerActionClick's delete
+      // uses, so this survives that merge for good instead of the old
+      // entries reappearing on the next sync.
+      if (!Array.isArray(state.deletedTransactionIds)) state.deletedTransactionIds = [];
+      toRemove.forEach(function (t) {
+        if (state.deletedTransactionIds.indexOf(t.id) === -1) state.deletedTransactionIds.push(t.id);
+      });
+    }
+    return changed;
+  }
+  if (migrateInstallments()) persist();
+
   function persist() {
     // Every transaction needs an updatedAt before it can take part in
     // reconcileState()'s merge - backfills it for any pushed directly
@@ -858,6 +905,12 @@
           state = reconcileState(state, remoteState);
           changed = before !== JSON.stringify(state);
         }
+        // A migration triggered here (the just-reconciled remoteState was
+        // still old-shape) needs its own fresh timestamp, not merely the
+        // reconciled max of the two sides - otherwise this push ties the
+        // stateUpdatedAt it just inherited, and the server's own reconcile
+        // (strict ">") keeps the old stored settings bundle over this fix.
+        if (migrateInstallments()) { changed = true; state.stateUpdatedAt = Date.now(); }
         if (changed) {
           localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
           render();
@@ -908,23 +961,47 @@
   function debtById(id) { return state.debts.find(function (d) { return d.id === id; }); }
   function installmentById(id) { return state.installments.find(function (i) { return i.id === id; }); }
 
-  // "Opening balance" fields in Settings (for Debts/Installments) still go
-  // through the transaction log, same as everything else here — they just
-  // find-or-create a single specially-flagged transaction instead of forcing
-  // a trip to the separate Add Transaction sheet for the very first amount.
+  // "Opening balance" in Settings (for Debts) still goes through the
+  // transaction log, same as everything else here — it just finds-or-creates
+  // a single specially-flagged transaction instead of forcing a trip to the
+  // separate Add Transaction sheet for the very first amount. Installments
+  // used to work the same way, but their remaining balance is now always
+  // derived (see installmentBaseAmount below), so there's no installment
+  // equivalent of this anymore.
   function debtOpeningTx(debtId) { return state.transactions.find(function (t) { return t.type === "debt_entry" && t.debtId === debtId && t.opening; }); }
-  function installmentOpeningTx(installmentId) { return state.transactions.find(function (t) { return t.type === "installment_payment" && t.installmentId === installmentId && t.opening; }); }
   function setDebtOpeningBalance(debtId, amount) {
     var tx = debtOpeningTx(debtId);
     if (tx) { tx.amount = amount; }
     else { state.transactions.push({ id: uid(), type: "debt_entry", debtId: debtId, amount: amount, date: todayStr(), description: "Opening balance", opening: true, createdAt: Date.now() }); }
   }
-  function setInstallmentOpeningBalance(installmentId, amount) {
-    var tx = installmentOpeningTx(installmentId);
-    if (tx) { tx.amount = amount; }
-    else { state.transactions.push({ id: uid(), type: "installment_payment", installmentId: installmentId, amount: amount, date: todayStr(), description: "Opening balance", opening: true, createdAt: Date.now() }); }
-  }
   function installmentsPaidCount(inst) { return Math.max(0, (Number(inst.installmentsTotal) || 0) - (Number(inst.installmentsLeft) || 0)); }
+  // How many calendar months make up one billing cycle for a given cadence -
+  // used to generalize the late/payoff math below across monthly, quarterly
+  // and annual installments. "custom" has no fixed cycle length, so there's
+  // nothing to derive a due date from - same as an installment with no start
+  // date at all.
+  function installmentCycleMonths(cadence) {
+    if (cadence === "quarterly") return 3;
+    if (cadence === "annually") return 12;
+    if (cadence === "custom") return null;
+    return 1; // "monthly" and legacy/missing cadence
+  }
+  function installmentCadenceSuffix(cadence) {
+    if (cadence === "quarterly") return "/qtr";
+    if (cadence === "annually") return "/yr";
+    if (cadence === "custom") return "";
+    return "/mo";
+  }
+  // The remaining balance, derived instead of a manually-typed "opening
+  // balance": a down payment (if any) is already settled at signing, so it
+  // doesn't count toward what's still owed - what's left is purely
+  // installmentsLeft more installments plus a balloon, if there is one.
+  // installmentsLeft is the authoritative "how many remain" counter (each
+  // logged payment decrements it), so this is a live figure, not a snapshot
+  // - which is also why no ledger amount gets summed on top of it below.
+  function installmentBaseAmount(inst) {
+    return round2((Number(inst.installmentsLeft) || 0) * (Number(inst.amount) || 0) + (Number(inst.balloon) || 0));
+  }
   // Full calendar months between two YYYY-MM-DD dates (negative if `to` is
   // before `from`) - the day-of-month comparison keeps a start date of the
   // 20th from counting as a full month elapsed on the 5th of the next one.
@@ -936,14 +1013,14 @@
   }
   // "Late" used to be a manually-typed counter, editable independently of
   // whatever was actually paid - it could say anything. Deriving it from
-  // the start date instead means it can't drift: how many payments SHOULD
-  // have happened by today (one at signing, one more per full month
-  // elapsed since, capped at the loan's term) minus how many actually
-  // have.
+  // the start date instead means it can't drift: how many installments
+  // SHOULD have happened by today (one at signing, one more per full cycle
+  // elapsed since, capped at the loan's term) minus how many actually have.
   function installmentDerivedLate(inst) {
-    if (!inst.startDate || !inst.installmentsTotal) return null;
-    var elapsed = monthsBetween(inst.startDate, todayStr()) + 1;
-    var expected = Math.min(Math.max(elapsed, 0), inst.installmentsTotal);
+    var cycleMonths = installmentCycleMonths(inst.cadence);
+    if (!inst.startDate || !inst.installmentsTotal || !cycleMonths) return null;
+    var elapsedCycles = Math.floor(monthsBetween(inst.startDate, todayStr()) / cycleMonths) + 1;
+    var expected = Math.min(Math.max(elapsedCycles, 0), inst.installmentsTotal);
     return Math.max(0, expected - installmentsPaidCount(inst));
   }
   function incomeSourceById(id) { return state.incomeSources.find(function (s) { return s.id === id; }); }
@@ -975,7 +1052,7 @@
     var accountBalances = {}; state.accounts.forEach(function (a) { accountBalances[a.id] = 0; });
     var bucketBalances = {}; state.buckets.forEach(function (b) { bucketBalances[b.id] = 0; });
     var debtBalances = {}; state.debts.forEach(function (d) { debtBalances[d.id] = 0; });
-    var installmentBalances = {}; state.installments.forEach(function (i) { installmentBalances[i.id] = 0; });
+    var installmentBalances = {}; state.installments.forEach(function (i) { installmentBalances[i.id] = installmentBaseAmount(i); });
     var receivedBySource = {}; state.incomeSources.forEach(function (s) { receivedBySource[s.id] = 0; });
     var monthStart = thisMonthStart();
 
@@ -1023,10 +1100,14 @@
           accountBalances[tx.accountId] = round2(accountBalances[tx.accountId] + debtAcctSign * tx.amount);
         }
       } else if (tx.type === "installment_payment") {
-        if (tx.installmentId in installmentBalances) installmentBalances[tx.installmentId] = round2(installmentBalances[tx.installmentId] + tx.amount);
-        // Same idea as debt_entry above - an installment is always money I
-        // owe, so its raw signed amount (negative for a real payment)
-        // already matches the cash-flow direction, no sign flip needed.
+        // Unlike debt_entry, this doesn't touch installmentBalances - the
+        // remaining balance is a live derivation off installmentsLeft (see
+        // installmentBaseAmount), which a real payment already updates by
+        // decrementing the count, so summing this transaction's amount on
+        // top too would double-count it. It still moves real cash, though,
+        // same as debt_entry above - an installment is always money I owe,
+        // so its raw signed amount (negative for a real payment) already
+        // matches the cash-flow direction, no sign flip needed.
         if (tx.accountId && tx.accountId in accountBalances) {
           accountBalances[tx.accountId] = round2(accountBalances[tx.accountId] + tx.amount);
         }
@@ -1519,7 +1600,15 @@
   function renderInstallmentSummary(derived) {
     var el = document.getElementById("installmentSummary");
     if (!state.installments.length) { el.innerHTML = ""; return; }
-    var totalMonthly = round2(state.installments.reduce(function (s, i) { return s + (Number(i.monthlyAmount) || 0); }, 0));
+    // Quarterly/annual installments get normalized down to a monthly figure
+    // (same idea as monthlyEquivalentAmount for income) so they can be
+    // summed together; "custom" cadence has no fixed cycle to normalize by,
+    // so it's left out of this total the same way a non-monthly item always
+    // has been.
+    var totalMonthly = round2(state.installments.reduce(function (s, i) {
+      var cycleMonths = installmentCycleMonths(i.cadence);
+      return s + (cycleMonths ? (Number(i.amount) || 0) / cycleMonths : 0);
+    }, 0));
     var totalRemaining = round2(state.installments.reduce(function (s, i) { return s + (derived.installmentBalances[i.id] || 0); }, 0));
     el.innerHTML = '<div class="panel" style="margin-bottom:8px">' +
       '<div class="comp-title">Total monthly obligation <span class="sub">' + curr() + ' ' + fmt(totalMonthly) + '/mo</span></div>' +
@@ -1535,16 +1624,18 @@
   // than sliding into the future. Without a start date there's nothing to
   // anchor a schedule to, so it falls back to counting `monthsLeft` forward
   // from today.
-  function estimatedPayoffLabel(inst, monthsLeft) {
+  function estimatedPayoffLabel(inst, cyclesLeft) {
     var names = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    var cycleMonths = installmentCycleMonths(inst.cadence);
+    if (!cycleMonths) return "";
     if (inst.startDate && inst.installmentsTotal) {
       var sd = new Date(inst.startDate);
-      sd.setMonth(sd.getMonth() + (inst.installmentsTotal - 1));
+      sd.setMonth(sd.getMonth() + (inst.installmentsTotal - 1) * cycleMonths);
       return names[sd.getMonth()] + " " + sd.getFullYear();
     }
-    if (!monthsLeft || monthsLeft <= 0) return "";
+    if (!cyclesLeft || cyclesLeft <= 0) return "";
     var d = new Date();
-    d.setMonth(d.getMonth() + monthsLeft);
+    d.setMonth(d.getMonth() + cyclesLeft * cycleMonths);
     return names[d.getMonth()] + " " + d.getFullYear();
   }
 
@@ -1562,7 +1653,7 @@
   // not all rendered as individual slivers.
   var SEGBAR_WINDOW = 12;
 
-  function buildInstallmentSegBar(total, paid, late, isMonthly) {
+  function buildInstallmentSegBar(total, paid, late, hasCycle) {
     var active = paid + late; // index of the "due" segment, or the boundary if none
     var start = 0, end = total;
     if (total > SEGBAR_WINDOW) {
@@ -1578,11 +1669,11 @@
     var segs = [];
     for (var i = start; i < end; i++) {
       // The single next payment right after paid/late is only "due" for a
-      // real monthly-cadence loan - the next one being right after in the
-      // count doesn't mean it's due now for something like an annual
-      // payment (monthlyAmount 0 is the signal for that), so it just stays
-      // unclassed (grey) like the rest of the un-due future there.
-      var cls = i < paid ? "paid" : (i < paid + late ? "late" : (isMonthly && i === paid + late ? "due" : ""));
+      // fixed-cycle cadence (monthly/quarterly/annually) - a "custom"
+      // cadence has no fixed cycle to say the next one is due now rather
+      // than later, so it just stays unclassed (grey) like the rest of the
+      // un-due future there.
+      var cls = i < paid ? "paid" : (i < paid + late ? "late" : (hasCycle && i === paid + late ? "due" : ""));
       segs.push('<div class="' + cls + '"></div>');
     }
     var before = start > 0 ? '<span class="segbar-more">+' + start + '</span>' : "";
@@ -1607,22 +1698,22 @@
       var left = Number(inst.installmentsLeft) || 0;
       var late = installmentDerivedLate(inst) || 0;
       var hasSchedule = total > 0;
-      var isMonthly = (Number(inst.monthlyAmount) || 0) > 0;
+      var hasCycle = !!installmentCycleMonths(inst.cadence);
       var paid = hasSchedule ? Math.max(0, total - left) : 0;
       var pct = hasSchedule ? Math.max(0, Math.min(100, (paid / total) * 100)) : 0;
       // Same reasoning as the segment bar's "due" flag: "installments left"
-      // only converts cleanly into a calendar estimate for a real monthly
-      // cadence - for something like an annual payment, guessing a monthly
-      // countdown would just be wrong, so it's omitted rather than shown.
+      // only converts cleanly into a calendar estimate for a fixed cadence -
+      // for a "custom" one, guessing a due-date countdown would just be
+      // wrong, so it's omitted rather than shown.
       var trailer = "";
       if (left <= 0) trailer = " · paid off";
-      else if (isMonthly) {
+      else if (hasCycle) {
         var payoff = estimatedPayoffLabel(inst, left);
         if (payoff) trailer = " · est. payoff " + payoff;
       }
 
       var progressHtml = hasSchedule
-        ? buildInstallmentSegBar(total, paid, late, isMonthly) +
+        ? buildInstallmentSegBar(total, paid, late, hasCycle) +
           '<div class="bucket-caption" style="margin-top:5px">' + paid + '/' + total + ' paid (' + pct.toFixed(0) + '%)' + trailer + '</div>'
         : '<div class="bucket-caption" style="margin-top:6px">Ongoing — no fixed end date</div>';
 
@@ -1640,7 +1731,7 @@
           '<div><div class="item-name">' + esc(inst.name) + '</div><div class="item-sub">' + esc(inst.purpose || "") + '</div></div>' +
           '<div class="item-amt num">' + curr() + ' ' + fmt(bal) + '</div>' +
         '</div>' +
-        '<div class="bucket-caption">' + curr() + ' ' + fmt(inst.monthlyAmount || 0) + '/mo</div>' +
+        '<div class="bucket-caption">' + curr() + ' ' + fmt(inst.amount || 0) + installmentCadenceSuffix(inst.cadence) + '</div>' +
         progressHtml +
         '<div class="item-bottom-row">' + chipRow + actions + '</div>' +
       '</div>';
@@ -2596,7 +2687,7 @@
     html += state.installments.map(function (inst, idx) {
       var bal = (lastDerived && lastDerived.installmentBalances[inst.id]) || 0;
       var derivedLate = installmentDerivedLate(inst);
-      var sub = curr() + ' ' + fmt(inst.monthlyAmount || 0) + '/mo · ' + installmentsPaidCount(inst) + '/' + (inst.installmentsTotal || 0) + ' paid · ' + curr() + ' ' + fmt(bal) + ' remaining' + (derivedLate ? ' · ' + derivedLate + ' late' : '');
+      var sub = curr() + ' ' + fmt(inst.amount || 0) + installmentCadenceSuffix(inst.cadence) + ' · ' + installmentsPaidCount(inst) + '/' + (inst.installmentsTotal || 0) + ' paid · ' + curr() + ' ' + fmt(bal) + ' remaining' + (derivedLate ? ' · ' + derivedLate + ' late' : '');
       return '<div class="acct-edit-row">' +
         '<div class="acct-edit-top">' +
           '<div class="reorder-btns">' +
@@ -2768,7 +2859,7 @@
       });
     });
     sheet.querySelector("#addInstallment").addEventListener("click", function () {
-      state.installments.push({ id: uid(), name: "New installment", monthlyAmount: 0, purpose: "", startDate: todayStr(), installmentsTotal: 0, installmentsLeft: 0, balloon: 0 });
+      state.installments.push({ id: uid(), name: "New installment", amount: 0, cadence: "monthly", downPayment: 0, purpose: "", startDate: todayStr(), installmentsTotal: 0, installmentsLeft: 0, balloon: 0 });
       persist(); renderSettingsSheet();
     });
 
@@ -2820,7 +2911,7 @@
     if (!item) { closeItemEditSheet(); return; }
 
     if (!itemDraft || itemDraft.id !== id) {
-      var openingTx = isDebt ? debtOpeningTx(id) : installmentOpeningTx(id);
+      var openingTx = isDebt ? debtOpeningTx(id) : null;
       itemDraft = Object.assign({ id: id, openingBalance: openingTx ? openingTx.amount : 0 }, item);
       itemDirty = false;
     }
@@ -2845,9 +2936,13 @@
         '<div class="field"><label>Start date</label><input class="input" type="date" id="ieStartDate" value="' + (d.startDate || "") + '"></div>' +
       '</div>';
       html += '<div class="row2" style="align-items:start">' +
-        '<div class="field"><label>Opening (remaining) balance</label><input class="input" type="number" step="0.01" min="0" id="ieOpeningBalance" value="' + d.openingBalance + '"></div>' +
-        '<div class="field"><label>Monthly amount</label><input class="input" type="number" step="0.01" id="ieMonthlyAmount" value="' + (d.monthlyAmount || 0) + '"></div>' +
+        '<div class="field"><label>Down payment</label><input class="input" type="number" step="0.01" min="0" id="ieDownPayment" value="' + (d.downPayment || 0) + '"></div>' +
+        '<div class="field"><label>Amount per installment</label><input class="input" type="number" step="0.01" id="ieAmount" value="' + (d.amount || 0) + '"></div>' +
       '</div>';
+      html += '<div class="field"><label>Cadence</label><select class="select" id="ieCadence">' +
+        ["monthly", "quarterly", "annually", "custom"].map(function (c) {
+          return '<option value="' + c + '"' + ((d.cadence || "monthly") === c ? " selected" : "") + '>' + c.charAt(0).toUpperCase() + c.slice(1) + '</option>';
+        }).join("") + '</select></div>';
       // Purpose usually needs more room than a single input line gives it
       // (loans carry a longer note than "Groceries" does), so it gets its
       // own full-width row rather than sharing one.
@@ -2902,9 +2997,10 @@
       bindDraft("ieOpeningBalance", function (v) { d.openingBalance = Math.max(0, parseFloat(v) || 0); });
     } else {
       bindDraft("iePurpose", function (v) { d.purpose = v; });
-      bindDraft("ieMonthlyAmount", function (v) { d.monthlyAmount = parseFloat(v) || 0; });
+      bindDraft("ieDownPayment", function (v) { d.downPayment = Math.max(0, parseFloat(v) || 0); });
+      bindDraft("ieAmount", function (v) { d.amount = parseFloat(v) || 0; });
+      bindDraft("ieCadence", function (v) { d.cadence = v; });
       bindDraft("ieStartDate", function (v) { d.startDate = v; });
-      bindDraft("ieOpeningBalance", function (v) { d.openingBalance = Math.max(0, parseFloat(v) || 0); });
       bindDraft("ieInstallmentsTotal", function (v) { d.installmentsTotal = parseFloat(v) || 0; });
       bindDraft("ieBalloon", function (v) { d.balloon = parseFloat(v) || 0; });
     }
@@ -2914,9 +3010,8 @@
         item.name = d.name; item.direction = d.direction;
         setDebtOpeningBalance(id, d.openingBalance);
       } else {
-        item.name = d.name; item.purpose = d.purpose; item.monthlyAmount = d.monthlyAmount;
-        item.startDate = d.startDate; item.installmentsTotal = d.installmentsTotal; item.balloon = d.balloon;
-        setInstallmentOpeningBalance(id, d.openingBalance);
+        item.name = d.name; item.purpose = d.purpose; item.amount = d.amount; item.cadence = d.cadence;
+        item.downPayment = d.downPayment; item.startDate = d.startDate; item.installmentsTotal = d.installmentsTotal; item.balloon = d.balloon;
       }
       persist();
       itemDirty = false; itemDraft = null;
