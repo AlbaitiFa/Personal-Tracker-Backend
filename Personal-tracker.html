@@ -1527,14 +1527,24 @@
       '</div>';
   }
 
-  // Adds `months` to today and returns a short "Mon YYYY" label - used to
-  // turn "installments left" (already a monthly-cadence count) into a real
-  // estimated payoff date, without needing any new data field.
-  function estimatedPayoffLabel(months) {
-    if (!months || months <= 0) return "";
-    var d = new Date();
-    d.setMonth(d.getMonth() + months);
+  // Returns a short "Mon YYYY" label for when a loan's last installment is
+  // due. When a start date is on record, it's schedule-aware: the last of
+  // `total` installments is due `total - 1` months after the start date
+  // (matching installmentDerivedLate's "first payment due at signing"
+  // convention), so a late loan still shows its original due month rather
+  // than sliding into the future. Without a start date there's nothing to
+  // anchor a schedule to, so it falls back to counting `monthsLeft` forward
+  // from today.
+  function estimatedPayoffLabel(inst, monthsLeft) {
     var names = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    if (inst.startDate && inst.installmentsTotal) {
+      var sd = new Date(inst.startDate);
+      sd.setMonth(sd.getMonth() + (inst.installmentsTotal - 1));
+      return names[sd.getMonth()] + " " + sd.getFullYear();
+    }
+    if (!monthsLeft || monthsLeft <= 0) return "";
+    var d = new Date();
+    d.setMonth(d.getMonth() + monthsLeft);
     return names[d.getMonth()] + " " + d.getFullYear();
   }
 
@@ -1607,7 +1617,7 @@
       var trailer = "";
       if (left <= 0) trailer = " · paid off";
       else if (isMonthly) {
-        var payoff = estimatedPayoffLabel(left);
+        var payoff = estimatedPayoffLabel(inst, left);
         if (payoff) trailer = " · est. payoff " + payoff;
       }
 
