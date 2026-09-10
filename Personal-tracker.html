@@ -828,7 +828,16 @@
     }
     return changed;
   }
-  if (migrateInstallments()) persist();
+  // Reshape now, but don't push yet when sync is on - this runs before the
+  // very first syncFromServer() call below has ever reconciled against the
+  // server's real copy, so a stale local cache (or, on a first-ever visit,
+  // the hardcoded seed) migrating "successfully" here and pushing would just
+  // race whatever's actually stored, and a fresh Date.now() stamp wins that
+  // race regardless of which side is actually newer - silently clobbering
+  // real edits already on the server. syncFromServer()'s own migrateInstallments()
+  // call (after reconciling) is what's allowed to push. Sync-disabled (pure
+  // local) mode has no server to race, so it persists immediately as before.
+  if (migrateInstallments() && !syncEnabled()) persist();
 
   function persist() {
     // Every transaction needs an updatedAt before it can take part in
