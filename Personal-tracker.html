@@ -609,8 +609,12 @@
 </button>
 
 <section class="block">
-  <h2>Income</h2>
+  <h2 class="collapsible-header" data-toggle="income">Income <span class="chevron" id="incomeChevron">▾</span></h2>
   <div id="entitlementPanel"></div>
+  <div id="incomeBody" class="collapsible-body" style="display:none">
+    <div id="incomeChartSection" style="margin-top:14px;"></div>
+    <div id="incomeLedgerSection" style="margin-top:14px;"></div>
+  </div>
 </section>
 
 <section class="block">
@@ -1153,6 +1157,8 @@
     renderAccountCards(derived);
     renderBuckets(derived);
     renderEntitlementPanel(derived);
+    renderIncomeChart();
+    renderIncomeLedger();
     renderExpensesSummary(derived);
     renderDebtSummary(derived);
     renderDebts(derived);
@@ -1265,6 +1271,150 @@
       '</div></div>';
     }).join("") + '</div>';
     el.innerHTML = html;
+  }
+
+  function totalMonthlyIncomeTarget() {
+    return round2(state.incomeSources.reduce(function (s, src) { return s + monthlyEquivalentAmount(src.amount, src.frequency); }, 0));
+  }
+  // Same inclusion rule as computeDerived()'s receivedBySource (every
+  // non-historical draw counts, emergency included - it never lands in a
+  // bank account but still counts toward the entitlement), just summed
+  // across all sources and for an arbitrary month instead of only the
+  // current one, since the chart below needs to look at past/future months.
+  function receivedInMonth(monthStr) {
+    var total = 0;
+    state.transactions.forEach(function (t) {
+      if (t.type === "draw" && !t.historical && (t.date || "").slice(0, 7) === monthStr) total = round2(total + (Number(t.amount) || 0));
+    });
+    return total;
+  }
+
+  var incomeChartView = "monthly";
+  var incomeMonthOffset = 0;
+  var incomeYearOffset = 0;
+  var incomeBarChart = null;
+
+  function renderIncomeChart() {
+    var el = document.getElementById("incomeChartSection");
+    if (!el) return;
+    var toggleHtml =
+      '<div class="segmented segmented-compact" style="max-width:180px; margin-top:8px">' +
+        '<button data-income-view="monthly" class="' + (incomeChartView === "monthly" ? "active" : "") + '">Monthly</button>' +
+        '<button data-income-view="yearly" class="' + (incomeChartView === "yearly" ? "active" : "") + '">Yearly</button>' +
+      '</div>';
+    if (incomeChartView === "yearly") renderIncomeChartYearly(el, toggleHtml);
+    else renderIncomeChartMonthly(el, toggleHtml);
+  }
+
+  function renderIncomeChartMonthly(el, toggleHtml) {
+    var targetMonth = addMonths(todayStr().slice(0, 7), incomeMonthOffset);
+    var navHtml =
+      '<div class="income-chart-nav">' +
+        '<button type="button" class="icon-btn" id="incomeMonthPrev" aria-label="Previous month">' + backIcon() + '</button>' +
+        '<div class="income-chart-nav-label">' + esc(monthYearLabel(targetMonth)) + '</div>' +
+        '<button type="button" class="icon-btn" id="incomeMonthNext" aria-label="Next month" style="transform:rotate(180deg)">' + backIcon() + '</button>' +
+      '</div>';
+    var received = receivedInMonth(targetMonth);
+    var target = totalMonthlyIncomeTarget();
+    var pct = target > 0 ? Math.max(0, Math.min(100, (received / target) * 100)) : 0;
+    var remaining = round2(target - received);
+    el.innerHTML = '<div class="panel" style="margin-bottom:8px">' +
+      '<div class="comp-title">Income <span class="sub">' + curr() + ' ' + fmt(received) + ' / ' + curr() + ' ' + fmt(target) + '</span></div>' +
+      toggleHtml + navHtml +
+      '<div class="progress" style="margin-top:10px"><div class="progress-fill" style="width:' + pct.toFixed(1) + '%"></div></div>' +
+      '<div class="bucket-caption" style="margin-top:6px">Remaining: ' + curr() + ' ' + fmt(remaining) + '</div>' +
+    '</div>';
+    wireIncomeChartToggle(el);
+    var prevBtn = el.querySelector("#incomeMonthPrev");
+    var nextBtn = el.querySelector("#incomeMonthNext");
+    if (prevBtn) prevBtn.addEventListener("click", function (e) { e.stopPropagation(); incomeMonthOffset -= 1; renderIncomeChart(); });
+    if (nextBtn) nextBtn.addEventListener("click", function (e) { e.stopPropagation(); incomeMonthOffset += 1; renderIncomeChart(); });
+  }
+
+  function renderIncomeChartYearly(el, toggleHtml) {
+    var targetYear = String(Number(todayStr().slice(0, 4)) + incomeYearOffset);
+    var navHtml =
+      '<div class="income-chart-nav">' +
+        '<button type="button" class="icon-btn" id="incomeYearPrev" aria-label="Previous year">' + backIcon() + '</button>' +
+        '<div class="income-chart-nav-label">' + esc(targetYear) + '</div>' +
+        '<button type="button" class="icon-btn" id="incomeYearNext" aria-label="Next year" style="transform:rotate(180deg)">' + backIcon() + '</button>' +
+      '</div>';
+    var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    var months = [];
+    for (var i = 0; i < 12; i++) {
+      var m = targetYear + "-" + String(i + 1).padStart(2, "0");
+      months.push({ label: monthNames[i], total: receivedInMonth(m) });
+    }
+    var yearTotal = round2(months.reduce(function (s, d) { return s + d.total; }, 0));
+
+    if (!yearTotal) {
+      el.innerHTML = '<div class="panel" style="margin-bottom:8px">' +
+        '<div class="comp-title">Income</div>' + toggleHtml + navHtml +
+        '<div class="empty-state" style="margin-top:12px">No income logged in ' + esc(targetYear) + '.</div>' +
+      '</div>';
+      wireIncomeChartToggle(el);
+      wireIncomeYearNav(el);
+      return;
+    }
+
+    el.innerHTML = '<div class="panel" style="margin-bottom:8px">' +
+      '<div class="comp-title">Income <span class="sub">' + curr() + ' ' + fmt(yearTotal) + ' in ' + esc(targetYear) + '</span></div>' +
+      toggleHtml + navHtml +
+      '<div class="expense-chart-box" style="height:180px; margin-top:12px"><canvas id="incomeBarChart"></canvas></div>' +
+    '</div>';
+
+    if (incomeBarChart) { incomeBarChart.destroy(); incomeBarChart = null; }
+    if (window.Chart) {
+      var canvas = document.getElementById("incomeBarChart");
+      var css = getComputedStyle(document.documentElement);
+      var borderVal = css.getPropertyValue("--border").trim();
+      var mutedVal = css.getPropertyValue("--text-muted").trim();
+      var accentVal = css.getPropertyValue("--accent").trim();
+      var values = months.map(function (d) { return d.total; });
+      var maxVal = Math.max(1, Math.max.apply(null, values));
+      var tickStep = niceAxisStep(maxVal * 1.15, 4);
+      var axisMax = Math.ceil((maxVal * 1.15) / tickStep) * tickStep || tickStep;
+      incomeBarChart = new Chart(canvas, {
+        type: "bar",
+        data: {
+          labels: months.map(function (d) { return d.label; }),
+          datasets: [{ data: values, backgroundColor: accentVal, borderRadius: 3, barThickness: 16 }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          scales: {
+            x: { grid: { display: false }, ticks: { color: mutedVal, font: { size: 10 } }, border: { color: borderVal } },
+            y: { min: 0, max: axisMax, grid: { color: borderVal }, ticks: { color: mutedVal, font: { size: 10 }, stepSize: tickStep } }
+          },
+          plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: function (ctx) { return curr() + " " + fmt(ctx.parsed.y); } } }
+          }
+        }
+      });
+    }
+    wireIncomeChartToggle(el);
+    wireIncomeYearNav(el);
+  }
+
+  function wireIncomeChartToggle(el) {
+    el.querySelectorAll("[data-income-view]").forEach(function (btn) {
+      btn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        incomeChartView = btn.getAttribute("data-income-view");
+        renderIncomeChart();
+      });
+    });
+  }
+  function wireIncomeYearNav(el) {
+    var prevBtn = el.querySelector("#incomeYearPrev");
+    var nextBtn = el.querySelector("#incomeYearNext");
+    if (prevBtn) prevBtn.addEventListener("click", function (e) { e.stopPropagation(); incomeYearOffset -= 1; renderIncomeChart(); });
+    if (nextBtn) nextBtn.addEventListener("click", function (e) { e.stopPropagation(); incomeYearOffset += 1; renderIncomeChart(); });
+  }
+
+  function renderIncomeLedger() {
+    renderFilteredLedger("incomeLedgerSection", null, function (t) { return t.type === "draw"; }, "No income logged yet.", false);
   }
 
   function monthYearLabel(monthStr) {
@@ -2530,10 +2680,10 @@
   // The header text AND the always-visible summary card underneath it both
   // toggle the same body - matches Prudy's artifact, where the whole summary
   // card is one big click target, not just its title.
-  ["expenses", "debt", "installment"].forEach(function (key) {
+  ["expenses", "debt", "installment", "income"].forEach(function (key) {
     var body = document.getElementById(key + "Body");
     var chevron = document.getElementById(key + "Chevron");
-    var summary = document.getElementById(key + "Summary");
+    var summary = document.getElementById(key === "income" ? "entitlementPanel" : key + "Summary");
     function toggle() {
       var isOpen = body.style.display !== "none";
       body.style.display = isOpen ? "none" : "";
@@ -2583,6 +2733,7 @@
   document.getElementById("debtLedgerSection").addEventListener("click", handleLedgerActionClick);
   document.getElementById("installmentLedgerSection").addEventListener("click", handleLedgerActionClick);
   document.getElementById("expensesLedgerSection").addEventListener("click", handleLedgerActionClick);
+  document.getElementById("incomeLedgerSection").addEventListener("click", handleLedgerActionClick);
 
   /* ---------------- settings sheet (live-persist, copied from the company tracker's own pattern) ---------------- */
   function openSettingsSheet() { document.getElementById("settingsOverlay").classList.add("open"); renderSettingsSheet(); }
